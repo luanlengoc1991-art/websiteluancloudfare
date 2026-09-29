@@ -134,7 +134,7 @@ export default function UnitDetailSheet({immersive=false,open,unit,project,units
   const vrHref=`${projectPath(project.id,'vr')}?product=${encodeURIComponent(unit?.code||'')}`;
   const zaloHref=contactPhone?`https://zalo.me/${contactPhone.replace(/\D/g,'')}`:'';
 
-  if(immersive&&unit)return <ProjectUnitView key={unit.id} open={open} unit={unit} project={project} assets={assets} units={units} status={status} phone={contactPhone} favorite={favorite} onClose={()=>onOpenChange(false)} onFavorite={onFavorite} onReserve={onReserve} onSelect={onSelectRelated}/>;
+  if(immersive&&unit)return <ProjectUnitView key={unit.projectId==='green-paradise'?unit.projectId:unit.id} open={open} unit={unit} project={project} assets={assets} units={units} status={status} phone={contactPhone} favorite={favorite} onClose={()=>onOpenChange(false)} onFavorite={onFavorite} onReserve={onReserve} onSelect={onSelectRelated}/>;
 
   return <Sheet open={open&&!!unit} onOpenChange={onOpenChange}>
     <SheetContent className="unit-sheet unit-detail-sheet">

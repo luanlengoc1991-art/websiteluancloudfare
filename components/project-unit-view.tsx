@@ -1,6 +1,7 @@
 'use client';
 
-import {useState} from 'react';
+import {useState,useRef,useEffect} from 'react';
+import VinhTienDrawing from './vinh-tien-drawing';
 import {Calculator,Check,ChevronLeft,ChevronRight,Compass,Copy,Download,FileText,Gift,Heart,Image as ImageIcon,Layers,LayoutGrid,Link as LinkIcon,Lock,MapPin,Maximize,MessageCircle,Minus,PanelLeftClose,PanelLeftOpen,Phone,Plus,RotateCcw,Ruler,WalletCards,X} from 'lucide-react';
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle} from '@/components/ui/dialog';
 import {toast} from 'sonner';
@@ -15,6 +16,8 @@ function Picture({src,alt,className=''}:{src:string;alt:string;className?:string
  return failed||!src?<div className={'punit-image-empty '+className}><ImageIcon size={32}/><span>Chưa có hình ảnh</span></div>:<img className={className} src={src} alt={alt} onError={()=>setFailed(true)}/>;
 }
 export default function ProjectUnitView({open,unit,project,assets,units,status,phone,favorite,onClose,onFavorite,onReserve,onSelect}:ProjectUnitViewProps){
+ const editorFrame=useRef<HTMLIFrameElement>(null);const initialEditorCode=useRef(unit.code);
+ useEffect(()=>{if(project.id!=='green-paradise')return;const listener=(event:MessageEvent)=>{if(event.origin!==window.location.origin||event.source!==editorFrame.current?.contentWindow||event.data?.type!=='vinh-tien-selected')return;const next=units.find(u=>u.projectId===project.id&&u.code===event.data.code);if(next&&next.id!==unit.id)onSelect(next);};window.addEventListener('message',listener);editorFrame.current?.contentWindow?.postMessage({type:'vinh-tien-select',code:unit.code},window.location.origin);return()=>window.removeEventListener('message',listener);},[unit.id,units,project.id,onSelect]);
  const [railOpen,setRailOpen]=useState(true),[image,setImage]=useState<Asset|null>(null),[zoom,setZoom]=useState(1),[tool,setTool]=useState<'loan'|'price'|'documents'|null>(null),[copied,setCopied]=useState(false);
  const [loanPercent,setLoanPercent]=useState(70),[interest,setInterest]=useState(8),[years,setYears]=useState(20);
  const savedAmenities=assets.filter(a=>a.kind==='amenity');
@@ -38,21 +41,21 @@ export default function ProjectUnitView({open,unit,project,assets,units,status,p
  const showLayout=()=>{if(layout){setImage({id:'unit-layout',projectId:project.id,kind:'plan',name:`Layout ${unit.code}`,url:layout});setZoom(1);}else toast.info('Căn này chưa có layout. Quản trị viên có thể bổ sung đường dẫn mặt bằng trong hồ sơ căn.');};
  return <>
   <Dialog open={open} onOpenChange={v=>{if(!v)onClose();}}>
-   <DialogContent className={'punit-view '+(!railOpen?'punit-rail-hidden':'')} showCloseButton={false}>
+   <DialogContent className={'punit-view '+(project.id==='green-paradise'?'punit-vinh-editor ': '')+(!railOpen?'punit-rail-hidden':'')} showCloseButton={false}>
     <DialogHeader className="sr-only"><DialogTitle>Chi tiết căn {unit.code}</DialogTitle><DialogDescription>{project.name} — hình ảnh, giá và thông tin sản phẩm</DialogDescription></DialogHeader>
-    <aside className="punit-rail" aria-label="Tiện ích và hình ảnh dự án">
+    {project.id!=='green-paradise'&&<aside className="punit-rail" aria-label="Tiện ích và hình ảnh dự án">
      <div className="punit-rail-heading"><h2><MapPin size={17}/>{amenities.length?'Tiện ích xung quanh':'Hình ảnh dự án'}</h2><button aria-label="Thu gọn tiện ích" onClick={()=>setRailOpen(false)}><PanelLeftClose size={16}/></button></div>
      <div className="punit-rail-scroll">
       <button className={'punit-amenity '+(!image?'active':'')} onClick={()=>{setImage(null);setZoom(1);}}><Picture src={project.image} alt={project.name}/><span>Phối cảnh {project.name}</span></button>
       {media.map(asset=><button key={asset.id} className={'punit-amenity '+(image?.id===asset.id?'active':'')} onClick={()=>{setImage(asset);setZoom(1);}}><Picture src={asset.url} alt={asset.name}/><span>{asset.name}</span></button>)}
       {!media.length&&<div className="punit-rail-empty"><ImageIcon size={23}/><p>Ảnh tiện ích đang được cập nhật.</p></div>}
      </div>
-    </aside>
-    <section className="punit-stage" aria-label="Hình ảnh và phiếu căn">
+    </aside>}
+    {project.id==='green-paradise'?<iframe ref={editorFrame} className="vinh-editor-frame" title="Chỉnh sửa bản vẽ Vịnh Tiên" src={`/vinh-tien-editor?code=${encodeURIComponent(initialEditorCode.current)}`}/>:<section className="punit-stage" aria-label="Hình ảnh và phiếu căn">
      <div className="punit-stage-top"><div>{!railOpen&&<button className="punit-icon" onClick={()=>setRailOpen(true)} aria-label="Mở tiện ích"><PanelLeftOpen size={18}/></button>}<button className="punit-icon" onClick={onClose} aria-label="Về quỹ căn"><ChevronLeft size={18}/></button><span>{image?.name||'Phiếu thông tin căn'}</span></div><button className={'punit-icon '+(favorite?'selected':'')} onClick={onFavorite} aria-label={favorite?'Bỏ yêu thích':'Yêu thích căn'}><Heart size={18} fill={favorite?'currentColor':'none'}/></button></div>
      <div className="punit-stage-scroll">
       <div className="punit-media-transform" style={{width:`${zoom*100}%`}}>
-       {image?<Picture key={image.url} className="punit-original" src={image.url} alt={image.name}/>:unit.posterUrl?<Picture key={unit.posterUrl} className="punit-original" src={unit.posterUrl} alt={`Phiếu căn ${unit.code}`}/>:<article className="punit-poster">
+       {image?<Picture key={image.url} className="punit-original" src={image.url} alt={image.name}/>:unit.projectId==='green-paradise'?<VinhTienDrawing key={unit.code} unit={unit}/>:unit.posterUrl?<Picture key={unit.posterUrl} className="punit-original" src={unit.posterUrl} alt={`Phiếu căn ${unit.code}`}/>:<article className="punit-poster">
         <header><div><span className="punit-poster-brand">{project.name}</span><small>{project.developer}</small></div><div><h2>{unit.code}</h2><p>{unit.type} | {number(unit.area)} m²</p></div></header>
         <div className="punit-poster-prices"><div><span>GIÁ THAM KHẢO</span><strong>{price(unit.price)}</strong></div><div><span>GIÁ TTS</span><strong>{price(unit.priceTts)}</strong></div><div><span>GIÁ TTTĐ</span><strong>{price(unit.priceTttd)}</strong></div></div>
         <div className="punit-poster-image"><Picture src={project.image} alt={`Phối cảnh ${project.name}`}/><span><MapPin size={17}/>{project.location}</span></div>
@@ -63,18 +66,18 @@ export default function ProjectUnitView({open,unit,project,assets,units,status,p
       </div>
      </div>
      <div className="punit-stage-bottom"><div className="punit-pager"><button disabled={unitIndex<=0} onClick={()=>move(-1)} aria-label="Căn trước"><ChevronLeft size={17}/></button><span>{unitIndex+1} / {nearby.length} căn</span><button disabled={unitIndex>=nearby.length-1} onClick={()=>move(1)} aria-label="Căn tiếp theo"><ChevronRight size={17}/></button></div><div className="punit-media-tools"><button onClick={()=>setZoom(v=>Math.max(.75,v-.25))} aria-label="Thu nhỏ"><Minus size={16}/></button><button onClick={()=>setZoom(1)} aria-label="Vừa khung hình">{Math.round(zoom*100)}%</button><button onClick={()=>setZoom(v=>Math.min(2.5,v+.25))} aria-label="Phóng to"><Plus size={16}/></button><button onClick={copy} aria-label="Sao chép liên kết">{copied?<Check size={16}/>:<Copy size={16}/>}</button>{image?<a href={image.url} target="_blank" rel="noreferrer" aria-label="Mở ảnh gốc"><Maximize size={16}/></a>:<button onClick={download} aria-label="Tải thông tin căn"><Download size={16}/></button>}</div></div>
-    </section>
+    </section>}
     <aside className="punit-details" aria-label="Thông tin căn">
      <div className="punit-statusbar"><span className={'punit-status '+(status==='Còn hàng'?'available':'unavailable')}>● {status}</span><span>{unit.policyDate?`CSBH: ${unit.policyDate}`:'Thông tin sản phẩm'}</span><div><button aria-label="Đặt lại chế độ xem" onClick={()=>{setImage(null);setZoom(1);}}><RotateCcw size={16}/></button><button aria-label="Đóng chi tiết căn" onClick={onClose}><X size={19}/></button></div></div>
      <div className="punit-detail-scroll">
       <div className="punit-title"><div><h1>{unit.code}</h1><p>{[unit.tower,unit.zone,project.name].filter(Boolean).join(' | ')}</p></div><button onClick={copy} aria-label="Chia sẻ căn"><LinkIcon size={17}/></button></div>
-      <div className="punit-facts">{[[Layers,'Tầng',unit.floor],[LayoutGrid,'Loại hình',unit.type],[Ruler,'Diện tích',`${number(unit.area)} m²`],[Maximize,'Diện tích sàn',unit.builtArea>0?`${number(unit.builtArea)} m²`:'Chưa cập nhật'],[Compass,'Hướng',unit.direction]].map(([Icon,label,value])=>{const I=Icon as typeof Layers;return <div key={String(label)}><I size={16}/><span>{String(label)}</span><strong title={String(value)}>{String(value)}</strong></div>;})}</div>
+      <div className="punit-facts">{[[Layers,'Tầng',unit.floor>0?unit.floor:'Chưa cập nhật'],[LayoutGrid,'Loại hình',unit.type],[Ruler,'Diện tích',`${number(unit.area)} m²`],[Maximize,'Diện tích sàn',unit.builtArea>0?`${number(unit.builtArea)} m²`:'Chưa cập nhật'],[Compass,'Hướng',unit.direction]].map(([Icon,label,value])=>{const I=Icon as typeof Layers;return <div key={String(label)}><I size={16}/><span>{String(label)}</span><strong title={String(value)}>{String(value)}</strong></div>;})}</div>
       <section className="punit-pricing"><div className="punit-price-row"><div className="punit-price-main"><span>Giá tham khảo <WalletCards size={15}/></span><strong>{price(unit.price)}</strong><small>Liên hệ xác nhận giá và trạng thái</small></div><div className="punit-price-meter"><span>Đơn giá tham khảo</span><strong>{unit.area>0&&unit.price>0?`${number(unit.price*1000/unit.area)} triệu/m²`:'Chưa cập nhật'}</strong></div></div><div className="punit-price-tools"><button onClick={download}><FileText size={13}/>Phiếu giá</button><button onClick={()=>setTool('loan')}><Calculator size={13}/>Tính lãi vay</button><button onClick={()=>setTool('price')}><WalletCards size={13}/>Chi tiết giá</button></div></section>
       <div className="punit-contact"><span className="punit-contact-avatar">A</span><div><small>LIÊN HỆ</small><strong>Quản trị viên</strong></div>{phoneDigits?<><a href={`https://zalo.me/${phoneDigits}`} target="_blank" rel="noreferrer" aria-label="Liên hệ Zalo"><MessageCircle size={16}/></a><a href={`tel:${phone}`} aria-label="Gọi tư vấn"><Phone size={16}/></a></>:<span className="punit-contact-note">Chưa có hotline</span>}<button className="punit-lock" onClick={onReserve} disabled={status!=='Còn hàng'}><Lock size={15}/>GIỮ CĂN</button></div>
       <section className="punit-card"><h2><WalletCards size={14}/>Giá chi tiết</h2><div className="punit-price-grid">{[['Giá TTS',unit.priceTts],['Giá vay',unit.priceLoan],['Giá TTTĐ',unit.priceTttd],['Tổng giá trị',unit.totalPrice]].map(([label,value])=><div key={String(label)}><span>{String(label)}</span><strong>{price(value)}</strong></div>)}</div></section>
       <section className="punit-card"><h2><FileText size={14}/>Bàn giao & tài liệu</h2><div className="punit-handover"><span>Nhóm quỹ</span><strong>{unit.group||'Chưa cập nhật'}</strong></div><div className="punit-doclinks"><button onClick={()=>setTool('documents')}><FileText size={19}/><span>Chính sách</span></button><button onClick={showLayout}><LayoutGrid size={19}/><span>Layout thiết kế</span></button><button onClick={()=>setTool('documents')}><Download size={19}/><span>Tài liệu dự án</span></button></div></section>
       <section className="punit-card"><h2><Gift size={14}/>Chính sách & Quà tặng</h2><div className="punit-price-grid"><div><span>CSBH áp dụng</span><strong>{unit.policyDate||'Chưa cập nhật'}</strong></div><div><span>Ưu đãi đặc biệt</span><strong>{unit.gift||'Chưa cập nhật'}</strong></div></div></section>
-      <p className="punit-disclaimer">{unit.sourceLabel&&<><strong>{unit.sourceLabel}</strong> · {unit.sourceCheckedAt?new Date(unit.sourceCheckedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):''}<br/>Bản ghi tại thời điểm cập nhật, không đồng bộ trực tiếp. Cần xác nhận lại giá và trạng thái.<br/></>}{unit.note||'Thông tin và hình ảnh mang tính tham khảo. Vui lòng xác nhận với quản trị viên trước khi giao dịch.'}</p>
+      <p className="punit-disclaimer">{unit.sourceLabel&&<><strong>{unit.sourceLabel}</strong> · {unit.sourceCheckedAt?new Date(unit.sourceCheckedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):''}<br/>{unit.projectId==='green-paradise'?'Đồng bộ Google Sheets mỗi 60 giây. Cần xác nhận lại giá và trạng thái.':'Bản ghi tại thời điểm cập nhật, không đồng bộ trực tiếp. Cần xác nhận lại giá và trạng thái.'}<br/></>}{unit.note||'Thông tin và hình ảnh mang tính tham khảo. Vui lòng xác nhận với quản trị viên trước khi giao dịch.'}</p>
      </div>
     </aside>
    </DialogContent>

@@ -1,6 +1,6 @@
 # Alpha HUB
 
-Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn thuộc repository `luanlengoc1991-art/websiteluan`.
+Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn và nhánh phát hành là `luanlengoc1991-art/websiteluancloudfare` (`main`). Push lên `main` chạy GitHub Actions để triển khai Cloudflare Workers.
 
 ## Website và trang quản trị
 
@@ -11,7 +11,7 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 
 Admin sử dụng một tài khoản quản trị. Dữ liệu lưu tại Supabase Postgres; ảnh và PDF lưu trong Supabase Storage. Ảnh dự án được hiển thị trên website; PDF cần đăng nhập để tải. Nội dung khách hàng không công khai.
 
-**Nhánh admin chưa được triển khai Production. Xem [ADMIN_SETUP.md](ADMIN_SETUP.md) để cấu hình Vercel và các bước kiểm tra còn lại.**
+**Production triển khai bằng Cloudflare Workers khi push `main`. Cần secret GitHub `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`. Xem [ADMIN_SETUP.md](ADMIN_SETUP.md) cho dữ liệu Supabase và các bước kiểm tra còn lại.**
 
 ## Chạy trên máy tính
 
@@ -21,7 +21,7 @@ Admin sử dụng một tài khoản quản trị. Dữ liệu lưu tại Supaba
 4. Thêm `SUPABASE_URL` và `SUPABASE_SECRET_KEY` vào `.env.local`. Dùng project phát triển khi kiểm thử.
 5. Chạy `npm run dev`, mở `http://127.0.0.1:3000`.
 
-Không commit `.env.local`, mật khẩu, khóa API bí mật hoặc dữ liệu khách hàng. Trên Vercel, để cookie dùng HTTPS mặc định; không sao chép `ALPHA_SECURE_COOKIE=false` từ môi trường local.
+Không commit `.env.local`, mật khẩu, khóa API bí mật hoặc dữ liệu khách hàng. Trên Cloudflare, để cookie dùng HTTPS mặc định; không sao chép `ALPHA_SECURE_COOKIE=false` từ môi trường local.
 
 ## Kiểm tra
 
@@ -31,7 +31,7 @@ npm run build
 npm test
 ```
 
-`npm test` chạy Next.js với Supabase HTTP giả lập dùng dữ liệu tạm, không kết nối project thật. Cần kiểm tra riêng luồng đăng nhập, upload và đăng ký tư vấn trên Vercel Preview trước khi đưa lên Production.
+`npm test` chạy Next.js với Supabase HTTP giả lập dùng dữ liệu tạm, không kết nối project thật. Cần kiểm tra riêng luồng đăng nhập, upload và đăng ký tư vấn trên bản Cloudflare trước khi coi là production.
 
 ## Dữ liệu mẫu
 

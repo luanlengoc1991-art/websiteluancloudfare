@@ -8,7 +8,7 @@ alwaysApply: true
 - Remote duy nhất: `https://github.com/luanlengoc1991-art/websiteluancloudfare.git`, nhánh `main`.
 - Trước khi sửa: `git fetch origin` rồi cập nhật `main` từ `origin/main`. Giữ thay đổi cục bộ chưa commit.
 - Sau công việc chủ dự án yêu cầu: commit, push `origin main`. Không đẩy sang `websiteluan` hay remote khác.
-- Push `main` chạy `.github/workflows/deploy.yml` (`npm run deploy` → Cloudflare Workers `websiteluancloudfare`).
-- Chỉ nói đã xuất bản khi GitHub Actions hoặc Wrangler báo deploy thành công.
+- Push `main` chạy Cloudflare Workers Builds của Worker `websiteluancloudfare` (`npx opennextjs-cloudflare build` rồi `npx wrangler deploy`).
+- Chỉ nói đã xuất bản khi bản build Cloudflare thành công và website phản hồi.
 - Không commit `.env.local`, mật khẩu, session, `data/`, file tải lên, hay bản ghi khách hàng.
-- Secret Cloudflare (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) và secret runtime nằm trên GitHub Actions / Cloudflare, không ghi vào repo.
+- Secret runtime nằm trong Settings của Worker trên Cloudflare, không ghi vào repo.

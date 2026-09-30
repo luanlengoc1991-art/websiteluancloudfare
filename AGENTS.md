@@ -13,8 +13,8 @@
 - Kho mã nguồn: `luanlengoc1991-art/websiteluancloudfare`; nhánh phát hành: `main`. Remote `origin` là `https://github.com/luanlengoc1991-art/websiteluancloudfare.git`. Không đẩy sang `websiteluan`.
 - Trước khi sửa, lấy phiên bản mới nhất từ GitHub (`git fetch` rồi cập nhật `origin/main`), đọc file này và bảo toàn thay đổi đang có.
 - Với công việc chủ dự án yêu cầu, thực hiện đầy đủ, kiểm tra phù hợp, commit và push trực tiếp lên `origin/main`. Chủ dự án đã cho phép quy trình này; không hỏi lại xác nhận cho các bước thông thường.
-- Push lên `main` chạy GitHub Actions `.github/workflows/deploy.yml`: `npm run deploy` xuất bản Cloudflare Workers `websiteluancloudfare`. Chỉ báo đã xuất bản khi Actions hoặc Wrangler có bằng chứng deploy thành công.
-- Deploy cần secret GitHub `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`. Biến runtime (`SUPABASE_SECRET_KEY`, `ALPHA_ADMIN_EMAIL`) đặt trên Cloudflare Workers, không commit.
+- Push lên `main` chạy Cloudflare Workers Builds của Worker `websiteluancloudfare`: build `npx opennextjs-cloudflare build`, deploy `npx wrangler deploy`. Chỉ báo đã xuất bản khi bản build trên Cloudflare thành công và website phản hồi.
+- Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`SUPABASE_SECRET_KEY`, `ALPHA_ADMIN_EMAIL`) đặt trong Settings của Worker, không commit.
 - Báo ngắn gọn bằng tiếng Việt: nội dung cập nhật, mã commit, trạng thái website và phần nào chưa kiểm chứng hoặc bị chặn.
 - Khi đổi thiết bị: clone/pull trước khi sửa; commit và push sau khi sửa để các thiết bị và Cloudflare dùng cùng nguồn.
 - GitHub lưu mã nguồn. Supabase lưu dữ liệu ứng dụng và Storage; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.

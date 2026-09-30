@@ -1,6 +1,6 @@
 # Alpha HUB
 
-Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn và nhánh phát hành là `luanlengoc1991-art/websiteluancloudfare` (`main`). Push lên `main` chạy GitHub Actions để triển khai Cloudflare Workers.
+Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn và nhánh phát hành là `luanlengoc1991-art/websiteluancloudfare` (`main`). Cloudflare Workers Builds theo dõi nhánh này và tự triển khai mỗi lần push.
 
 ## Website và trang quản trị
 
@@ -11,7 +11,7 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 
 Admin sử dụng một tài khoản quản trị. Dữ liệu lưu tại Supabase Postgres; ảnh và PDF lưu trong Supabase Storage. Ảnh dự án được hiển thị trên website; PDF cần đăng nhập để tải. Nội dung khách hàng không công khai.
 
-**Production triển khai bằng Cloudflare Workers khi push `main`. Cần secret GitHub `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`. Xem [ADMIN_SETUP.md](ADMIN_SETUP.md) cho dữ liệu Supabase và các bước kiểm tra còn lại.**
+**Production chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`, tự triển khai khi push `main`. Biến Supabase đặt trong Settings của Worker; xem [ADMIN_SETUP.md](ADMIN_SETUP.md) cho dữ liệu và các bước kiểm tra còn lại.**
 
 ## Chạy trên máy tính
 

@@ -13,6 +13,7 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "setup": "node scripts/setup.mjs",
+    "admin:password": "node scripts/admin-password.mjs",
     "typecheck": "tsc --noEmit",
     "types": "wrangler types --env-interface CloudflareEnv --include-runtime=false cloudflare-env.d.ts",
     "db:migrate": "wrangler d1 migrations apply alpha-hub --remote",

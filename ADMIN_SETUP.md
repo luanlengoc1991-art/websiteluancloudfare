@@ -40,21 +40,27 @@ npm run db:migrate:local   # áp dụng lên D1 cục bộ dùng cho dev và npm
 
 | Biến | Giá trị |
 | --- | --- |
-| `ALPHA_ADMIN_EMAIL` | Email Google duy nhất được quyền quản trị |
-| `GOOGLE_CLIENT_ID` | OAuth client ID của Google |
+| `ALPHA_ADMIN_EMAIL` | Email duy nhất được quyền quản trị |
+| `ALPHA_ENABLE_PASSWORD_LOGIN` | `true` để quản trị đăng nhập bằng mật khẩu |
+| `ALPHA_ADMIN_PASSWORD_HASH` | Mã băm scrypt của mật khẩu quản trị, đặt dạng Secret |
+| `GOOGLE_CLIENT_ID` | OAuth client ID của Google, chỉ khi muốn thêm nút Google |
 | `GOOGLE_CLIENT_SECRET` | OAuth client secret, đặt dạng Secret |
-| `ALPHA_ENABLE_PASSWORD_LOGIN` | Để trống hoặc `false`; Google là cách chính |
-| `ALPHA_ADMIN_PASSWORD_HASH` | Chỉ khi bật đăng nhập mật khẩu dự phòng |
 
 Không đặt `ALPHA_SECURE_COOKIE` trên Cloudflare (cookie mặc định chỉ đi qua HTTPS).
 `ALPHA_PUBLIC_ORIGIN` chỉ cần khi tên miền công khai khác Host của request.
 
-`npm run setup` chỉ tạo thông tin đăng nhập cho máy cá nhân. Sao chép mã băm sang
-Cloudflare bằng kênh riêng, không qua chat hay GitHub. Không commit `.env.local`.
+`npm run setup` chỉ tạo thông tin đăng nhập cho máy cá nhân. `npm run admin:password`
+đổi mật khẩu quản trị: nó ghi mật khẩu mới vào `data/mat-khau-quan-tri.txt` (git bỏ
+qua) và in mã băm để dán vào `ALPHA_ADMIN_PASSWORD_HASH` trên Worker. Chuyển mã băm
+bằng kênh riêng, không qua chat hay GitHub. Không commit `.env.local`.
 
 Giới hạn tải lên 4 MiB mỗi file. File lớn hơn cần upload trực tiếp có chữ ký, chưa làm.
 
 ## Cấu hình đăng nhập Google
+
+Bước này không bắt buộc. Không có `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET`
+thì nút Google báo chưa khả dụng, còn đăng nhập quản trị và thành viên bằng email
+và mật khẩu vẫn chạy hoàn toàn trên Cloudflare.
 
 1. Trong Google Auth Platform, tạo OAuth client loại Web. Chỉ cấp scope `openid`, email và profile.
 2. Authorized redirect URI: `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`. Thêm cả tên miền riêng nếu dùng.
@@ -76,7 +82,7 @@ thu hồi quyền cũ. Đăng xuất thu hồi phiên Alpha HUB, không đăng x
 - Đăng ký bằng email trùng `ALPHA_ADMIN_EMAIL` bị từ chối; quyền quản trị chỉ đến từ phiên Google khớp email cấu hình.
 - Các API quản trị tiếp tục dùng `getCurrentUser()` (chỉ admin). `getSignedInUser()` chỉ dùng cho trang tài khoản và trạng thái thành viên. Không thay kiểm tra quản trị bằng kiểm tra đã đăng nhập.
 - Cookie phiên HttpOnly chứa mã ngẫu nhiên; bảng `sessions` chỉ lưu SHA-256 của mã, `owner` là id thành viên hoặc `admin`. Đăng xuất thu hồi phiên hiện tại; hạn phiên 7 ngày.
-- Đăng nhập mật khẩu quản trị dự phòng dùng `/api/auth/admin-password`, chỉ hoạt động khi đặt `ALPHA_ENABLE_PASSWORD_LOGIN=true`.
+- Quản trị đăng nhập ngay tại `/dang-nhap` bằng `ALPHA_ADMIN_EMAIL` và mật khẩu quản trị, chỉ hoạt động khi đặt `ALPHA_ENABLE_PASSWORD_LOGIN=true` cùng `ALPHA_ADMIN_PASSWORD_HASH`. Mật khẩu quản trị không nằm trong bảng `members`; email này không thể tạo tài khoản thành viên. `/api/auth/admin-password` vẫn dùng được cho công cụ ngoài giao diện.
 
 ## Kiểm thử
 

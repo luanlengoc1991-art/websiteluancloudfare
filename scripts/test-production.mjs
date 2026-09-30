@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createHash, randomBytes, scryptSync} from 'node:crypto';
-import {existsSync, mkdtempSync, rmSync} from 'node:fs';
+import {mkdtempSync, rmSync} from 'node:fs';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -74,13 +74,12 @@ const post = (path, data, extra = {}) => fetch(origin + path, {
 const readState = (jar = cookie) => fetch(origin + '/api/state', {headers: jar ? {Cookie: jar} : {}}).then((r) => r.json());
 
 try {
-  if (!existsSync(join('.open-next', 'worker.js'))) {
-    console.log('Đang dựng Worker để kiểm thử...');
-    await new Promise((resolve, reject) => {
-      const build = spawn('npm', ['run', 'build:worker'], {stdio: 'inherit', shell: true});
-      build.on('exit', (code) => (code === 0 ? resolve() : reject(new Error('opennextjs-cloudflare build thất bại.'))));
-    });
-  }
+  // Always rebuild: a stale bundle would test yesterday's code.
+  console.log('Đang dựng Worker để kiểm thử...');
+  await new Promise((resolve, reject) => {
+    const build = spawn('npm', ['run', 'build:worker'], {stdio: 'inherit', shell: true});
+    build.on('exit', (code) => (code === 0 ? resolve() : reject(new Error('opennextjs-cloudflare build thất bại.'))));
+  });
   await run(['d1', 'migrations', 'apply', 'alpha-hub', '--local', '--persist-to', state]);
   await start();
 
@@ -137,6 +136,13 @@ try {
   assert.equal(login.status, 200);
   assert.match(login.headers.get('set-cookie'), /HttpOnly/i);
   const adminCookie = login.headers.get('set-cookie').split(';')[0];
+
+  // The sign-in page reaches the administrator account without Google.
+  assert.equal((await post('/api/auth/login', {email: adminEmail, password: 'incorrect'})).status, 401);
+  const adminFormLogin = await post('/api/auth/login', {email: adminEmail, password});
+  assert.equal(adminFormLogin.status, 200);
+  assert.equal((await adminFormLogin.json()).redirect, '/admin');
+  assert.equal((await readState(adminFormLogin.headers.getSetCookie().find((c) => c.startsWith('alpha_session=')).split(';')[0])).user.email, adminEmail);
 
   // Member accounts live in D1 and never reach the admin area.
   assert.equal((await post('/api/auth/signup', {email: 'member@example.test', password: 'short', name: 'Member'})).status, 400);
@@ -206,6 +212,18 @@ try {
   }
   const anonymousAdmin = await fetch(origin + '/admin', {redirect: 'manual'});
   assert([200, 307].includes(anonymousAdmin.status));
+
+  // An administrator edits a project, saves it, and the public page shows the change.
+  const editedName = 'Dự án kiểm thử đã lưu';
+  const project = {id: 'du-an-kiem-thu', name: 'Dự án kiểm thử', location: 'Cần Giờ', region: 'TP. Hồ Chí Minh', developer: 'Alpha', category: 'low', status: 'Đang mở bán', image: '', hot: false, description: 'Dự án tạo từ trang quản trị.', lat: 10.4, lng: 106.91};
+  const saved = await post('/api/action', {action: 'save', kind: 'project', id: project.id, data: {...project, name: editedName}});
+  assert.equal(saved.status, 200, 'save project');
+  const publicProjects = await readState('');
+  assert.equal(publicProjects.records.find((r) => r.kind === 'project' && r.id === project.id).data.name, editedName);
+  // The public page renders its data in the browser from /api/state.
+  const page = await fetch(origin + '/du-an');
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Danh sách dự án/);
 
   // D1 and R2 keep the data after the Worker restarts.
   await stop();

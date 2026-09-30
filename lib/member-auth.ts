@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {isSameOrigin} from './request-origin';
-import {adminEmail,checkPassword,cookieOptions,hashPassword,newSession,sessionCookie,sessionLifetime,tokenHash} from './auth';
+import {adminEmail,checkPassword,cookieOptions,hashPassword,newSession,sessionCookie,sessionLifetime,tokenHash,verifyPassword} from './auth';
 import {allowAttempt} from './login-limits';
 import {database} from '@/db/store';
 
@@ -14,7 +14,7 @@ async function credentials(req:Request,signup=false){
  if(email.length>254||!/^\S+@\S+\.\S+$/.test(email)||password.length>128||password.length<(signup?8:1))return {error:fail('Nhập email hợp lệ và mật khẩu '+(signup?'từ 8 đến 128 ký tự.':'hợp lệ.'))};
  const name=typeof data.name==='string'?data.name.trim().slice(0,100):'';
  if(signup&&!name)return {error:fail('Vui lòng nhập họ và tên.')};
- if(signup&&email===adminEmail())return {error:fail('Email này dành cho quản trị website. Vui lòng đăng nhập bằng Google.',409)};
+ if(signup&&email===adminEmail())return {error:fail('Email này dành cho quản trị website, không thể tạo tài khoản thành viên.',409)};
  if(!await allowAttempt('member:'+tokenHash(email)))return {error:fail('Thử quá nhiều lần. Vui lòng đợi 15 phút.',429)};
  return {email,password,name};
 }
@@ -32,8 +32,17 @@ export async function signup(req:Request){try{
  if(!created.meta.changes)return fail('Email này đã có tài khoản. Vui lòng đăng nhập.',409);
  return await memberSession(id,data.email!,data.name||null);
 }catch(error){console.error(error);return fail('Kết nối đang gián đoạn. Vui lòng thử lại.',503);}}
+/** The administrator signs in against the server-only password hash, never against a member row. */
+async function adminSession(password:string){
+ if(process.env.ALPHA_ENABLE_PASSWORD_LOGIN!=='true'||!process.env.ALPHA_ADMIN_PASSWORD_HASH)return fail('Tài khoản quản trị đăng nhập bằng Google.',410);
+ if(!await verifyPassword(password))return fail('Email hoặc mật khẩu không đúng.',401);
+ const response=NextResponse.json({ok:true,redirect:'/admin'},{headers:{'Cache-Control':'no-store'}});
+ response.cookies.set(sessionCookie,await newSession(adminEmail()),{...cookieOptions(),maxAge:sessionLifetime});
+ return response;
+}
 export async function passwordLogin(req:Request){try{
  const data=await credentials(req);if(data.error)return data.error;
+ if(data.email===adminEmail())return await adminSession(data.password!);
  const member=await database().prepare('SELECT id,password_hash,full_name FROM members WHERE email=?').bind(data.email)
   .first<{id:string;password_hash:string|null;full_name:string|null}>();
  if(!member||!await checkPassword(data.password!,member.password_hash))return fail('Email hoặc mật khẩu không đúng.',401);

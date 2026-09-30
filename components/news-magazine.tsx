@@ -1,65 +1,150 @@
 'use client';
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState, type FormEvent} from 'react';
 import Link from './site-link';
-import {ArrowLeft, Pencil, Plus, Search} from 'lucide-react';
-import ContactForm from './contact-form';
-import type {Article} from '@/lib/catalog';
+import {ArrowLeft, ArrowRight, MapPin, MessageCircle, Pencil, Phone, Plus, Search} from 'lucide-react';
+import type {Article, Project} from '@/lib/catalog';
+import {projectPath} from '@/lib/project-routes';
+import {publicContact} from '@/lib/public-contact';
+
+type Story = {id: string; title: string; summary: string; image: string; category: string; meta: string; href: string; article?: Article};
+
+const ALL = 'Tổng hợp';
+const PROJECTS = 'Tin dự án';
+const PAGE = 8;
 
 const vnDate = (iso: string) => {
   const [year, month, day] = iso.split('-');
   return year && month && day ? `${day}/${month}/${year}` : iso;
 };
-const excerpt = (body: string) => {
-  const text = body.replace(/\s+/g, ' ').trim();
-  return text.length > 150 ? text.slice(0, 147).trimEnd() + '…' : text;
+const clip = (text: string, size = 160) => {
+  const plain = text.replace(/\s+/g, ' ').trim();
+  return plain.length > size ? plain.slice(0, size - 1).trimEnd() + '…' : plain;
 };
 
-function Cover({src, alt}: {src: string; alt: string}) {
+const placeholderNote = /^(Dự án tham khảo|Bảng hàng tham khảo)/;
+const projectSummary = (project: Project) => placeholderNote.test(project.description) || !project.description.trim()
+  ? `${project.category === 'high' ? 'Dự án căn hộ cao tầng' : 'Khu đô thị thấp tầng'} của ${project.developer} tại ${project.location}. Xem quỹ căn 360°, vị trí, mặt bằng, tiện ích và bảng hàng tham khảo.`
+  : clip(project.description);
+
+function Cover({src, alt = ''}: {src: string; alt?: string}) {
   const [broken, setBroken] = useState(false);
-  if (broken || !src) return <div className="news-fallback" role="img" aria-label={alt}/>;
-  return <img src={src} alt={alt} onError={() => setBroken(true)}/>;
+  if (broken || !src) return <span className="nm-fallback" role={alt ? 'img' : undefined} aria-label={alt || undefined}/>;
+  return <img src={src} alt={alt} loading="lazy" onError={() => setBroken(true)}/>;
 }
 
-export default function NewsMagazine({articles, routeId, query, onQuery, category, onCategory, canEdit, onCreate, onEdit}: {articles: Article[]; routeId?: string; query: string; onQuery: (value: string) => void; category: string; onCategory: (value: string) => void; canEdit: boolean; onCreate: () => void; onEdit: (article: Article) => void}) {
-  const categories = useMemo(() => ['Tất cả', ...Array.from(new Set(articles.map(article => article.category)))], [articles]);
-  const selected = category === 'all' ? 'Tất cả' : category;
-  const visible = articles.filter(article => article.title.toLowerCase().includes(query.toLowerCase()) && (selected === 'Tất cả' || article.category === selected));
-  const [featured, ...rest] = visible;
-  const mosaic = rest.slice(0, 3);
-  const rows = rest.slice(3);
-  const opened = routeId ? articles.find(article => article.id === routeId) : undefined;
-
-  return <section className="news-magazine">
-    <div className="news-hero"><h1>Tin tức</h1></div>
-    <div className="news-tabs" role="tablist" aria-label="Chuyên mục tin tức">
-      {categories.map(name => <button key={name} type="button" role="tab" aria-selected={selected === name} onClick={() => onCategory(name === 'Tất cả' ? 'all' : name)}>{name}</button>)}
+function LeadPanel({projects}: {projects: Project[]}) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ok: boolean; text: string} | null>(null);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget, data = new FormData(form);
+    setBusy(true);
+    setMessage(null);
+    try {
+      const project = String(data.get('project') || '');
+      const response = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: data.get('name'), phone: data.get('phone'), email: '', note: 'Trang tin tức' + (project ? ' · Dự án quan tâm: ' + project : ''), website: data.get('website') || ''})});
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Chưa gửi được thông tin.');
+      setMessage({ok: true, text: 'Đã nhận thông tin. Chúng tôi sẽ gọi lại cho bạn sớm.'});
+      form.reset();
+    } catch (error) {
+      setMessage({ok: false, text: error instanceof Error ? error.message : 'Chưa gửi được thông tin.'});
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <div className="nm-lead-wrap">
+    <form className="nm-panel nm-lead" id="tu-van" onSubmit={submit}>
+      <h2>Tư vấn nhu cầu</h2>
+      <select name="project" aria-label="Dự án quan tâm" defaultValue=""><option value="">Dự án quan tâm</option>{projects.map(project => <option key={project.id} value={project.name}>{project.name}</option>)}</select>
+      <input name="name" placeholder="Nhập họ và tên" aria-label="Họ và tên" required minLength={2} maxLength={100} autoComplete="name"/>
+      <input name="phone" placeholder="Nhập số điện thoại" aria-label="Số điện thoại" type="tel" required pattern="[+\d ()-]{8,20}" autoComplete="tel"/>
+      <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" hidden/>
+      <label className="nm-check"><input type="checkbox" required/><span>Tôi đồng ý để Alpha Hub liên hệ tư vấn qua số điện thoại này.</span></label>
+      <label className="nm-check"><input type="checkbox" required/><span>Tôi đồng ý để Alpha Hub lưu thông tin nhằm chăm sóc nhu cầu của tôi.</span></label>
+      <button className="nm-submit" disabled={busy}>{busy ? 'Đang gửi…' : 'Gửi thông tin'}</button>
+      {message && <p className={message.ok ? 'nm-note ok' : 'nm-note error'} role="status">{message.text}</p>}
+    </form>
+    <div className="nm-hotline">
+      <span>Hoặc</span>
+      <div><a href={'tel:' + publicContact.phone}><Phone size={14}/>{publicContact.phone}</a><a href={publicContact.zaloHref} target="_blank" rel="noreferrer"><MessageCircle size={14}/>Chat Zalo</a></div>
+      <small>Để được tư vấn và giải đáp thắc mắc</small>
     </div>
-    {routeId && <div className="container news-article-wrap">{opened ? <article className="news-article"><Link href="/tin-tuc" className="news-back"><ArrowLeft size={16}/>Tin tức</Link><p>{opened.category} · {vnDate(opened.date)}</p><h2>{opened.title}</h2><Cover src={opened.image} alt={opened.title}/>{opened.body.split('\n').filter(Boolean).map(paragraph => <p key={paragraph}>{paragraph}</p>)}{canEdit && <button className="button subtle" type="button" onClick={() => onEdit(opened)}><Pencil size={15}/>Sửa bài viết</button>}</article> : <div className="news-article"><h2>Không tìm thấy bài viết</h2><p>Bài này không còn trong danh mục.</p><Link href="/tin-tuc" className="news-read">Về tin tức</Link></div>}</div>}
-    {!routeId && <div className="container news-layout">
-      <div>
-        <div className="news-heading"><h2>{selected === 'Tất cả' ? 'Mới cập nhật' : selected}</h2>{canEdit && <button className="news-write" type="button" onClick={onCreate}><Plus size={16}/>Viết bài</button>}</div>
-        {featured ? <article className="news-feature">
-          <div>
-            <h3><Link href={`/tin-tuc/${featured.id}`}>{featured.title}</Link></h3>
-            <p>{excerpt(featured.body)}</p>
-            <time dateTime={featured.date}>{vnDate(featured.date)}</time>
-            <div className="news-feature-actions"><Link className="news-read" href={`/tin-tuc/${featured.id}`}>Đọc bài viết</Link>{canEdit && <button type="button" onClick={() => onEdit(featured)}><Pencil size={15}/>Sửa</button>}</div>
-          </div>
-          <Link href={`/tin-tuc/${featured.id}`} className="news-feature-photo" aria-label={featured.title}><Cover src={featured.image} alt=""/></Link>
-        </article> : <p className="news-empty">Chưa có bài viết phù hợp. Thử chuyên mục hoặc từ khóa khác.</p>}
-        {mosaic.length > 0 && <div className="news-mosaic">{mosaic.map(article => <article key={article.id}><Link href={`/tin-tuc/${article.id}`}><Cover src={article.image} alt=""/><strong>{article.title}</strong><time dateTime={article.date}>{vnDate(article.date)}</time></Link>{canEdit && <button type="button" onClick={() => onEdit(article)}>Sửa</button>}</article>)}</div>}
-        {rows.length > 0 && <div className="news-rows">{rows.map(article => <article key={article.id}><Link href={`/tin-tuc/${article.id}`} className="news-row-photo" aria-hidden="true"><Cover src={article.image} alt=""/></Link><div><h3><Link href={`/tin-tuc/${article.id}`}>{article.title}</Link></h3><p>{excerpt(article.body)}</p><time dateTime={article.date}>{vnDate(article.date)}</time></div></article>)}</div>}
-      </div>
-      <aside className="news-side">
-        <form className="news-panel" onSubmit={event => event.preventDefault()}>
+  </div>;
+}
+
+export default function NewsMagazine({articles, projects, routeId, query, onQuery, category, onCategory, canEdit, onCreate, onEdit}: {articles: Article[]; projects: Project[]; routeId?: string; query: string; onQuery: (value: string) => void; category: string; onCategory: (value: string) => void; canEdit: boolean; onCreate: () => void; onEdit: (article: Article) => void}) {
+  const [limit, setLimit] = useState(PAGE);
+  const stories = useMemo<Story[]>(() => {
+    const posts = [...articles].sort((a, b) => b.date.localeCompare(a.date)).map(article => ({id: article.id, title: article.title, summary: clip(article.body), image: article.image, category: article.category, meta: vnDate(article.date), href: `/tin-tuc/${article.id}`, article}));
+    const places = projects.map(project => ({id: 'du-an-' + project.id, title: `${project.name}: ${project.status.toLowerCase()} tại ${project.location}`, summary: projectSummary(project), image: project.image, category: PROJECTS, meta: project.location, href: projectPath(project.id)}));
+    return [...posts, ...places];
+  }, [articles, projects]);
+  const tabs = useMemo(() => [ALL, PROJECTS, ...Array.from(new Set(articles.map(article => article.category)))], [articles]);
+  const selected = category === 'all' ? ALL : category;
+  const needle = query.trim().toLowerCase();
+  const visible = stories.filter(story => (selected === ALL || story.category === selected) && (!needle || (story.title + ' ' + story.summary).toLowerCase().includes(needle)));
+  useEffect(() => setLimit(PAGE), [selected, needle]);
+  const [featured, ...others] = visible;
+  const trio = others.slice(0, 3);
+  const list = others.slice(3);
+  const opened = routeId ? articles.find(article => article.id === routeId) : undefined;
+  const related = opened ? stories.filter(story => story.id !== opened.id).slice(0, 4) : [];
+
+  return <section className="nm">
+    <header className="nm-head">
+      <h1>Tin tức</h1>
+      <nav className="nm-tabs" aria-label="Danh mục tin tức">{tabs.map(name => <button key={name} type="button" aria-pressed={selected === name} onClick={() => {onCategory(name === ALL ? 'all' : name); if (routeId) window.location.assign('/tin-tuc');}}>{name}</button>)}</nav>
+    </header>
+    <div className="nm-layout">
+      <main className="nm-main">
+        {routeId ? (opened ? <article className="nm-article">
+          <Link href="/tin-tuc" className="nm-back"><ArrowLeft size={16}/>Tất cả tin tức</Link>
+          <span className="nm-kicker">{opened.category} · {vnDate(opened.date)}</span>
+          <h2>{opened.title}</h2>
+          <div className="nm-article-cover"><Cover src={opened.image} alt={opened.title}/></div>
+          <div className="nm-article-body">{opened.body.split('\n').filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
+          {canEdit && <button className="nm-edit dark" type="button" onClick={() => onEdit(opened)}><Pencil size={15}/>Sửa bài viết</button>}
+          {related.length > 0 && <div className="nm-related"><h3>Có thể bạn quan tâm</h3><div className="nm-trio">{related.slice(0, 3).map(story => <Link key={story.id} href={story.href} className="nm-card"><span className="nm-card-photo"><Cover src={story.image}/></span><strong>{story.title}</strong><time>{story.meta}</time></Link>)}</div></div>}
+        </article> : <div className="nm-article"><h2>Không tìm thấy bài viết</h2><p>Bài viết này không còn trên website.</p><Link href="/tin-tuc" className="nm-read">Về trang tin tức <ArrowRight size={16}/></Link></div>) : <>
+          <div className="nm-section-title"><h2>{selected}</h2>{canEdit && <button type="button" className="nm-edit" onClick={onCreate}><Plus size={16}/>Viết bài</button>}</div>
+          {featured ? <div className="nm-spotlight">
+            <article className="nm-feature">
+              <div className="nm-feature-text">
+                <h3><Link href={featured.href}>{featured.title}</Link></h3>
+                <p>{featured.summary}</p>
+                <time>{featured.meta}</time>
+                <div className="nm-feature-actions"><Link className="nm-read" href={featured.href}>{featured.article ? 'Đọc bài viết' : 'Xem dự án'} <ArrowRight size={16}/></Link>{canEdit && featured.article && <button type="button" className="nm-edit" onClick={() => onEdit(featured.article!)}><Pencil size={14}/>Sửa</button>}</div>
+              </div>
+              <Link href={featured.href} className="nm-feature-photo" aria-label={featured.title}><Cover src={featured.image}/></Link>
+            </article>
+            {trio.length > 0 && <div className="nm-trio">{trio.map(story => <Link key={story.id} href={story.href} className="nm-card"><span className="nm-card-photo"><Cover src={story.image}/></span><strong>{story.title}</strong><time>{story.meta}</time></Link>)}</div>}
+          </div> : <div className="nm-empty"><h3>Chưa có tin phù hợp</h3><p>Thử một chuyên mục khác hoặc xoá từ khoá tìm kiếm.</p></div>}
+          {list.length > 0 && <div className="nm-list">
+            {list.slice(0, limit).map(story => <article key={story.id} className="nm-row">
+              <Link href={story.href} className="nm-row-photo" tabIndex={-1} aria-hidden="true"><Cover src={story.image}/></Link>
+              <div>
+                <h3><Link href={story.href}>{story.title}</Link></h3>
+                <p>{story.summary}</p>
+                <time>{story.category === PROJECTS ? <><MapPin size={13}/>{story.meta}</> : story.meta}</time>
+                {canEdit && story.article && <button type="button" className="nm-row-edit" onClick={() => onEdit(story.article!)}><Pencil size={13}/>Sửa</button>}
+              </div>
+            </article>)}
+            {list.length > limit && <button type="button" className="nm-more" onClick={() => setLimit(limit + PAGE)}>Xem thêm tin</button>}
+          </div>}
+        </>}
+      </main>
+      <aside className="nm-side">
+        <form className="nm-panel" role="search" onSubmit={event => {event.preventDefault(); if (routeId) window.location.assign('/tin-tuc');}}>
           <h2>Tìm kiếm</h2>
-          <label className="news-search"><Search size={18}/><input type="search" value={query} onChange={event => onQuery(event.target.value)} placeholder="Nhập nội dung cần tìm" aria-label="Tìm bài viết"/></label>
+          <label className="nm-search"><Search size={17}/><input type="search" value={query} onChange={event => onQuery(event.target.value)} placeholder="Nhập nội dung cần tìm" aria-label="Tìm tin tức"/></label>
         </form>
-        <div className="news-panel news-consult">
-          <h2>Tư vấn nhu cầu</h2>
-          <ContactForm note="Đăng ký từ trang tin tức"/>
-        </div>
+        <LeadPanel projects={projects}/>
       </aside>
-    </div>}
+    </div>
+    <div className="nm-tour">
+      <div><span>Đăng ký tham quan</span><h2>Dự án & căn hộ mẫu</h2><p>Để trực tiếp trải nghiệm căn nhà mới, mời quý khách đăng ký tham quan.</p></div>
+      <div className="nm-tour-actions"><a className="nm-read" href="#tu-van">Đăng ký tham quan <ArrowRight size={16}/></a><Link className="nm-ghost" href="/du-an">Xem danh sách dự án</Link></div>
+    </div>
   </section>;
 }

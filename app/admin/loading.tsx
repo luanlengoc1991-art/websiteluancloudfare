@@ -1,1 +1,2 @@
-export default function Loading(){return <section className="container section-space" role="status">Đang mở trang quản trị…</section>;}
+/** The persistent admin workspace supplies its own initial loading state. */
+export default function Loading(){return null;}

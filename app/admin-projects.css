@@ -83,3 +83,63 @@
 @media (max-width: 760px) {.admin-projects-site .management-heading {padding-top: 28px;}.ap-intro {align-items: flex-start; flex-direction: column; gap: 18px;}.ap-intro p {font-size: 13px;}.ap-desktop-break {display: none;}.ap-metrics {gap: 12px; margin-bottom: 30px;}.ap-metric strong {font-size: 30px;}.ap-catalog-heading h2 {font-size: 30px;}.ap-catalog-heading {align-items: flex-start; flex-direction: column; gap: 12px;}.ap-tabs {gap: 20px;}.ap-filter-panel {padding: 0 14px 14px; border-radius: 16px;}.ap-grid {gap: 16px;}.ap-card h3 {font-size: 18px;}}
 @media (max-width: 540px) {.ap-grid {grid-template-columns: 1fr;}.ap-card-body {padding: 20px;}.ap-card h3 {min-height: 0; font-size: 21px;}.ap-location {min-height: 0;}.ap-metric {padding: 15px 12px;}.ap-metric>div>span {font-size: 11px;}.ap-metric-icon {width: 28px; height: 32px; border: 0; background: none;}.ap-filters {gap: 10px;}.ap-filters select {font-size: 11px; padding: 0 9px;}}
 @media (prefers-reduced-motion: reduce) {.ap-card, .ap-photo img {transition: none;}.ap-card:hover, .ap-card:hover .ap-photo img {transform: none;}}
+
+/* One stable canvas across admin tabs; overview uses the project magazine style. */
+.admin-projects-site .admin-overview .admin-welcome {
+  background: radial-gradient(ellipse at 88% 10%, #67d89926, transparent 60%), linear-gradient(120deg, #ffffff12, #ffffff05);
+  border: 1px solid var(--ap-line); border-radius: 22px; padding: 34px 36px;
+  box-shadow: 0 18px 45px #001b1026;
+}
+.admin-projects-site .admin-welcome h2 {font-family: var(--ap-display); font-size: clamp(34px, 4vw, 48px); line-height: 1.13; font-weight: 400; letter-spacing: -.025em;}
+.admin-projects-site .admin-welcome span {color: #9ff0c1;}
+.admin-projects-site .admin-welcome p {color: #c3dfd0; font-size: 14px;}
+.admin-projects-site .admin-welcome a {background: linear-gradient(105deg, #c6f5d6, #5fd394 65%, #2fae6e); color: #062d1d; border-radius: 999px; font-size: 13px; min-height: 44px; padding-inline: 20px;}
+.admin-projects-site .admin-welcome-mark {color: #bdf2d233;}
+.admin-projects-site .admin-overview .admin-panel,
+.admin-projects-site .admin-overview .admin-metrics>a {
+  background: linear-gradient(140deg, #ffffff17, #ffffff06); border: 1px solid var(--ap-line);
+  border-radius: 18px; backdrop-filter: blur(12px); box-shadow: 0 12px 32px #00180d14; color: #fff;
+}
+.admin-projects-site .admin-overview .admin-metrics>a {transition: background .15s, border-color .15s;}
+.admin-projects-site .admin-overview .admin-metrics>a:hover {background: #ffffff1c; border-color: #9ff0c170;}
+.admin-projects-site .admin-overview .admin-metrics>a>div {color: #9ff0c1;}
+.admin-projects-site .admin-overview .admin-metrics>a>span {font-size: 12px; color: #c3dfd0;}
+.admin-projects-site .admin-overview .admin-metrics small {font-size: 11px; color: #b3d4c3;}
+.admin-projects-site .admin-overview .admin-metrics strong {font-size: 34px; color: #fff; font-weight: 500;}
+.admin-projects-site .admin-overview .admin-metric-icon,
+.admin-projects-site .admin-overview .admin-initial {background: #9ff0c114; color: #bdf2d2; border: 1px solid #ffffff26; border-radius: 12px;}
+.admin-projects-site .admin-overview .admin-panel-title h2 {font-family: var(--ap-display); font-size: 28px; font-weight: 400; color: #fff; line-height: 1.2;}
+.admin-projects-site .admin-overview .admin-panel-title p {color: #c3dfd0; font-size: 12px; line-height: 1.6;}
+.admin-projects-site .admin-overview .admin-panel-title>a {color: #bdf2d2; font-size: 12px;}
+.admin-projects-site .admin-overview .admin-quick a {border-color: #ffffff30; background: #ffffff06; color: #e2f3e9; border-radius: 12px; font-size: 13px; min-height: 50px; transition: background .15s;}
+.admin-projects-site .admin-overview .admin-quick a:hover {background: #ffffff16;}
+.admin-projects-site .admin-overview .admin-data-note {background: #9ff0c10d; color: #c3dfd0; border: 1px solid #9ff0c126; border-radius: 12px; font-size: 12px;}
+.admin-projects-site .admin-overview .admin-data-note p {font-size: 11px;}
+.admin-projects-site .admin-overview .admin-empty {color: #b3d4c3;}
+.admin-projects-site .admin-overview .admin-empty h3 {color: #fff; font-size: 16px;}
+.admin-projects-site .admin-overview .admin-empty p,
+.admin-projects-site .admin-overview .admin-empty-line {color: #c3dfd0; font-size: 12px;}
+.admin-projects-site .admin-overview .admin-empty a {color: #9ff0c1; font-size: 12px;}
+.admin-projects-site .admin-overview .admin-customer-list>a,
+.admin-projects-site .admin-overview .admin-activity>div {border-color: var(--ap-line); color: #e2f3e9;}
+.admin-projects-site .admin-overview .admin-customer-list small,
+.admin-projects-site .admin-overview .admin-activity time {color: #b3d4c3; font-size: 11px;}
+.admin-projects-site .admin-overview .admin-activity>div>span {background: #9ff0c1;}
+/* Existing light data surfaces retain their readable foreground on the shared canvas. */
+.admin-projects-site :is(.table-wrap,.stat-card,.settings-card,.upload-panel,.admin-asset,.transaction-list article,.admin-members .admin-panel,.loading,.login-prompt) {color: #182e27;}
+.admin-projects-site .loading {background: #ffffff0d; color: #c3dfd0; border-color: var(--ap-line);}
+.admin-projects-site .loading>svg {color: #9ff0c1;}
+.admin-projects-site .section-heading>h2 {color: #fff;}
+.admin-projects-site .section-heading>.button.subtle,
+.admin-projects-site .section-heading>.row>.button.subtle,
+.admin-projects-site .admin-page-controls>.button.subtle {background: #ffffff12; border-color: #ffffff40; color: #e2f3e9;}
+.admin-projects-site .admin-page-controls {color: #c3dfd0;}
+.admin-projects-site .section-space>.muted {color: #c3dfd0;}
+@media(max-width:760px){
+  .admin-projects-site .admin-overview .admin-welcome {padding: 25px;}
+  .admin-projects-site .admin-overview .admin-panel-title {flex-wrap: wrap;}
+  .admin-projects-site .admin-overview .admin-panel-title h2 {font-size: 25px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .admin-projects-site .admin-overview a {transition: none;}
+}

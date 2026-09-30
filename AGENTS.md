@@ -5,7 +5,8 @@
 - Run npm run typecheck and npm run build after meaningful changes; npm test verifies the backend against disposable data.
 - Never commit .env.local, admin passwords, session tokens, data/, uploads, or customer records.
 - Preserve same-origin native links and per-project routes. Do not restore the ChatGPT Sites auth headers or cloudflare:workers imports.
-- Auth supports public Supabase email/Google members and one allowlisted Google admin, with hashed opaque sessions in Supabase. getCurrentUser is admin-only; getSignedInUser includes members. Never grant admin access from user_metadata or email/password signup. Records use Supabase Postgres and files use the private alpha-assets Storage bucket. Secret keys are server-only. Keep RLS enabled and browser roles denied direct access. npm test uses a disposable HTTP fixture, not a live Supabase project.
+- Everything runs on Cloudflare. Records, reservations, files metadata, sessions, login limits and members live in D1 `alpha-hub` (binding DB); uploads live in R2 `alpha-assets` (binding MEDIA). Reach them only through db/store.ts. Schema changes go in migrations/ and are applied with npm run db:migrate.
+- Auth supports public email/password and Google members plus one allowlisted Google admin, with hashed opaque sessions in D1. Google OAuth talks to Google directly with PKCE and a state check; the id_token is validated for iss, aud, exp and email_verified. getCurrentUser is admin-only; getSignedInUser includes members. Never grant admin access from an id_token claim other than the allowlisted email, and never from email/password signup. GOOGLE_CLIENT_SECRET and the admin password hash are server-only. npm test runs the real Worker on a local Cloudflare runtime with disposable D1 and R2, not the production account.
 - GitHub source and the old chatgpt.site deployment are separate. Do not claim automatic synchronization with chatgpt.site.
 
 ## Quy trình đã được chủ dự án xác nhận
@@ -14,10 +15,10 @@
 - Trước khi sửa, lấy phiên bản mới nhất từ GitHub (`git fetch` rồi cập nhật `origin/main`), đọc file này và bảo toàn thay đổi đang có.
 - Với công việc chủ dự án yêu cầu, thực hiện đầy đủ, kiểm tra phù hợp, commit và push trực tiếp lên `origin/main`. Chủ dự án đã cho phép quy trình này; không hỏi lại xác nhận cho các bước thông thường.
 - Push lên `main` chạy Cloudflare Workers Builds của Worker `websiteluancloudfare`: build `npx opennextjs-cloudflare build`, deploy `npx wrangler deploy`. Chỉ báo đã xuất bản khi bản build trên Cloudflare thành công và website phản hồi.
-- Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`SUPABASE_SECRET_KEY`, `ALPHA_ADMIN_EMAIL`) đặt trong Settings của Worker, không commit.
+- Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`ALPHA_ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) đặt trong Settings của Worker, không commit.
 - Báo ngắn gọn bằng tiếng Việt: nội dung cập nhật, mã commit, trạng thái website và phần nào chưa kiểm chứng hoặc bị chặn.
 - Khi đổi thiết bị: clone/pull trước khi sửa; commit và push sau khi sửa để các thiết bị và Cloudflare dùng cùng nguồn.
-- GitHub lưu mã nguồn. Supabase lưu dữ liệu ứng dụng và Storage; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.
+- GitHub lưu mã nguồn. Cloudflare D1 và R2 lưu dữ liệu ứng dụng và file; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.
 - Quy trình này áp dụng cho các tác vụ đã được yêu cầu; vẫn tuân thủ các yêu cầu quyền truy cập bắt buộc và không tự ý thực hiện thao tác phá hủy ngoài phạm vi công việc.
 
 <!-- BEGIN:nextjs-agent-rules -->

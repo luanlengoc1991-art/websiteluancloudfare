@@ -1,80 +1,110 @@
 # Alpha HUB Admin
 
-Admin entry: `/admin`. This change stays on a feature branch until Vercel credentials are configured and the preview is verified.
+Trang quản trị: `/admin`. Production chạy trên Cloudflare Workers tại
+`https://websiteluancloudfare.luanlengoc1991.workers.dev`.
 
-## What is implemented
+## Những gì đã có
 
-- Separate responsive green administration interface: overview, projects, inventory with CSV import, customers, reservations, image/PDF library, articles, settings.
-- Public consultation form creates a new customer in the admin system. No email is sent.
-- Google OAuth via Supabase with PKCE, a server-checked admin email allowlist, opaque HttpOnly session cookie, database-backed throttling and logout revocation.
-- Data persisted in Supabase Postgres; uploads in private `alpha-assets` bucket. Images are intentionally served publicly through `/api/files/:id` for website use. PDF downloads require an admin session.
-- Customer records, sessions, and reservation customer details are never returned by the public state endpoint. The public site reads published project/unit/article changes and contact settings.
-- Initial catalogue and inventory contain demo data. Dashboard distinguishes saved units and demo catalogue. Replace sample inventory before commercial use.
+- Giao diện quản trị xanh, responsive: tổng quan, dự án, quỹ căn (nhập CSV), khách hàng, giao dịch, thư viện ảnh/PDF, bài viết, cài đặt.
+- Form đăng ký tư vấn trên website tạo khách hàng mới trong quản trị. Không gửi email.
+- Đăng nhập Google trực tiếp với Google (PKCE + `state`), danh sách email quản trị kiểm tra ở máy chủ, cookie phiên HttpOnly dạng mã ngẫu nhiên, giới hạn số lần thử trong database và thu hồi phiên khi đăng xuất.
+- Dữ liệu nằm trong Cloudflare D1; ảnh và PDF nằm trong bucket R2 `alpha-assets`. Ảnh được phục vụ công khai qua `/api/files/:id` để website dùng; tải PDF cần phiên quản trị.
+- Bản ghi khách hàng, phiên đăng nhập và chi tiết khách trong giao dịch không bao giờ trả về từ API trạng thái công khai. Website công khai chỉ đọc dự án, quỹ căn, bài viết và thông tin liên hệ đã xuất bản.
+- Danh mục và quỹ căn ban đầu là dữ liệu minh họa. Hãy thay trước khi dùng thương mại.
 
-## Already applied to Supabase
+## Hạ tầng Cloudflare
 
-Project `alphahub` (`qhxjlqtuupisysdirwct`):
+| Thành phần | Tên | Binding |
+| --- | --- | --- |
+| Worker | `websiteluancloudfare` | — |
+| D1 | `alpha-hub` | `DB` |
+| R2 | `alpha-assets` | `MEDIA` |
+| Static assets | — | `ASSETS` |
+| Images | — | `IMAGES` |
 
-1. `sql/alpha-admin.sql`: five prefixed tables with RLS, private Storage bucket, server-only RPC functions.
-2. `sql/alpha-atomic-records.sql`: atomic record writes, unit-code uniqueness, transaction locking for reservations.
+Binding khai báo trong `wrangler.jsonc`. Sau khi sửa file đó, chạy `npm run types`
+để cập nhật `cloudflare-env.d.ts`.
 
-The connected SQL reader is not allowed to call the service-role functions. Schema/RLS/bucket were inspected; a live service-role integration test remains required. No production service key or admin password was retrieved or created in this task.
+Bảng trong D1: `records` (mọi thực thể quản trị dạng JSON), `reservations`,
+`files`, `sessions`, `login_limits`, `members`. Schema nằm ở
+`migrations/0001_alpha_hub.sql`.
 
-Tables intentionally have no browser RLS policies: direct `anon` / `authenticated` access is revoked; the server enforces the single-admin access model and uses `service_role`.
+```sh
+npm run db:migrate         # áp dụng migration lên D1 production
+npm run db:migrate:local   # áp dụng lên D1 cục bộ dùng cho dev và npm test
+```
 
-## Vercel environment
+## Biến môi trường trên Worker
 
-Set these in the existing `websiteluan` project, on the appropriate Preview and Production environments:
+Đặt trong Settings của Worker (Variables and Secrets), không commit:
 
-| Variable | Value |
+| Biến | Giá trị |
 | --- | --- |
-| `SUPABASE_URL` | `https://qhxjlqtuupisysdirwct.supabase.co` |
-| `SUPABASE_SECRET_KEY` | Supabase secret key, server only; legacy `SUPABASE_SERVICE_ROLE_KEY` is also supported |
-| `ALPHA_ADMIN_EMAIL` | Owner's chosen admin email |
-| `ALPHA_ENABLE_PASSWORD_LOGIN` | Leave unset or `false`; Google is the default |
+| `ALPHA_ADMIN_EMAIL` | Email Google duy nhất được quyền quản trị |
+| `GOOGLE_CLIENT_ID` | OAuth client ID của Google |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret, đặt dạng Secret |
+| `ALPHA_ENABLE_PASSWORD_LOGIN` | Để trống hoặc `false`; Google là cách chính |
+| `ALPHA_ADMIN_PASSWORD_HASH` | Chỉ khi bật đăng nhập mật khẩu dự phòng |
 
-Do not prefix secret keys with `NEXT_PUBLIC_`. Leave `ALPHA_SECURE_COOKIE` unset in Vercel. The optional `ALPHA_PUBLIC_ORIGIN` must match the environment's actual origin; normally leave it unset to support preview hosts.
+Không đặt `ALPHA_SECURE_COOKIE` trên Cloudflare (cookie mặc định chỉ đi qua HTTPS).
+`ALPHA_PUBLIC_ORIGIN` chỉ cần khi tên miền công khai khác Host của request.
 
-`npm run setup` is for generating local credentials. Copy the hash to Vercel privately, not through chat or GitHub. Never commit `.env.local`.
+`npm run setup` chỉ tạo thông tin đăng nhập cho máy cá nhân. Sao chép mã băm sang
+Cloudflare bằng kênh riêng, không qua chat hay GitHub. Không commit `.env.local`.
 
-Node.js 24; `npm run build`. Upload cap is 4 MiB per file to fit the Vercel request body limit. Larger uploads need signed direct uploads and are not implemented here.
+Giới hạn tải lên 4 MiB mỗi file. File lớn hơn cần upload trực tiếp có chữ ký, chưa làm.
 
-## Validation performed
+## Cấu hình đăng nhập Google
 
-- `npm run typecheck`: passed.
-- `npm run build`: passed.
-- `npm test`: passed against a disposable local HTTP contract fixture (authentication, CSRF, public/private separation, customer save, reservation operations, upload/download, restart persistence, logout, admin server rendering, lead form API).
-- Cloud database schema: five tables with RLS enabled and private 4 MiB Storage bucket verified.
-- Cloud browser could not open the local test server (`ERR_BLOCKED_BY_CLIENT`); responsive styling is implemented but visual browser verification remains pending.
+1. Trong Google Auth Platform, tạo OAuth client loại Web. Chỉ cấp scope `openid`, email và profile.
+2. Authorized redirect URI: `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`. Thêm cả tên miền riêng nếu dùng.
+3. Đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong Settings của Worker.
+4. Đặt `ALPHA_ADMIN_EMAIL` bằng email Google của chủ website. Không có cơ chế tự cấp quyền admin và không cấp theo tên miền Gmail.
+5. Nếu ứng dụng Google còn ở trạng thái Testing, thêm email quản trị vào danh sách test user.
 
-Before merging: restore Vercel access, configure environment, open the branch preview, test real admin login, image upload and consultation submission, then merge and verify Production.
-
-## Scope and remaining limits
-
-Single admin; no staff roles, delete/archive workflow, automated emails, or real-time subscriptions. Public changes refresh on reload or the current 60-second polling cycle. No old SQLite database/files were migrated because no source runtime data was accessible. The existing source catalogue remains intact.
-
-## Google login configuration
-
-1. In Google Auth Platform, create a Web OAuth client. Configure only `openid`, email and profile scopes.
-2. Google authorized redirect URI: `https://qhxjlqtuupisysdirwct.supabase.co/auth/v1/callback`.
-3. In Supabase Authentication → Sign In / Providers → Google, enable Google and enter the OAuth Client ID and Client Secret privately. Keep nonce checks enabled.
-4. Supabase URL Configuration: Site URL `https://websiteluan.vercel.app`; add `https://websiteluan.vercel.app/auth/callback` and the exact active Preview URL ending `/auth/callback`. Avoid broad wildcard redirects.
-5. Set `ALPHA_ADMIN_EMAIL` in Vercel to the owner's chosen Google email. No automatic admin assignment and no Gmail-domain-wide permission. Redeploy after configuration.
-6. If the Google app is in Testing, add the chosen admin email as a test user.
-
-The browser receives neither Supabase secret keys nor OAuth access/refresh tokens. A successful PKCE exchange is checked with Supabase's user endpoint and converted to the existing seven-day opaque admin session. Each admin request rechecks the configured email, so changing that email revokes previous access. Logout revokes the Alpha HUB session; it does not sign out of the user's Google account.
-Password login is disabled unless `ALPHA_ENABLE_PASSWORD_LOGIN=true` is explicitly set with the legacy hash. The local backend fixture enables this only to retain existing regression tests. OAuth tests cover the success callback, denied email/unverified/non-Google accounts, PKCE challenge, replay rejection and unsafe redirects. These are simulated provider tests; a real Google sign-in still requires provider configuration and the user's account interaction.
+Trình duyệt không nhận client secret, access token hay refresh token của Google.
+Mã `code` được đổi lấy `id_token` ở máy chủ bằng client secret; máy chủ kiểm tra
+`iss`, `aud`, `exp` và `email_verified` rồi đổi thành phiên Alpha HUB 7 ngày.
+Mỗi request quản trị kiểm tra lại email cấu hình, nên đổi `ALPHA_ADMIN_EMAIL` là
+thu hồi quyền cũ. Đăng xuất thu hồi phiên Alpha HUB, không đăng xuất khỏi Google.
 
 ## Tài khoản thành viên
 
 - `/dang-ky`: đăng ký email/mật khẩu (tối thiểu 8 ký tự) hoặc Google; `/dang-nhap`: đăng nhập; `/tai-khoan`: xem email, quyền truy cập và đăng xuất.
-- Bật Email và Google trong Supabase Auth; cho phép đăng ký mới. Giữ xác nhận email. Cấu hình Custom SMTP để gửi thư xác nhận cho người dùng công khai; dịch vụ email mặc định Supabase có giới hạn người nhận và tần suất.
-- Redirect URL xác nhận/Google: `https://websiteluan.vercel.app/auth/callback`. Xác nhận email sử dụng PKCE; mở thư trên cùng trình duyệt trong 1 giờ. Nếu đã xác nhận nhưng cookie hết hạn, đăng nhập lại bằng mật khẩu.
-- Tài khoản mới luôn là thành viên. Chỉ phiên Google có email khớp `ALPHA_ADMIN_EMAIL` được truy cập quản trị. Email/mật khẩu không cấp quyền admin, kể cả email trùng cấu hình admin.
-- Các API quản trị tiếp tục dùng `getCurrentUser()` (admin-only). `getSignedInUser()` chỉ dùng cho trang tài khoản và trạng thái thành viên. Không thay kiểm tra quản trị bằng kiểm tra đã đăng nhập.
-- Cookie phiên HttpOnly chứa mã ngẫu nhiên; chỉ lưu hash trong `alpha_sessions`, owner là UUID Supabase cho thành viên và `admin` cho quản trị. Đăng xuất thu hồi phiên hiện tại; hạn phiên 7 ngày.
-- Đăng nhập mật khẩu quản trị cũ, nếu được bật rõ ràng bằng `ALPHA_ENABLE_PASSWORD_LOGIN=true`, dùng `/api/auth/admin-password`; mặc định bị tắt. `/api/auth/login` dành cho Supabase email/password.
-- `npm test` kiểm thử đăng ký, xác nhận, đăng nhập, đăng xuất và cách ly quyền thành viên bằng dữ liệu giả lập, không gửi thư hay tạo người dùng thật.
+- Tài khoản thành viên lưu trong bảng `members` của D1. Mật khẩu băm bằng scrypt kèm salt riêng cho từng người; tài khoản đăng nhập bằng Google có `password_hash` rỗng nên không thể dò mật khẩu.
+- **Cloudflare không có dịch vụ gửi email trong kiến trúc này, nên đăng ký bằng email được kích hoạt ngay, không qua bước xác nhận email.** Thành viên chỉ xem được nội dung công khai và trang tài khoản, không ghi được dữ liệu, nên rủi ro giới hạn ở việc email chưa được xác minh. Nếu cần xác nhận email, phải thêm một dịch vụ gửi thư (ví dụ Cloudflare Email Sending) rồi bật lại luồng xác nhận.
+- Đăng ký bằng email trùng `ALPHA_ADMIN_EMAIL` bị từ chối; quyền quản trị chỉ đến từ phiên Google khớp email cấu hình.
+- Các API quản trị tiếp tục dùng `getCurrentUser()` (chỉ admin). `getSignedInUser()` chỉ dùng cho trang tài khoản và trạng thái thành viên. Không thay kiểm tra quản trị bằng kiểm tra đã đăng nhập.
+- Cookie phiên HttpOnly chứa mã ngẫu nhiên; bảng `sessions` chỉ lưu SHA-256 của mã, `owner` là id thành viên hoặc `admin`. Đăng xuất thu hồi phiên hiện tại; hạn phiên 7 ngày.
+- Đăng nhập mật khẩu quản trị dự phòng dùng `/api/auth/admin-password`, chỉ hoạt động khi đặt `ALPHA_ENABLE_PASSWORD_LOGIN=true`.
+
+## Chuyển dữ liệu từ Supabase
+
+`npm run db:import` đọc dữ liệu cũ bằng `SUPABASE_URL` và `SUPABASE_SECRET_KEY`
+trong `.env.local`, ghi SQL ra `data/` (git bỏ qua), nạp vào D1 và copy từng file
+từ Supabase Storage sang R2 với đúng `object_key`. Thêm `-- --local` để nạp vào
+môi trường cục bộ. Script chạy lại được nhiều lần vì dùng `INSERT OR REPLACE`.
+
+## Kiểm thử
+
+`npm test` dựng Worker thật rồi chạy nó trên runtime Cloudflare cục bộ với D1 và
+R2 dùng một lần trong thư mục tạm. Không chạm vào tài khoản production. Nội dung
+kiểm tra: PKCE và ràng buộc `state` của Google, mã dùng một lần, danh sách email
+quản trị, từ chối danh tính chưa xác minh, đăng ký và đăng nhập thành viên trong
+D1, cách ly thành viên khỏi khu vực quản trị, từ chối header danh tính giả mạo,
+CSRF, mật khẩu quản trị, cookie HttpOnly, lưu khách hàng, giữ chỗ nguyên tử,
+gia hạn và hủy, tải lên và tải xuống có bảo vệ, form đăng ký tư vấn, dữ liệu
+riêng tư không lộ qua API công khai, các trang Next.js, dữ liệu còn sau khi khởi
+động lại, và thu hồi phiên khi đăng xuất.
+
+Đăng nhập Google trong `npm test` dùng một endpoint giả lập chạy cục bộ. Luồng
+Google thật vẫn cần cấu hình OAuth client và một lần đăng nhập của người dùng.
+
+## Phạm vi và giới hạn còn lại
+
+Một tài khoản quản trị; chưa có phân quyền nhân viên, luồng xóa/lưu trữ, email tự
+động hay cập nhật thời gian thực. Thay đổi công khai xuất hiện sau khi tải lại
+trang hoặc theo chu kỳ hỏi lại 60 giây.
 
 ## Màn hình chi tiết căn toàn màn hình
 
@@ -90,4 +120,4 @@ Password login is disabled unless `ALPHA_ENABLE_PASSWORD_LOGIN=true` is explicit
 - `lib/masteri-account-snapshot.ts` chứa 12 căn đọc được từ bảng hàng VHub trong phiên tài khoản của chủ website ngày 27/09/2026, thay cho 650 căn mô phỏng. Đây là snapshot ban đầu, không phải API đồng bộ VHub.
 - Snapshot chỉ chứa thông tin sản phẩm hiển thị: mã, tòa, tầng, loại căn, diện tích, hướng, giá, phân khu, nhóm quỹ, trạng thái và nguồn/thời điểm. Không chứa thông tin tài khoản, khách hàng, cookie hoặc khóa truy cập.
 - Giá TTS/TTTĐ, diện tích sàn, layout và ảnh phiếu căn chưa đọc được nên không tự suy đoán. Giá/trạng thái phải được xác nhận lại trước giao dịch.
-- Kết nối quản trị Supabase hiện từ chối ghi (read-only transaction); snapshot chưa được nhập vào database. Admin vẫn có thể sửa từng căn bằng giao diện quản lý hiện có, các thay đổi được lưu qua backend Supabase và ưu tiên hơn snapshot cùng ID.
+- Admin có thể sửa từng căn bằng giao diện quản lý; thay đổi lưu vào D1 và được ưu tiên hơn snapshot cùng ID.

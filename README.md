@@ -9,17 +9,19 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 - Đăng nhập: `/dang-nhap`.
 - Khách gửi form đăng ký tư vấn sẽ xuất hiện trong Khách hàng của admin.
 
-Admin sử dụng một tài khoản quản trị. Dữ liệu lưu tại Supabase Postgres; ảnh và PDF lưu trong Supabase Storage. Ảnh dự án được hiển thị trên website; PDF cần đăng nhập để tải. Nội dung khách hàng không công khai.
+Admin sử dụng một tài khoản quản trị. Toàn bộ dữ liệu nằm trên Cloudflare: bản ghi trong D1 `alpha-hub`, ảnh và PDF trong bucket R2 `alpha-assets`, phiên đăng nhập và tài khoản thành viên cũng trong D1. Ảnh dự án hiển thị trên website; PDF cần đăng nhập để tải. Nội dung khách hàng không công khai.
 
-**Production chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`, tự triển khai khi push `main`. Biến Supabase đặt trong Settings của Worker; xem [ADMIN_SETUP.md](ADMIN_SETUP.md) cho dữ liệu và các bước kiểm tra còn lại.**
+**Production chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`, tự triển khai khi push `main`. Binding và biến môi trường xem [ADMIN_SETUP.md](ADMIN_SETUP.md).**
 
 ## Chạy trên máy tính
 
 1. Cài Node.js 24.
 2. Chạy `npm ci`.
-3. Chạy `npm run setup` để tạo tài khoản local hoặc cấu hình tài khoản sẵn có trong `.env.local`.
-4. Thêm `SUPABASE_URL` và `SUPABASE_SECRET_KEY` vào `.env.local`. Dùng project phát triển khi kiểm thử.
+3. Chạy `npm run setup` để tạo tài khoản quản trị local, hoặc dùng `.env.local` sẵn có.
+4. Chạy `npm run db:migrate:local` để tạo bảng trong D1 cục bộ.
 5. Chạy `npm run dev`, mở `http://127.0.0.1:3000`.
+
+`next dev` dùng đúng binding D1 và R2 như trên Cloudflare, nhưng là bản cục bộ trong `.wrangler/`. Đăng nhập Google cần `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong `.env.local` cùng redirect URI trỏ về máy local.
 
 Không commit `.env.local`, mật khẩu, khóa API bí mật hoặc dữ liệu khách hàng. Trên Cloudflare, để cookie dùng HTTPS mặc định; không sao chép `ALPHA_SECURE_COOKIE=false` từ môi trường local.
 
@@ -31,7 +33,7 @@ npm run build
 npm test
 ```
 
-`npm test` chạy Next.js với Supabase HTTP giả lập dùng dữ liệu tạm, không kết nối project thật. Cần kiểm tra riêng luồng đăng nhập, upload và đăng ký tư vấn trên bản Cloudflare trước khi coi là production.
+`npm test` dựng Worker thật rồi chạy trên runtime Cloudflare cục bộ với D1 và R2 dùng một lần, không chạm vào tài khoản production. Đăng nhập Google dùng endpoint giả lập, nên luồng Google thật vẫn cần kiểm tra một lần trên bản đã triển khai.
 
 ## Dữ liệu mẫu
 
@@ -39,4 +41,4 @@ Dự án và quỹ căn khởi tạo trong `lib/catalog.ts` là dữ liệu minh
 
 Giới hạn upload hiện tại: 4 MiB/file, JPG/PNG/WEBP/PDF. Không có phân quyền nhân viên, tự động gửi email hoặc xóa/lưu trữ bản ghi trong phiên bản này.
 
-Các file SQL trong `sql/` đã áp dụng cho project Supabase `alphahub`; không chạy lại trên project này. Nếu tạo project khác, áp dụng theo thứ tự trong `ADMIN_SETUP.md`.
+Schema D1 nằm trong `migrations/`. `npm run db:import` chuyển dữ liệu cũ từ Supabase sang D1 và R2 một lần.

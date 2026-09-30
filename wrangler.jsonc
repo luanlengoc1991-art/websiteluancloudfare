@@ -18,6 +18,14 @@
   "images": {
     "binding": "IMAGES"
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "alpha-hub",
+      "database_id": "1f376627-9f4a-4072-8dbc-35953670880e",
+      "migrations_dir": "migrations"
+    }
+  ],
   "observability": {
     "enabled": true
   }

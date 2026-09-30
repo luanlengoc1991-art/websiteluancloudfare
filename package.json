@@ -17,7 +17,6 @@
     "types": "wrangler types --env-interface CloudflareEnv --include-runtime=false cloudflare-env.d.ts",
     "db:migrate": "wrangler d1 migrations apply alpha-hub --remote",
     "db:migrate:local": "wrangler d1 migrations apply alpha-hub --local",
-    "db:import": "node scripts/import-from-supabase.mjs",
     "test": "node scripts/test-production.mjs",
     "test:chatbot": "node scripts/test-customer-care.mjs"
   },

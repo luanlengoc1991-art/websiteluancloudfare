@@ -2,7 +2,6 @@ node_modules/
 .next/
 .open-next/
 .wrangler/
-.wrangler-test.json
 out/
 data/
 .env*

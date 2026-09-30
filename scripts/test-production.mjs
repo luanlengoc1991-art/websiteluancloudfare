@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createHash, randomBytes, scryptSync} from 'node:crypto';
-import {existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {existsSync, mkdtempSync, rmSync} from 'node:fs';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -17,7 +17,6 @@ const adminEmail = 'admin@example.test';
 const password = randomBytes(20).toString('hex');
 const salt = randomBytes(16).toString('hex');
 const state = mkdtempSync(join(tmpdir(), 'alpha-hub-state-'));
-const configPath = join(process.cwd(), '.wrangler-test.json');
 
 const google = await mockGoogle(clientId);
 const probe = createServer();
@@ -25,11 +24,6 @@ await new Promise((resolve) => probe.listen(0, '127.0.0.1', resolve));
 const port = probe.address().port;
 await new Promise((resolve) => probe.close(resolve));
 const origin = `http://127.0.0.1:${port}`;
-
-// The test config adds the R2 bucket the deployed Worker gets once R2 is enabled.
-const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
-config.r2_buckets = [{binding: 'MEDIA', bucket_name: 'alpha-assets'}];
-writeFileSync(configPath, JSON.stringify(config, null, 2));
 
 const vars = {
   ALPHA_PUBLIC_ORIGIN: origin,
@@ -52,7 +46,7 @@ const run = (args) => new Promise((resolve, reject) => {
 });
 async function start() {
   logs = '';
-  const args = ['dev', '-c', configPath, '--local', '--ip', '127.0.0.1', '--port', String(port), '--persist-to', state];
+  const args = ['dev', '--local', '--ip', '127.0.0.1', '--port', String(port), '--persist-to', state];
   for (const [key, value] of Object.entries(vars)) args.push('--var', `${key}:${value}`);
   server = spawn(process.execPath, [wrangler, ...args], {stdio: ['ignore', 'pipe', 'pipe'], env: {...process.env, CI: '1'}});
   server.stdout.on('data', (b) => (logs += b));
@@ -87,7 +81,7 @@ try {
       build.on('exit', (code) => (code === 0 ? resolve() : reject(new Error('opennextjs-cloudflare build thất bại.'))));
     });
   }
-  await run(['d1', 'migrations', 'apply', 'alpha-hub', '--local', '-c', configPath, '--persist-to', state]);
+  await run(['d1', 'migrations', 'apply', 'alpha-hub', '--local', '--persist-to', state]);
   await start();
 
   // Google sign-in: PKCE, state binding, one-time codes and the admin allowlist.
@@ -231,6 +225,5 @@ try {
 } finally {
   await stop();
   await google.close();
-  rmSync(configPath, {force: true});
   rmSync(state, {recursive: true, force: true});
 }

@@ -78,13 +78,6 @@ thu hồi quyền cũ. Đăng xuất thu hồi phiên Alpha HUB, không đăng x
 - Cookie phiên HttpOnly chứa mã ngẫu nhiên; bảng `sessions` chỉ lưu SHA-256 của mã, `owner` là id thành viên hoặc `admin`. Đăng xuất thu hồi phiên hiện tại; hạn phiên 7 ngày.
 - Đăng nhập mật khẩu quản trị dự phòng dùng `/api/auth/admin-password`, chỉ hoạt động khi đặt `ALPHA_ENABLE_PASSWORD_LOGIN=true`.
 
-## Chuyển dữ liệu từ Supabase
-
-`npm run db:import` đọc dữ liệu cũ bằng `SUPABASE_URL` và `SUPABASE_SECRET_KEY`
-trong `.env.local`, ghi SQL ra `data/` (git bỏ qua), nạp vào D1 và copy từng file
-từ Supabase Storage sang R2 với đúng `object_key`. Thêm `-- --local` để nạp vào
-môi trường cục bộ. Script chạy lại được nhiều lần vì dùng `INSERT OR REPLACE`.
-
 ## Kiểm thử
 
 `npm test` dựng Worker thật rồi chạy nó trên runtime Cloudflare cục bộ với D1 và

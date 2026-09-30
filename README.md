@@ -41,4 +41,4 @@ Dự án và quỹ căn khởi tạo trong `lib/catalog.ts` là dữ liệu minh
 
 Giới hạn upload hiện tại: 4 MiB/file, JPG/PNG/WEBP/PDF. Không có phân quyền nhân viên, tự động gửi email hoặc xóa/lưu trữ bản ghi trong phiên bản này.
 
-Schema D1 nằm trong `migrations/`. `npm run db:import` chuyển dữ liệu cũ từ Supabase sang D1 và R2 một lần.
+Schema D1 nằm trong `migrations/`; `npm run db:migrate` áp dụng lên database thật.

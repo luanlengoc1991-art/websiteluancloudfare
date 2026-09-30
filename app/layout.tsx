@@ -3,6 +3,7 @@ import "./globals.css";
 import "./admin.css";
 import "./admin-projects.css";
 import "./news.css";
+import "./projects.css";
 import "./project-unit.css";
 
 export const metadata: Metadata = {

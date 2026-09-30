@@ -1,6 +1,6 @@
 # Alpha HUB
 
-Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn và nhánh phát hành là `luanlengoc1991-art/websiteluancloudfare` (`main`). Cloudflare Workers Builds theo dõi nhánh này và tự triển khai mỗi lần push.
+Website bất động sản dùng Next.js App Router, React, TypeScript và Node.js 24. Mã nguồn và nhánh phát hành là `luanlengoc1991-art/websiteluancloudfare` (`main`). Cloudflare Workers Builds theo dõi nhánh này và tự triển khai mỗi lần push có thay đổi mã nguồn.
 
 ## Website và trang quản trị
 

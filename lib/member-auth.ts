@@ -27,8 +27,9 @@ async function memberSession(id:string,email:string,fullName:string|null){
 export async function signup(req:Request){try{
  const data=await credentials(req,true);if(data.error)return data.error;
  const id=crypto.randomUUID();
- const created=await database().prepare('INSERT INTO members(id,email,password_hash,full_name,created_at) VALUES(?,?,?,?,?) ON CONFLICT(email) DO NOTHING')
-  .bind(id,data.email,await hashPassword(data.password!),data.name||null,Date.now()).run();
+ const now=Date.now();
+ const created=await database().prepare('INSERT INTO members(id,email,password_hash,full_name,created_at,provider,last_login_at,can_edit) VALUES(?,?,?,?,?,?,?,0) ON CONFLICT(email) DO NOTHING')
+  .bind(id,data.email,await hashPassword(data.password!),data.name||null,now,'email',now).run();
  if(!created.meta.changes)return fail('Email này đã có tài khoản. Vui lòng đăng nhập.',409);
  return await memberSession(id,data.email!,data.name||null);
 }catch(error){console.error(error);return fail('Kết nối đang gián đoạn. Vui lòng thử lại.',503);}}
@@ -46,11 +47,22 @@ export async function passwordLogin(req:Request){try{
  const member=await database().prepare('SELECT id,password_hash,full_name FROM members WHERE email=?').bind(data.email)
   .first<{id:string;password_hash:string|null;full_name:string|null}>();
  if(!member||!await checkPassword(data.password!,member.password_hash))return fail('Email hoặc mật khẩu không đúng.',401);
+ await database().prepare('UPDATE members SET last_login_at=? WHERE id=?').bind(Date.now(),member.id).run();
  return await memberSession(member.id,data.email!,member.full_name);
 }catch(error){console.error(error);return fail('Kết nối đang gián đoạn. Vui lòng thử lại.',503);}}
-/** Record a Google member so the account survives across sign-ins. */
+/** A successful Google sign-in, including the administrator. This never grants edit rights. */
+export async function recordGoogleSignIn(email:string,name:string|null){
+ await database().prepare('INSERT INTO auth_events(id,email,full_name,kind,created_at) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),email,name,'google',Date.now()).run();
+}
+/** Record a Google member so the account survives across sign-ins. New accounts stay view-only. */
 export async function rememberGoogleMember(email:string,name:string|null){
- const member=await database().prepare('INSERT INTO members(id,email,password_hash,full_name,created_at) VALUES(?,?,NULL,?,?) ON CONFLICT(email) DO UPDATE SET full_name=COALESCE(excluded.full_name,members.full_name) RETURNING id,full_name')
-  .bind(crypto.randomUUID(),email,name,Date.now()).first<{id:string;full_name:string|null}>();
- return member??{id:crypto.randomUUID(),full_name:name};
+ const db=database(),now=Date.now();
+ const existing=await db.prepare('SELECT id,full_name FROM members WHERE email=?').bind(email).first<{id:string;full_name:string|null}>();
+ if(existing){
+  await db.prepare('UPDATE members SET full_name=COALESCE(?,full_name), last_login_at=? WHERE id=?').bind(name,now,existing.id).run();
+  return {id:existing.id,full_name:name||existing.full_name};
+ }
+ const id=crypto.randomUUID();
+ await db.prepare('INSERT INTO members(id,email,password_hash,full_name,created_at,provider,last_login_at,can_edit) VALUES(?,?,NULL,?,?,?,?,0)').bind(id,email,name,now,'google',now).run();
+ return {id,full_name:name};
 }

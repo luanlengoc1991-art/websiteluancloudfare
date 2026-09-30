@@ -2,7 +2,7 @@ import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
 import {adminEmail, cookieOptions, newSession, sessionCookie, sessionLifetime} from '@/lib/auth';
 import {exchangeCode, oauthCookie, readIdentity, safeReturnTo} from '@/lib/google-auth';
-import {rememberGoogleMember} from '@/lib/member-auth';
+import {recordGoogleSignIn, rememberGoogleMember} from '@/lib/member-auth';
 export const runtime = 'nodejs';
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     if (typeof flow.state !== 'string' || flow.state !== url.searchParams.get('state')) return finish('/dang-nhap?error=google_cancelled');
     const identity = readIdentity(await exchangeCode(code, flow.verifier, origin+'/auth/callback'));
     if (!identity) return finish('/dang-nhap?error=google_forbidden');
+    await recordGoogleSignIn(identity.email, identity.name);
     const isAdmin = identity.email === adminEmail();
     const member = isAdmin ? null : await rememberGoogleMember(identity.email, identity.name);
     const destination = isAdmin ? safeReturnTo(typeof flow.destination === 'string' ? flow.destination : '/admin') : '/tai-khoan';

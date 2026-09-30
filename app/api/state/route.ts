@@ -15,7 +15,7 @@ export async function GET(){try{
   ]);
   const records=rows.map(r=>{const data=JSON.parse(r.payload);return {kind:r.kind,id:r.id,data:r.kind==='settings'?{brand:data.brand,phone:data.phone,email:data.email,address:data.address}:r.kind==='unit'?{...data,note:''}:data};});
   for(const hold of holds){if(hold.status!=='Đã bán'&&!(hold.status==='Đang giữ chỗ'&&hold.expires_at>Date.now()))continue;const row=records.find(r=>r.kind==='unit'&&r.id===hold.unit_id);if(row)row.data.status=hold.status;else{const seed=seedUnits.find(u=>u.id===hold.unit_id);if(seed)records.push({kind:'unit',id:seed.id,data:{...seed,status:hold.status,note:''}});}}
-  return Response.json({user:null,member:signedIn?{email:signedIn.email}:null,records,reservations:[],files:files.map(f=>({id:f.id,projectId:f.project_id,kind:f.kind,name:f.name,url:`/api/files/${f.id}`}))},{headers:{'Cache-Control':'no-store'}});
+  return Response.json({user:null,member:signedIn?{email:signedIn.email,canEdit:signedIn.canEdit}:null,records,reservations:[],files:files.map(f=>({id:f.id,projectId:f.project_id,kind:f.kind,name:f.name,url:`/api/files/${f.id}`}))},{headers:{'Cache-Control':'no-store'}});
  }
  const [records,holds,files]=await Promise.all([
   readAll<Record>('SELECT kind,id,payload FROM records WHERE owner=? ORDER BY id ASC',user.userId),

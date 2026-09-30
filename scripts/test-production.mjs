@@ -160,8 +160,41 @@ try {
   assert.equal(memberState.user, null);
   assert.equal(memberState.member.email, 'member@example.test');
   assert.match(await fetch(origin + '/tai-khoan', {headers: {Cookie: cookie}}).then((r) => r.text()), /member@example.test/);
-  assert.equal((await post('/api/action', {action: 'save', kind: 'customer', id: 'unauthorized', data: {}})).status, 401);
-  assert.equal((await post('/api/upload', {})).status, 401);
+  assert.equal(memberState.member.canEdit, false);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'customer', id: 'unauthorized', data: {}})).status, 403);
+  assert.equal((await post('/api/upload', {})).status, 403);
+  const memberCookie = cookie;
+  assert.equal((await fetch(origin + '/api/admin/members', {headers: {Cookie: memberCookie}})).status, 401);
+  assert.equal((await post('/api/admin/members', {id: '00000000-0000-4000-8000-000000000000', canEdit: true})).status, 401);
+  const adminList = await fetch(origin + '/api/admin/members', {headers: {Cookie: adminCookie}});
+  assert.equal(adminList.status, 200);
+  const listed = await adminList.json();
+  const emailAccount = listed.accounts.find((account) => account.email === 'member@example.test');
+  const googleAccount = listed.accounts.find((account) => account.email === 'google-member@example.test');
+  assert.equal(emailAccount.provider, 'email');
+  assert.equal(emailAccount.canEdit, false);
+  assert.equal(googleAccount.provider, 'google');
+  assert.ok(listed.google.some((event) => event.email === 'google-member@example.test'));
+  assert.ok(listed.google.some((event) => event.email === adminEmail));
+  const grantedProject = {id: 'du-an-phan-quyen', name: 'Dự án được cấp phép', location: 'Cần Giờ', region: 'TP. Hồ Chí Minh', developer: 'Alpha', category: 'low', status: 'Đang mở bán', image: '', hot: false, description: 'Sửa bởi thành viên được cấp quyền.', lat: 10.4, lng: 106.91};
+  cookie = adminCookie;
+  assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: true})).status, 200);
+  cookie = memberCookie;
+  assert.equal((await post('/api/action', {action: 'save', kind: 'customer', id: 'unauthorized', data: {}})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: grantedProject})).status, 200);
+  assert.equal((await readState('')).records.find((row) => row.id === grantedProject.id).data.name, grantedProject.name);
+  const editorDirectory = await fetch(origin + '/admin/thanh-vien', {headers: {Cookie: memberCookie}, redirect: 'manual'});
+  const editorHtml = await editorDirectory.text();
+  if (editorDirectory.status === 307) assert.match(editorDirectory.headers.get('location') || '', /quan-ly-du-an/);
+  else assert.equal(editorHtml.includes('Tài khoản và phân quyền'), false, 'Thành viên được cấp quyền vẫn mở được danh sách tài khoản: ' + editorDirectory.status + ' ' + editorHtml.slice(0, 180));
+  const editorPage = await fetch(origin + '/admin/quan-ly-du-an', {headers: {Cookie: memberCookie}});
+  assert.equal(editorPage.status, 200);
+  assert.match(await editorPage.text(), /admin-sidebar/);
+  cookie = adminCookie;
+  assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: false})).status, 200);
+  cookie = memberCookie;
+  assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: {...grantedProject, name: 'Không được sửa'}})).status, 403);
+  assert.equal((await readState('')).records.find((row) => row.id === grantedProject.id).data.name, grantedProject.name);
   const memberAdmin = await fetch(origin + '/admin', {headers: {Cookie: cookie}, redirect: 'manual'});
   assert([200, 307].includes(memberAdmin.status));
   assert(!(await memberAdmin.text()).includes('admin-sidebar'));
@@ -205,7 +238,7 @@ try {
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /Alpha/);
   }
-  for (const path of ['/admin', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet']) {
+  for (const path of ['/admin', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /admin-sidebar/);
@@ -235,7 +268,7 @@ try {
   assert.equal((await post('/api/auth/logout', {})).status, 303);
   assert.equal((await readState()).user, null);
 
-  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, Next.js pages, persistence across restart, logout revocation.');
+  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, Google sign-in log, grant and revoke content edits, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, Next.js pages, persistence across restart, logout revocation.');
 } catch (error) {
   console.error(error);
   if (logs) console.error(logs.slice(-4000));

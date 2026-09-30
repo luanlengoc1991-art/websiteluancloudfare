@@ -14,10 +14,15 @@ export async function getSignedInUser(){
  if(!row)return null;
  const isAdmin=row.owner==='admin'&&row.email.toLowerCase()===adminEmail();
  if(row.owner==='admin'&&!isAdmin)return null;
- return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin};
+ if(isAdmin)return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin:true,canEdit:true};
+ const member=await database().prepare('SELECT can_edit FROM members WHERE id=? AND email=?').bind(row.owner,row.email).first<{can_edit:number}>();
+ if(!member)return null;
+ return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin:false,canEdit:member.can_edit===1};
 }
-/** Existing management endpoints intentionally accept administrators only. */
+/** Full administration stays on the allowlisted identity. A granted member is never an administrator. */
 export async function getCurrentUser(){const user=await getSignedInUser();return user?.isAdmin?user:null;}
+/** Site content edits: the administrator, or a member they explicitly allowed. */
+export async function getContentEditor(){const user=await getSignedInUser();return user?.canEdit?user:null;}
 /** scrypt:<salt>:<64-byte hash>, the format written by npm run setup. */
 export async function hashPassword(password:string){
  const salt=randomBytes(16).toString('hex');

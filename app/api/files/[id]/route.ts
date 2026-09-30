@@ -1,9 +1,9 @@
-import {getCurrentUser} from '@/lib/auth';
+import {getContentEditor} from '@/lib/auth';
 import {database,bucket} from '@/db/store';
 export const runtime='nodejs';
 export async function GET(req:Request,{params}:{params:Promise<{id:string}>}){try{
- const user=await getCurrentUser();const {id}=await params;
- const row=await database().prepare('SELECT * FROM files WHERE id=? AND owner=?').bind(id,user?.userId||'admin').first<{mime:string;name:string;object_key:string}>();
+ const user=await getContentEditor();const {id}=await params;
+ const row=await database().prepare('SELECT * FROM files WHERE id=? AND owner=?').bind(id,'admin').first<{mime:string;name:string;object_key:string}>();
  if(!row||(!user&&row.mime==='application/pdf'))return new Response('Không tìm thấy',{status:404});
  const object=await bucket().get(row.object_key);
  if(!object)return new Response('Không tìm thấy',{status:404});

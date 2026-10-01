@@ -29,6 +29,7 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background);
 
 /* Dark glass: the light and shade behind each card remain visible while scrolling. */
 .news-site :is(.nm-spotlight,.nm-panel),
+.public-sidebar .nm-panel,
 .inventory-market-site .catalog-unit-card,
 .project-directory-site .pd-card,
 .admin-projects-site :is(.ap-metric,.ap-filter-panel,.ap-card),

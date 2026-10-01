@@ -1,10 +1,10 @@
 'use client';
-import {useEffect, useMemo, useState, type FormEvent} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Link from './site-link';
-import {ArrowLeft, ArrowRight, MapPin, MessageCircle, Pencil, Phone, Plus, Search} from 'lucide-react';
+import {ArrowLeft, ArrowRight, MapPin, Pencil, Plus} from 'lucide-react';
 import type {Article, Project} from '@/lib/catalog';
 import {projectPath} from '@/lib/project-routes';
-import {publicContact} from '@/lib/public-contact';
+import PublicSidebar from './public-sidebar';
 
 type Story = {id: string; title: string; summary: string; image: string; category: string; meta: string; href: string; article?: Article};
 
@@ -30,47 +30,6 @@ function Cover({src, alt = ''}: {src: string; alt?: string}) {
   const [broken, setBroken] = useState(false);
   if (broken || !src) return <span className="nm-fallback" role={alt ? 'img' : undefined} aria-label={alt || undefined}/>;
   return <img src={src} alt={alt} loading="lazy" onError={() => setBroken(true)}/>;
-}
-
-export function LeadPanel({projects, source = 'Trang tin tức'}: {projects: Project[]; source?: string}) {
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ok: boolean; text: string} | null>(null);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget, data = new FormData(form);
-    setBusy(true);
-    setMessage(null);
-    try {
-      const project = String(data.get('project') || '');
-      const response = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: data.get('name'), phone: data.get('phone'), email: '', note: source + (project ? ' · Dự án quan tâm: ' + project : ''), website: data.get('website') || ''})});
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Chưa gửi được thông tin.');
-      setMessage({ok: true, text: 'Đã nhận thông tin. Chúng tôi sẽ gọi lại cho bạn sớm.'});
-      form.reset();
-    } catch (error) {
-      setMessage({ok: false, text: error instanceof Error ? error.message : 'Chưa gửi được thông tin.'});
-    } finally {
-      setBusy(false);
-    }
-  }
-  return <div className="nm-lead-wrap">
-    <form className="nm-panel nm-lead" id="tu-van" onSubmit={submit}>
-      <h2>Tư vấn nhu cầu</h2>
-      <select name="project" aria-label="Dự án quan tâm" defaultValue=""><option value="">Dự án quan tâm</option>{projects.map(project => <option key={project.id} value={project.name}>{project.name}</option>)}</select>
-      <input name="name" placeholder="Nhập họ và tên" aria-label="Họ và tên" required minLength={2} maxLength={100} autoComplete="name"/>
-      <input name="phone" placeholder="Nhập số điện thoại" aria-label="Số điện thoại" type="tel" required pattern="[+\d ()-]{8,20}" autoComplete="tel"/>
-      <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" hidden/>
-      <label className="nm-check"><input type="checkbox" required/><span>Tôi đồng ý để Alpha Hub liên hệ tư vấn qua số điện thoại này.</span></label>
-      <label className="nm-check"><input type="checkbox" required/><span>Tôi đồng ý để Alpha Hub lưu thông tin nhằm chăm sóc nhu cầu của tôi.</span></label>
-      <button className="nm-submit" disabled={busy}>{busy ? 'Đang gửi…' : 'Gửi thông tin'}</button>
-      {message && <p className={message.ok ? 'nm-note ok' : 'nm-note error'} role="status">{message.text}</p>}
-    </form>
-    <div className="nm-hotline">
-      <span>Hoặc</span>
-      <div><a href={'tel:' + publicContact.phone}><Phone size={14}/>{publicContact.phone}</a><a href={publicContact.zaloHref} target="_blank" rel="noreferrer"><MessageCircle size={14}/>Chat Zalo</a></div>
-      <small>Để được tư vấn và giải đáp thắc mắc</small>
-    </div>
-  </div>;
 }
 
 export default function NewsMagazine({articles, projects, routeId, query, onQuery, category, onCategory, canEdit, onCreate, onEdit}: {articles: Article[]; projects: Project[]; routeId?: string; query: string; onQuery: (value: string) => void; category: string; onCategory: (value: string) => void; canEdit: boolean; onCreate: () => void; onEdit: (article: Article) => void}) {
@@ -134,13 +93,7 @@ export default function NewsMagazine({articles, projects, routeId, query, onQuer
           </div>}
         </>}
       </main>
-      <aside className="nm-side">
-        <form className="nm-panel" role="search" onSubmit={event => {event.preventDefault(); if (routeId) window.location.assign('/tin-tuc');}}>
-          <h2>Tìm kiếm</h2>
-          <label className="nm-search"><Search size={17}/><input type="search" value={query} onChange={event => onQuery(event.target.value)} placeholder="Nhập nội dung cần tìm" aria-label="Tìm tin tức"/></label>
-        </form>
-        <LeadPanel projects={projects}/>
-      </aside>
+      <PublicSidebar projects={projects} source="Trang tin tức" query={query} onQuery={onQuery} searchLabel="Tìm tin tức" onSearch={value => {if (routeId) window.location.assign('/tin-tuc?search=' + encodeURIComponent(value));}}/>
     </div>
     <div className="nm-tour">
       <div><span>Đăng ký tham quan</span><h2>Dự án & căn hộ mẫu</h2><p>Để trực tiếp trải nghiệm căn nhà mới, mời quý khách đăng ký tham quan.</p></div>

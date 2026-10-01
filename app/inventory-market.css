@@ -1,6 +1,6 @@
 /* Matches the news magazine: emerald canvas, mint highlights and glass surfaces. */
 .inventory-market-site{--inventory-display:var(--font-display);background:radial-gradient(1100px 520px at 50% 0%,#1f9d6850,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);color:#fff;font-family:var(--font-body);line-height:1.6}
-.inventory-market-site .container{width:calc(100% - 64px);max-width:none}
+.inventory-market-site .container{width:min(1200px,calc(100% - 40px));max-width:none}
 .inventory-market-site .catalog-inventory-hero{background:none;padding:48px 0 36px;color:#fff;scroll-margin-top:95px}
 .inventory-market-site .page-heading{text-align:center;margin-bottom:25px}
 .inventory-market-site .page-heading .eyebrow{color:#a9d9bc;letter-spacing:.15em;font-size:11px;line-height:1.8}

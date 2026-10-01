@@ -15,3 +15,9 @@ h1,h2{font-family:var(--font-display)}
 .floating-inventory-head h2,.directory-results-heading h2,.directory-results-heading h2 span,
 .workspace-panel-heading h1,.punit-rail-heading h2,.punit-card h2,
 .admin-panel-title h2,.admin-project-card h2,[data-slot=dialog-title],[data-slot=sheet-title]{font-family:var(--font-body)}
+
+/* Unit identifiers and primary prices share the display font across cards and details. */
+.unit-code,.catalog-unit-card .unit-code,.mini-unit-code,.catalog-unit-card .price,.money,
+.unit-price-card strong,.punit-price-main strong,.unit-sheet-heading [data-slot=sheet-title]{
+  font-family:var(--font-display);font-weight:700;font-synthesis:none;font-variant-numeric:lining-nums tabular-nums
+}

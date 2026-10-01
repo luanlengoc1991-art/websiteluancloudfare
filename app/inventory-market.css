@@ -56,7 +56,8 @@
 .inventory-market-site .catalog-unit-card .unit-code{font-size:23px;line-height:1.55;letter-spacing:0;color:#fff;overflow:visible;white-space:normal}
 .inventory-market-site .catalog-unit-card .project-name{font-size:14px;line-height:1.8;letter-spacing:0;text-transform:none;color:#d4e9dc;white-space:normal;overflow:visible;margin:3px 0 8px}
 .inventory-market-site .catalog-project-count{color:#abedc5;font-size:13px;line-height:1.8}
-.inventory-market-site .catalog-unit-price{border-top:1px solid #ffffff25;padding-top:16px;margin:16px 0}
+.inventory-market-site .catalog-unit-price{position:relative;border-top:1px solid #ffffff25;border-bottom:0;padding-top:16px;margin:16px 0}
+.inventory-market-site .catalog-unit-price::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:6px;background:url("/unit-price-divider.svg") repeat-x left center / 16px 6px;filter:drop-shadow(0 0 2px #22d3ee66);pointer-events:none}
 .inventory-market-site .catalog-unit-card .price-label{color:#b9d9c6;font-size:12px;line-height:1.8;letter-spacing:.04em}
 .inventory-market-site .catalog-unit-card .price{color:#b5f1bf;font-size:32px;line-height:1.4;letter-spacing:0}.inventory-market-site .catalog-unit-card .price small{font-size:19px;line-height:1.6}
 .inventory-market-site .catalog-unit-specs{padding-top:0;margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}

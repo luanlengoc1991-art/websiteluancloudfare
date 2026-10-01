@@ -34,6 +34,15 @@
 .inventory-market-site .filter-actions{margin-top:22px;padding-top:24px;border-top:1px solid #c5dfcf;gap:12px}
 .inventory-market-site .filter-actions .gold{min-width:200px;padding:14px 32px;border:0;background:linear-gradient(100deg,#165438,#207e53);color:#fff;font-size:17px;line-height:1.6;font-weight:700;box-shadow:0 8px 24px #001e1930}
 .inventory-market-site .filter-actions .translucent{padding:14px 26px;border:1px solid #a7c9b3;background:#fff;color:#254e35;line-height:1.6}
+/* The main inventory finder stays centered above the results and their sidebar. */
+.inventory-market-site .catalog-inventory-hero .filter-panel{border-color:#dcf6e5;background:linear-gradient(135deg,#fafffcf7,#e6f6eced);box-shadow:0 20px 50px #01130c40}
+.inventory-market-site .catalog-inventory-hero .filter-head{grid-template-columns:1fr;justify-items:center;gap:18px}
+.inventory-market-site .catalog-inventory-hero .filter-head h2{justify-content:center;text-align:center;font-size:26px}
+.inventory-market-site .catalog-inventory-hero .filter-head .searchbox{max-width:860px;min-height:64px;border-color:#328e60}
+.inventory-market-site .catalog-inventory-hero .filter-head .searchbox input{min-height:60px}
+.inventory-market-site .catalog-inventory-hero .filter-actions{justify-content:center}
+.public-site.inventory-market-site .public-content-layout{padding-top:0}
+.inventory-market-site .public-content-main .catalog-inventory-results{padding-top:0}
 .inventory-market-site .catalog-inventory-results{padding-top:24px;padding-bottom:70px;background:none}
 .inventory-market-site .results-heading{align-items:center;gap:20px;margin-bottom:22px}
 .inventory-market-site .results-heading .eyebrow{color:#b0d7bd;line-height:1.8}
@@ -81,3 +90,4 @@
 .inventory-market-site .filter-panel .filter-head .searchbox svg{color:#1e7047}
 .inventory-market-site .results-tools .field [data-slot=select-trigger]{font-size:14px}
 @media(max-width:700px){.inventory-market-site .filter-head h2{font-size:20px}.inventory-market-site .filter-selects .field [data-slot=select-trigger]{font-size:15px}.inventory-market-site .range-labels{font-size:13px}.inventory-market-site .inventory-project-counts button{font-size:14px}.inventory-market-site .inventory-project-counts button strong{font-size:15px}}
+@media(max-width:700px){.inventory-market-site .catalog-inventory-hero .filter-head h2{font-size:22px}.inventory-market-site .catalog-inventory-hero .filter-head .searchbox{min-height:54px}.inventory-market-site .catalog-inventory-hero .filter-head .searchbox input{min-height:50px}}

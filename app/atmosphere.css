@@ -17,7 +17,6 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background);
   background:radial-gradient(ellipse at 12% 76%,#1f9d6840,transparent 55%),radial-gradient(ellipse at 88% 28%,#05241a8c,transparent 52%);
   transform:translate3d(0,var(--atmosphere-light-shift,0px),0);will-change:transform;
 }
-.site-atmosphere-cursor{position:absolute;inset:0;background:radial-gradient(380px circle at var(--atmosphere-pointer-x,50%) var(--atmosphere-pointer-y,50%),#9ff0c12b,transparent 72%);opacity:var(--atmosphere-pointer-visible,0);transition:opacity .18s;pointer-events:none}
 @media(hover:hover) and (pointer:fine){
   [data-atmosphere-text]{color:var(--atmosphere-text-active)!important;-webkit-text-fill-color:currentColor;text-shadow:0 0 10px var(--atmosphere-text-glow);transition:color .15s,text-shadow .15s}
 }
@@ -70,7 +69,6 @@ body .studio-header,.studio-layout .editor-panel{background:var(--surface-light)
 }
 @media(prefers-reduced-motion:reduce){
   .site-atmosphere-base,.site-atmosphere-light{transform:none;will-change:auto}
-  .site-atmosphere-cursor{display:none}
   [data-atmosphere-text]{transition:none}
 }
 @media print{.site-atmosphere{display:none}}

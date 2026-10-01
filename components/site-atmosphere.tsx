@@ -66,10 +66,7 @@ export default function SiteAtmosphere() {
   }, [pathname]);
 
   useEffect(() => {
-    const node = canvas.current;
-    if (!node) return;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame: number | null = null;
     let x = 0, y = 0, visible = false;
     let activeText: HTMLElement | null = null;
@@ -105,21 +102,17 @@ export default function SiteAtmosphere() {
       activeText = next;
     }
 
-    function renderPointer() {
+    function refreshText() {
       frame = null;
-      if (!node) return;
       const enabled = visible && finePointer.matches;
-      node.style.setProperty('--atmosphere-pointer-x', `${x}px`);
-      node.style.setProperty('--atmosphere-pointer-y', `${y}px`);
-      node.style.setProperty('--atmosphere-pointer-visible', enabled && !motion.matches ? '1' : '0');
       lightText(enabled ? document.elementFromPoint(x, y) : null);
     }
 
     function schedule() {
-      if (frame === null) frame = window.requestAnimationFrame(renderPointer);
+      if (frame === null) frame = window.requestAnimationFrame(refreshText);
     }
 
-    function onPointerMove(event: PointerEvent) {
+    function onPointerOver(event: PointerEvent) {
       if (event.pointerType === 'touch' || !finePointer.matches) {
         leave();
         return;
@@ -127,39 +120,49 @@ export default function SiteAtmosphere() {
       x = event.clientX;
       y = event.clientY;
       visible = true;
-      schedule();
+      lightText(event.target instanceof Element ? event.target : null);
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      // Entering text changes its style; movement only records the position for scrolls.
+      if (!visible) {
+        onPointerOver(event);
+        return;
+      }
+      if (event.pointerType === 'touch' || !finePointer.matches) {
+        leave();
+        return;
+      }
+      x = event.clientX;
+      y = event.clientY;
     }
 
     function leave() {
       visible = false;
-      schedule();
+      clearText();
     }
 
+    document.addEventListener('pointerover', onPointerOver, {passive: true});
     document.addEventListener('pointermove', onPointerMove, {passive: true});
     document.addEventListener('pointerleave', leave);
     document.addEventListener('scroll', schedule, {passive: true, capture: true});
     window.addEventListener('blur', leave);
     finePointer.addEventListener('change', schedule);
-    motion.addEventListener('change', schedule);
 
     return () => {
+      document.removeEventListener('pointerover', onPointerOver);
       document.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('pointerleave', leave);
       document.removeEventListener('scroll', schedule, true);
       window.removeEventListener('blur', leave);
       finePointer.removeEventListener('change', schedule);
-      motion.removeEventListener('change', schedule);
       if (frame !== null) window.cancelAnimationFrame(frame);
       clearText();
-      node.style.removeProperty('--atmosphere-pointer-x');
-      node.style.removeProperty('--atmosphere-pointer-y');
-      node.style.removeProperty('--atmosphere-pointer-visible');
     };
   }, [pathname]);
 
   return <div ref={canvas} className="site-atmosphere" aria-hidden="true">
     <div className="site-atmosphere-base"/>
     <div className="site-atmosphere-light"/>
-    <div className="site-atmosphere-cursor"/>
   </div>;
 }

@@ -5,6 +5,7 @@ import "./admin-projects.css";
 import "./news.css";
 import "./projects.css";
 import "./project-unit.css";
+import "./inventory-market.css";
 
 export const metadata: Metadata = {
   title: "Alpha Hub | Quỹ căn & Dự án",

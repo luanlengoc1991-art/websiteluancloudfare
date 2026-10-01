@@ -42,15 +42,16 @@ export default function ProjectDirectory({projects, units, favorites, onFavorite
     (collection !== 'hot' || p.hot) && (collection !== 'favorite' || favorites.has(p.id)));
   const results = collection === 'new' ? [...filtered].reverse() : filtered;
   function reset() {setQuery(''); setRegion('all'); setCategory('all'); setDeveloper('all'); setStatus('all'); setCollection('all'); setLimit(9);}
-  function move(direction: number) {setSelectedId(featured[(activeIndex + direction + featured.length) % featured.length].id);}
+  function move(direction: number) {if (!featured.length) return; setSelectedId(featured[(activeIndex + direction + featured.length) % featured.length].id);}
 
   return <main className="pd">
-    <header className="pd-heading pd-container"><span className="pd-kicker">ALPHA HUB · KHÔNG GIAN DỰ ÁN</span><h1>Dự án nổi bật</h1><p>Khám phá không gian sống. Kết nối những giá trị bền vững.</p></header>
+    {active && <div className="pd-ambient" aria-hidden="true"><ProjectImage src={active.image} name=""/></div>}
+    {!active && <header className="pd-heading pd-container"><span className="pd-kicker">ALPHA HUB</span><h1>Khám phá dự án</h1><p>Tìm không gian sống dành cho bạn.</p></header>}
     {active && <section className="pd-hero pd-container" aria-label="Dự án nổi bật">
       <div className="pd-hero-image"><ProjectImage src={active.image} name={active.name} priority/></div>
       <div className="pd-hero-shade"/>
       <div className="pd-feature-panel">
-        <span className="pd-kicker">{active.developer} <span>•</span> {active.status}</span>
+        <span className="pd-kicker">ALPHA HUB · KHÔNG GIAN DỰ ÁN</span><h1>Dẫn lối<br/>chọn tổ ấm xứng tầm</h1><p className="pd-hero-intro">Khám phá những dự án nổi bật,<br/>kết nối không gian sống và giá trị bền vững.</p><span className="pd-kicker">{active.developer} <span>•</span> {active.status}</span>
         <h2>{active.name}</h2><p className="pd-location"><MapPin size={16}/>{active.location}</p>
         <dl className="pd-facts"><div><dt>Chủ đầu tư</dt><dd>{active.developer || 'Đang cập nhật'}</dd></div><div><dt>Khu vực</dt><dd>{active.region || 'Đang cập nhật'}</dd></div><div><dt>Loại hình</dt><dd>{active.category === 'low' ? 'Thấp tầng' : 'Cao tầng'}</dd></div><div className="pd-feature-count"><dt>Quỹ căn trên hệ thống</dt><dd><b>{format(counts.get(active.id) || 0)}</b><span>căn</span></dd></div></dl>
         <div className="pd-feature-actions"><Link className="pd-button pd-button-light" href={projectPath(active.id)}>Chi tiết dự án <ArrowUpRight size={18}/></Link><Link className="pd-text-link" href={projectPath(active.id, 'inventory')}>Bảng hàng <ArrowRight size={16}/></Link></div>
@@ -58,7 +59,7 @@ export default function ProjectDirectory({projects, units, favorites, onFavorite
       <div className="pd-hero-controls"><span><b>{String(activeIndex + 1).padStart(2, '0')}</b> / {String(featured.length).padStart(2, '0')}</span><button aria-label="Dự án trước" disabled={featured.length < 2} onClick={() => move(-1)}><ChevronLeft size={21}/></button><button aria-label="Dự án tiếp theo" disabled={featured.length < 2} onClick={() => move(1)}><ChevronRight size={21}/></button></div>
     </section>}
     {featured.length > 1 && <nav className="pd-feature-nav pd-container" aria-label="Chọn dự án nổi bật">{featured.map((p, index) => <button key={p.id} aria-pressed={active.id === p.id} onClick={() => setSelectedId(p.id)}><span>{String(index + 1).padStart(2, '0')}</span>{p.name}</button>)}</nav>}
-    <section className="pd-catalog pd-container" aria-labelledby="pd-list-title">
+    <section className="pd-catalog pd-container" id="danh-sach-du-an" aria-labelledby="pd-list-title">
       <div className="pd-catalog-heading"><div><span className="pd-kicker">TÌM KHÔNG GIAN DÀNH CHO BẠN</span><h2 id="pd-list-title">Danh sách dự án</h2></div><label className="pd-search"><Search size={19}/><input type="search" placeholder="Nhập tên dự án, địa điểm…" aria-label="Tìm dự án" value={query} onChange={e => {setQuery(e.target.value); setLimit(9);}}/></label></div>
       <div className="pd-regions" role="group" aria-label="Lọc theo khu vực">{['all', ...regions].map(value => <button key={value} aria-pressed={region === value} onClick={() => {setRegion(value); setLimit(9);}}>{value === 'all' ? 'Tất cả' : value}<span>{value === 'all' ? projects.length : projects.filter(p => p.region === value).length}</span></button>)}</div>
       <div className="pd-filter-bar"><SlidersHorizontal size={18} aria-hidden="true"/><select aria-label="Loại hình" value={category} onChange={e => {setCategory(e.target.value); setLimit(9);}}><option value="all">Tất cả loại hình</option><option value="low">Thấp tầng</option><option value="high">Cao tầng</option></select><select aria-label="Chủ đầu tư" value={developer} onChange={e => {setDeveloper(e.target.value); setLimit(9);}}><option value="all">Tất cả chủ đầu tư</option>{Array.from(new Set(projects.map(p => p.developer).filter(Boolean))).map(value => <option key={value}>{value}</option>)}</select><select aria-label="Trạng thái" value={status} onChange={e => {setStatus(e.target.value); setLimit(9);}}><option value="all">Tất cả trạng thái</option>{Array.from(new Set(projects.map(p => p.status).filter(Boolean))).map(value => <option key={value}>{value}</option>)}</select><select aria-label="Bộ sưu tập dự án" value={collection} onChange={e => {setCollection(e.target.value); setLimit(9);}}><option value="all">Tất cả dự án</option><option value="hot">Dự án nổi bật</option><option value="favorite">Đã yêu thích</option><option value="new">Mới cập nhật</option></select><button className="pd-reset" onClick={reset}><RotateCcw size={15}/>Đặt lại</button></div>
@@ -70,6 +71,10 @@ export default function ProjectDirectory({projects, units, favorites, onFavorite
       {!results.length && <div className="pd-empty"><Search size={32}/><h3>Chưa có dự án phù hợp</h3><p>Thử thay đổi từ khóa, khu vực hoặc các bộ lọc.</p><button className="pd-button pd-button-light" onClick={reset}>Xem tất cả dự án <ArrowRight size={17}/></button></div>}
       {limit < results.length && <button className="pd-button pd-more" onClick={() => setLimit(value => value + 9)}>Xem thêm dự án <ChevronRight size={18}/></button>}
     </section>
+    <section className="pd-panorama" aria-label="Khám phá dự án">{featured.slice(0, 2).map((p, index) => <article className={`pd-band ${index % 2 ? 'pd-band-reverse' : ''}`} key={p.id}>
+      <div className="pd-band-image"><ProjectImage src={p.image} name={p.name}/></div><div className="pd-band-shade"/>
+      <div className="pd-band-content pd-container"><div><span className="pd-kicker">{p.developer}</span><h2>{p.name}</h2><p className="pd-location"><MapPin size={16}/>{p.location}</p><p className="pd-band-description">{p.description}</p><Link className="pd-button" href={projectPath(p.id)}>Khám phá dự án <ArrowRight size={16}/></Link></div><Link className="pd-band-count" href={projectPath(p.id, 'inventory')}><b>{format(counts.get(p.id) || 0)}</b><span>CĂN</span><small>Xem quỹ căn <ArrowRight size={14}/></small></Link></div>
+    </article>)}</section>
     <section className="pd-consult pd-container" aria-labelledby="pd-consult-title"><div><span className="pd-kicker">ĐỒNG HÀNH CÙNG ALPHA HUB</span><h2 id="pd-consult-title">Tìm dự án phù hợp<br/>với bạn.</h2><p>Để lại thông tin để được tư vấn dự án và quỹ căn bạn quan tâm.</p><Link className="pd-text-link" href="/tin-tuc">Khám phá tin tức & kiến thức <ArrowUpRight size={17}/></Link></div><div className="pd-consult-form"><h3>Đăng ký tư vấn</h3><ContactForm note="Đăng ký tư vấn từ trang danh sách dự án"/></div></section>
   </main>;
 }

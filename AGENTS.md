@@ -14,9 +14,9 @@
 - Kho mã nguồn: `luanlengoc1991-art/websiteluancloudfare`; nhánh phát hành: `main`. Remote `origin` là `https://github.com/luanlengoc1991-art/websiteluancloudfare.git`. Không đẩy sang `websiteluan`.
 - Trước khi sửa, lấy phiên bản mới nhất từ GitHub (`git fetch` rồi cập nhật `origin/main`), đọc file này và bảo toàn thay đổi đang có.
 - Với công việc chủ dự án yêu cầu, thực hiện đầy đủ, kiểm tra phù hợp, commit và push trực tiếp lên `origin/main`. Chủ dự án đã cho phép quy trình này; không hỏi lại xác nhận cho các bước thông thường.
-- Push lên `main` chạy Cloudflare Workers Builds của Worker `websiteluancloudfare`: build `npx opennextjs-cloudflare build`, deploy `npx wrangler deploy`. Chỉ báo đã xuất bản khi bản build trên Cloudflare thành công và website phản hồi.
+- Chủ dự án yêu cầu chỉ cập nhật GitHub để tự triển khai bằng Cursor. Codex commit và push lên `main`, không chạy lệnh triển khai, không điều khiển Cloudflare hoặc chờ triển khai. Báo kết quả theo commit GitHub. Kết nối Workers Builds có sẵn có thể vẫn tự build khi push; không tự thay đổi cấu hình kết nối này.
 - Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`ALPHA_ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) đặt trong Settings của Worker, không commit.
-- Báo ngắn gọn bằng tiếng Việt: nội dung cập nhật, mã commit, trạng thái website và phần nào chưa kiểm chứng hoặc bị chặn.
+- Báo ngắn gọn bằng tiếng Việt: nội dung cập nhật, mã commit trên GitHub, kiểm tra đã thực hiện và phần nào chưa kiểm chứng hoặc bị chặn.
 - Khi đổi thiết bị: clone/pull trước khi sửa; commit và push sau khi sửa để các thiết bị và Cloudflare dùng cùng nguồn.
 - GitHub lưu mã nguồn. Cloudflare D1 và R2 lưu dữ liệu ứng dụng và file; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.
 - Quy trình này áp dụng cho các tác vụ đã được yêu cầu; vẫn tuân thủ các yêu cầu quyền truy cập bắt buộc và không tự ý thực hiện thao tác phá hủy ngoài phạm vi công việc.

@@ -1,5 +1,6 @@
 /* One public header and footer, shared by every catalog and editorial route. */
-.public-site{padding-top:96px;background:#052f23;--shell-mint:#b5f2ce;--shell-text:#ecfff3;--shell-muted:#c0ddcd}
+.public-site{padding-top:96px;background:linear-gradient(180deg,#052f23 96px,#f4f8f5 96px);--shell-mint:#b5f2ce;--shell-text:#ecfff3;--shell-muted:#c0ddcd}
+.public-site:is(.about-site,.project-directory-site,.news-site,.guide-site){background:#052f23}
 .public-site.about-site,.public-site.project-directory-site:not(.inventory-market-site){padding-top:0}
 .public-site>.site-header{position:fixed;inset:12px 20px auto;height:72px;border:1px solid #ffffff35;border-radius:999px;background:linear-gradient(110deg,#154e40e8,#176344c9);color:var(--shell-text);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 8px 25px #02251d26;z-index:40}
 .public-site .header-inner{max-width:none;padding:0 24px;gap:24px}
@@ -32,6 +33,7 @@
 .public-site>.compact-hero{background:radial-gradient(ellipse at 70% 0,#167a514a,transparent 70%),#052f23;color:#fff}
 .public-site>.compact-hero p,.public-site>.compact-hero .eyebrow{color:#c0ddcd}
 .public-site .guide-list details{background:#ffffff0d;color:#ecfff3;border-color:#ffffff26}
+.public-site .guide-list>h2{color:#ecfff3}
 .public-site .guide-list details p{color:#c0ddcd}
 .public-site .guide-list .guide-number,.public-site .guide-list summary>svg{color:#b5f2ce}
 @media(max-width:1150px){.public-site .desktop-nav{gap:2px}.public-site .desktop-nav a{padding:9px 12px}.public-site .header-inner{gap:12px;padding-inline:18px}.public-site>.site-footer .container{width:calc(100% - 40px)}.public-site .site-footer .footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}}

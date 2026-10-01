@@ -36,3 +36,17 @@
 .inventory-market-site .catalog-unit-card .project-name{font-size:13px;white-space:normal;line-height:1.5;letter-spacing:0}
 .inventory-market-site .catalog-unit-card .price-label{font-size:9px;color:#65816c}
 .inventory-market-site .catalog-unit-card .unit-bottom{margin-top:18px;padding-top:15px;border-top:1px solid #e4eee6}
+
+/* Search-first inventory: compact masthead, prominent form, immediate listings. */
+.inventory-market-site .catalog-inventory-hero{padding:120px 0 38px;background:radial-gradient(ellipse at 85% 0%,#b9dbbe75,transparent 65%),linear-gradient(135deg,#edf5ee,#f8fbf8);border-bottom:1px solid #dce9df}
+.inventory-market-site .page-heading{text-align:left;margin-bottom:25px;display:block}
+.inventory-market-site .page-heading h1{font:400 clamp(32px,3vw,46px)/1.2 Georgia,serif;color:#174d39;margin:12px 0}
+.inventory-market-site .page-heading p{font-size:14px;margin-bottom:0}
+.inventory-market-site .filter-head{display:grid;grid-template-columns:auto minmax(280px,1fr);gap:30px;align-items:center;padding-bottom:22px;border-bottom:1px solid #dce8df;margin-bottom:22px}
+.inventory-market-site .filter-head .searchbox{width:100%;max-width:none;min-height:58px;background:#fff;border:2px solid #80b18d;box-shadow:0 4px 20px #245c3b0c}
+.inventory-market-site .filter-head .searchbox:focus-within{border-color:#1f6947;box-shadow:0 0 0 4px #28674312}
+.inventory-market-site .filter-head .searchbox input{font-size:16px;color:#164d36}
+.inventory-market-site .filter-panel{box-shadow:0 15px 40px #25593a10}
+.inventory-market-site .filter-actions .gold{font-size:15px;padding:14px 28px;box-shadow:0 5px 16px #185a3e26}
+.inventory-market-site .catalog-inventory-results{padding-top:38px}
+@media(max-width:800px){.inventory-market-site .catalog-inventory-hero{padding:105px 0 28px}.inventory-market-site .filter-head{grid-template-columns:1fr;gap:14px}.inventory-market-site .filter-head .searchbox{min-height:54px}.inventory-market-site .page-heading{margin-bottom:22px}}

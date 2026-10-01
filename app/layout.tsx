@@ -7,6 +7,7 @@ import "./projects.css";
 import "./project-unit.css";
 import "./inventory-market.css";
 import "./about.css";
+import "./site-shell.css";
 
 export const metadata: Metadata = {
   title: "Alpha Hub | Quỹ căn & Dự án",
@@ -28,4 +29,3 @@ export default function RootLayout({
     </html>
   );
 }
-

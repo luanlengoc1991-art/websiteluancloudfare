@@ -1,17 +1,11 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useState} from 'react';
+import {useContentDraft} from './use-content-draft';
 import {Plus, Save} from 'lucide-react';
 import type {Project} from '@/lib/catalog';
 import type {AboutContent, Guide} from '@/lib/site-content';
 
-export function useContentDraft<T>(initial: T) {
-  const [draft, setDraft] = useState(initial);
-  const [dirty, setDirty] = useState(false);
-  const current = useRef(initial);
-  useEffect(() => {if (!dirty) {current.current = initial; setDraft(initial);}}, [initial, dirty]);
-  return {draft, edit: (value: T) => {current.current = value; setDraft(value); setDirty(true);}, saved: (value: T) => {if (current.current === value) setDirty(false);}};
-}
 
 export function AdminAbout({content, projects, busy, onSave}: {content: AboutContent; projects: Project[]; busy: boolean; onSave: (data: AboutContent) => Promise<boolean>}) {
   const {draft, edit, saved} = useContentDraft(content);

@@ -51,7 +51,7 @@ export default function ProjectDirectory({projects, units, favorites, onFavorite
       setSelectedId(current => featured[(Math.max(0, featured.findIndex(p => p.id === current)) + 1) % featured.length].id);
     }, 6500);
     return () => window.clearInterval(timer);
-  }, [featured, paused, hovered, focused, reducedMotion, selectedId]);
+  }, [featured, paused, hovered, focused, reducedMotion]);
   function applySearch() {
     setQuery(draftQuery); setRegion(draftRegion); setLimit(9);
     document.getElementById('danh-sach-du-an')?.scrollIntoView({behavior: reducedMotion ? 'instant' : 'smooth', block: 'start'});

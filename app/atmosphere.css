@@ -4,6 +4,8 @@
   --surface-dark:linear-gradient(155deg,#ffffff18,#032e2352);
   --surface-light:#f5fcf7d9;
   --surface-line:#ffffff30;
+  --glass-blur:8px;
+  --chrome-blur:12px;
 }
 html body{isolation:isolate;min-height:100dvh;background:var(--site-background);background-attachment:scroll}
 .site-atmosphere{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
@@ -18,6 +20,7 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background);
   transform:translate3d(0,var(--atmosphere-light-shift,0px),0);will-change:transform;
 }
 @media(hover:hover) and (pointer:fine){
+  [data-atmosphere-text] small{color:var(--atmosphere-text-rest);-webkit-text-fill-color:currentColor;text-shadow:none}
   [data-atmosphere-text]{color:var(--atmosphere-text-active)!important;-webkit-text-fill-color:currentColor;text-shadow:0 0 10px var(--atmosphere-text-glow);transition:color .15s,text-shadow .15s}
 }
 
@@ -35,13 +38,14 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background);
 .admin-projects-site :is(.ap-metric,.ap-filter-panel,.ap-card),
 .admin-projects-site .admin-overview :is(.admin-panel,.admin-metrics>a){
   background:var(--surface-dark);border-color:var(--surface-line);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
 }
 .project-directory-site .pd-card-body{background:linear-gradient(180deg,#043b2c30,#043b2c99)}
-.public-site>.site-header{background:linear-gradient(110deg,#154e40b8,#1763448c)}
-.public-site>.site-footer{background:linear-gradient(180deg,#073b2ab8,#052c21d9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.admin-projects-site .admin-sidebar{background:#04271fcc}
-.admin-projects-site .admin-topbar{background:#052b2066}
+.public-site>.site-header{background:linear-gradient(110deg,#154e40b8,#1763448c);backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
+.public-site>.site-footer{background:linear-gradient(180deg,#073b2ab8,#052c21d9);backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
+.admin-projects-site .admin-sidebar{background:#04271fcc;backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
+.admin-projects-site .admin-topbar{background:#052b2066;backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
+.inventory-market-site .filter-panel,.immersive-site .workspace-dock,.project-directory-site .pd-consult{backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
 
 /* White shapes keep their dark text and contrast, with a soft view of the green below. */
 .about-site :is(.al-panel,.al-project,.al-news-list>article,.al-project-nav),
@@ -51,21 +55,23 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background);
 .auth-section .auth-card,
 .admin-projects-site :is(.table-wrap,.stat-card,.settings-card,.upload-panel,.admin-asset,.transaction-list article),
 .admin-projects-site .admin-members .admin-panel{
-  background:var(--surface-light);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:var(--surface-light);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
 }
-.about-site .al-feature-copy{background:#f7fff9eb;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.about-site .al-feature-copy{background:#f7fff9eb;backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
 
 /* Project photography and interactive plans stay above the common emerald canvas. */
 .immersive-site .project-workspace{background:transparent}
 .immersive-site .workspace-canvas{opacity:.38}
-.immersive-site :is(.workspace-panel,.floating-inventory,.scene-message){background:var(--surface-light);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.immersive-site :is(.workspace-panel,.floating-inventory,.scene-message){background:var(--surface-light);backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
 
 /* Editor chrome shares the atmosphere; the exported poster is its own artwork. */
-body .studio-header,.studio-layout .editor-panel{background:var(--surface-light);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+body .studio-header,.studio-layout .editor-panel{background:var(--surface-light);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur))}
 .studio-layout .workspace-heading{color:#fff}
 .studio-layout .workspace-note{color:#c3dfd0}
 
+.module-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:32px;font-size:14px}
 @media(max-width:760px){
+  :root{--glass-blur:4px;--chrome-blur:6px}
   :root{--site-background:radial-gradient(680px 420px at 50% -40px,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%)}
 }
 @media(prefers-reduced-motion:reduce){

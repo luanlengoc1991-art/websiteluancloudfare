@@ -1,0 +1,69 @@
+/* The news page's emerald palette is the shared canvas for every route. */
+:root{
+  --surface-dark:linear-gradient(155deg,#ffffff16,#032e237d);
+  --surface-light:#f5fcf7e6;
+  --surface-line:#ffffff30;
+}
+body{isolation:isolate;background:#05241a}
+.site-atmosphere{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#05241a}
+.site-atmosphere-base{
+  position:absolute;inset:-20% -10% -42%;
+  background:radial-gradient(1100px 520px at 50% 12%,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);
+  transform:translate3d(0,var(--atmosphere-shift,0px),0);will-change:transform;
+}
+.site-atmosphere-light{
+  position:absolute;inset:-35% -15%;
+  background:radial-gradient(ellipse at 12% 76%,#1f9d6840,transparent 55%),radial-gradient(ellipse at 88% 28%,#05241a8c,transparent 52%);
+  transform:translate3d(0,var(--atmosphere-light-shift,0px),0);will-change:transform;
+}
+
+/* Route wrappers reveal the same background rather than painting a new canvas. */
+.site.public-site,.public-site:is(.about-site,.project-directory-site,.news-site,.guide-site){background:transparent;color:#fff}
+.site.admin-site.admin-projects-site{background:transparent!important}
+.news-site .nm,.about-site .al,.project-directory-site .pd,.public-site>.compact-hero,.auth-section{background:transparent}
+.public-site .section-heading>.eyebrow,.public-site .section-heading>div>.eyebrow{color:#b5e8cc}
+
+/* Dark glass: the light and shade behind each card remain visible while scrolling. */
+.news-site :is(.nm-spotlight,.nm-panel),
+.inventory-market-site .catalog-unit-card,
+.project-directory-site .pd-card,
+.admin-projects-site :is(.ap-metric,.ap-filter-panel,.ap-card),
+.admin-projects-site .admin-overview :is(.admin-panel,.admin-metrics>a){
+  background:var(--surface-dark);border-color:var(--surface-line);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.project-directory-site .pd-card-body{background:linear-gradient(180deg,#043b2c30,#043b2c99)}
+.public-site>.site-header{background:linear-gradient(110deg,#154e40b8,#1763448c)}
+.public-site>.site-footer{background:linear-gradient(180deg,#073b2ab8,#052c21d9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.admin-projects-site .admin-sidebar{background:#04271fcc}
+.admin-projects-site .admin-topbar{background:#052b2066}
+
+/* White shapes keep their dark text and contrast, with a soft view of the green below. */
+.about-site :is(.al-panel,.al-project,.al-news-list>article,.al-project-nav),
+.project-directory-site :is(.pd-finder,.pd-process-wrap,.pd-news-wrap),
+.news-site :is(.nm-list,.nm-article,.nm-tour),
+.public-site:not(.inventory-market-site) :is(.unit-card,.project-card),
+.auth-section .auth-card,
+.admin-projects-site :is(.table-wrap,.stat-card,.settings-card,.upload-panel,.admin-asset,.transaction-list article),
+.admin-projects-site .admin-members .admin-panel{
+  background:var(--surface-light);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.about-site .al-feature-copy{background:#f7fff9eb;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+/* Project photography and interactive plans stay above the common emerald canvas. */
+.immersive-site .project-workspace{background:transparent}
+.immersive-site .workspace-canvas{opacity:.38}
+.immersive-site :is(.workspace-panel,.floating-inventory,.scene-message){background:var(--surface-light);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+/* Editor chrome shares the atmosphere; the exported poster is its own artwork. */
+body .studio-header,.studio-layout .editor-panel{background:var(--surface-light);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.studio-layout .workspace-heading{color:#fff}
+.studio-layout .workspace-note{color:#c3dfd0}
+
+@media(max-width:760px){
+  .site-atmosphere-base{background:radial-gradient(680px 420px at 50% 12%,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .site-atmosphere-base,.site-atmosphere-light{transform:none;will-change:auto}
+}
+@media print{.site-atmosphere{display:none}}

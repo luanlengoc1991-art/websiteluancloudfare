@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import SiteAtmosphere from "@/components/site-atmosphere";
 import "./globals.css";
 import "./admin.css";
 import "./admin-projects.css";
@@ -10,6 +11,7 @@ import "./inventory-market.css";
 import "./about.css";
 import "./site-shell.css";
 import "./typography.css";
+import "./atmosphere.css";
 
 const playfairDisplay = localFont({
   src: [
@@ -53,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${playfairDisplay.variable} ${mulish.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><SiteAtmosphere/>{children}</body>
     </html>
   );
 }

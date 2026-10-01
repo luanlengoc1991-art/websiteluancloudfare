@@ -32,7 +32,7 @@ function Cover({src, alt = ''}: {src: string; alt?: string}) {
   return <img src={src} alt={alt} loading="lazy" onError={() => setBroken(true)}/>;
 }
 
-function LeadPanel({projects}: {projects: Project[]}) {
+export function LeadPanel({projects, source = 'Trang tin tức'}: {projects: Project[]; source?: string}) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ok: boolean; text: string} | null>(null);
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -42,7 +42,7 @@ function LeadPanel({projects}: {projects: Project[]}) {
     setMessage(null);
     try {
       const project = String(data.get('project') || '');
-      const response = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: data.get('name'), phone: data.get('phone'), email: '', note: 'Trang tin tức' + (project ? ' · Dự án quan tâm: ' + project : ''), website: data.get('website') || ''})});
+      const response = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: data.get('name'), phone: data.get('phone'), email: '', note: source + (project ? ' · Dự án quan tâm: ' + project : ''), website: data.get('website') || ''})});
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Chưa gửi được thông tin.');
       setMessage({ok: true, text: 'Đã nhận thông tin. Chúng tôi sẽ gọi lại cho bạn sớm.'});

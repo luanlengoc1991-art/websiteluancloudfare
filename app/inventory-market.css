@@ -1,10 +1,10 @@
 /* Matches the news magazine: emerald canvas, mint highlights and glass surfaces. */
-.inventory-market-site{--inventory-display:"Times New Roman","Noto Serif","Liberation Serif",Times,serif;background:radial-gradient(1100px 520px at 50% 0%,#1f9d6850,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);color:#fff;font-family:Arial,Helvetica,sans-serif;line-height:1.6}
+.inventory-market-site{--inventory-display:var(--font-display);background:radial-gradient(1100px 520px at 50% 0%,#1f9d6850,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);color:#fff;font-family:var(--font-body);line-height:1.6}
 .inventory-market-site .container{width:calc(100% - 64px);max-width:none}
 .inventory-market-site .catalog-inventory-hero{background:none;padding:48px 0 36px;color:#fff;scroll-margin-top:95px}
 .inventory-market-site .page-heading{text-align:center;margin-bottom:25px}
 .inventory-market-site .page-heading .eyebrow{color:#a9d9bc;letter-spacing:.15em;font-size:11px;line-height:1.8}
-.inventory-market-site .page-heading h1{font:400 clamp(40px,4.6vw,64px)/1.3 var(--inventory-display);letter-spacing:0;color:#fff;margin:9px 0 13px;overflow:visible}
+.inventory-market-site .page-heading h1{font:500 clamp(40px,4.6vw,64px)/1.3 var(--inventory-display);letter-spacing:0;color:#fff;margin:9px 0 13px;overflow:visible}
 .inventory-market-site .page-heading p{color:#e2f1e8;font-size:16px;line-height:1.8;margin:0}
 .inventory-market-site .category-tabs{display:flex;justify-content:center;margin:0 0 28px}
 .inventory-market-site .category-tabs [role=tablist]{background:none;border:0;border-radius:0;box-shadow:none;padding:0;gap:30px;height:auto}
@@ -37,8 +37,8 @@
 .inventory-market-site .catalog-inventory-results{padding-top:24px;padding-bottom:70px;background:none}
 .inventory-market-site .results-heading{align-items:center;gap:20px;margin-bottom:22px}
 .inventory-market-site .results-heading .eyebrow{color:#b0d7bd;line-height:1.8}
-.inventory-market-site .results-heading h2{font:400 40px/1.3 var(--inventory-display);letter-spacing:0;color:#fff;margin:8px 0 0;display:flex;align-items:center;gap:14px}
-.inventory-market-site .result-count{font-family:Arial,sans-serif;font-size:20px;font-weight:700;line-height:1.7;background:#b7f2cf;color:#115b39;border:0;padding:2px 13px;border-radius:99px}
+.inventory-market-site .results-heading h2{font:500 40px/1.3 var(--inventory-display);letter-spacing:0;color:#fff;margin:8px 0 0;display:flex;align-items:center;gap:14px}
+.inventory-market-site .result-count{font-family:var(--font-body);font-size:20px;font-weight:700;line-height:1.7;background:#b7f2cf;color:#115b39;border:0;padding:2px 13px;border-radius:99px}
 .inventory-market-site .results-tools .button{background:#ffffff14;color:#fff;border:1px solid #ffffff50;font-size:14px;line-height:1.7}
 .inventory-market-site .results-tools .button.chosen{background:#b9f2ce;color:#134b32}
 .inventory-market-site .results-tools .field [data-slot=select-trigger]{color:#164e34;background:#e7f6ed;border-color:#c5e6d4;min-height:40px;height:auto;padding:8px 14px;line-height:1.6}

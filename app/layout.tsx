@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 import "./admin.css";
 import "./admin-projects.css";
@@ -8,6 +9,33 @@ import "./project-unit.css";
 import "./inventory-market.css";
 import "./about.css";
 import "./site-shell.css";
+import "./typography.css";
+
+const playfairDisplay = localFont({
+  src: [
+    { path: "./fonts/PlayfairDisplay-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/PlayfairDisplay-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/PlayfairDisplay-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-playfair-display",
+  display: "swap",
+  adjustFontFallback: "Times New Roman",
+  fallback: ["Georgia", "serif"],
+});
+
+const mulish = localFont({
+  src: [
+    { path: "./fonts/Mulish-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Mulish-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/Mulish-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/Mulish-Bold.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Mulish-Italic.woff2", weight: "400", style: "italic" },
+  ],
+  variable: "--font-mulish",
+  display: "swap",
+  adjustFontFallback: "Arial",
+  fallback: ["Arial", "Helvetica", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Alpha Hub | Quỹ căn & Dự án",
@@ -24,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={`${playfairDisplay.variable} ${mulish.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

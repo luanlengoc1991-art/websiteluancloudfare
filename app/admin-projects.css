@@ -1,6 +1,6 @@
 /* Project administration shares the news magazine's emerald palette and serif display. */
 .admin-site.admin-projects-site {
-  --ap-display: "Times New Roman", "Noto Serif", "Liberation Serif", Times, serif;
+  --ap-display: var(--font-display);
   --ap-muted: #c3dfd0;
   --ap-line: #ffffff26;
   background: radial-gradient(1000px 650px at 65% -5%, #1f9d685c, transparent 65%), linear-gradient(160deg, #05241a 0%, #0a3a29 40%, #0f5a3d 78%, #137a51 100%) !important;

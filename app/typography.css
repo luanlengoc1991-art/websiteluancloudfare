@@ -1,0 +1,17 @@
+/* Two font roles: Playfair Display for major titles/numbers; Mulish for small text. */
+:root{--font-display:var(--font-playfair-display),Georgia,serif;--font-body:var(--font-mulish),Arial,Helvetica,sans-serif}
+body,button,input,select,textarea{font-family:var(--font-body)}
+h1,h2{font-family:var(--font-display)}
+
+/* Main project inventory totals and large summary figures. Small badges retain Mulish. */
+.pd-feature-count b,.pd-count-value b,.pd-card-lead .pd-count-value b,.pd-band-count b,
+.project-unit-count strong,.al-green-count>strong,.al-platform-stats dd,
+.ap-metric strong,.admin-projects-site .admin-overview .admin-metrics strong,.stat-card>strong{
+  font-family:var(--font-display);font-weight:700;font-synthesis:none;font-variant-numeric:lining-nums tabular-nums
+}
+
+/* Compact headings are labels, rather than display titles. */
+.filter-head h2,.article-card h2,.settings-card h2,.scene-message h2,
+.floating-inventory-head h2,.directory-results-heading h2,.directory-results-heading h2 span,
+.workspace-panel-heading h1,.punit-rail-heading h2,.punit-card h2,
+.admin-panel-title h2,.admin-project-card h2,[data-slot=dialog-title],[data-slot=sheet-title]{font-family:var(--font-body)}

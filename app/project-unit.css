@@ -32,9 +32,9 @@
 .punit-poster{width:100%;max-width:660px;background:#deeff0;border-radius:13px;overflow:hidden;box-shadow:0 8px 28px #17353412;color:#155765}
 .punit-poster header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px;background:linear-gradient(110deg,#d6edef,#78c2c9)}
 .punit-poster header>div:last-child{text-align:right}
-.punit-poster-brand{font-family:Georgia,serif;font-size:22px;line-height:1.15;display:block;max-width:180px;font-weight:700}
+.punit-poster-brand{font-family:var(--font-display);font-size:22px;line-height:1.15;display:block;max-width:180px;font-weight:700}
 .punit-poster header small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.3px;margin-top:7px}
-.punit-poster h2{font-family:Georgia,serif;font-size:clamp(22px,2.4vw,42px);margin:0 0 5px;letter-spacing:-1px;color:#fff;overflow-wrap:anywhere}
+.punit-poster h2{font-family:var(--font-display);font-size:clamp(22px,2.4vw,42px);margin:0 0 5px;letter-spacing:-1px;color:#fff;overflow-wrap:anywhere}
 .punit-poster header p{font-size:12px;margin:0;font-weight:600}
 .punit-poster-prices{display:grid;grid-template-columns:repeat(3,1fr);padding:12px;background:#f0faf9;border-bottom:1px solid #c9e2e4;gap:8px}
 .punit-poster-prices>div{border-right:1px solid #cce1e3;padding:0 8px}
@@ -46,7 +46,7 @@
 .punit-poster-image>span{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:7px;background:linear-gradient(transparent,#173a40dd);padding:35px 20px 16px;color:white;font-size:12px}
 .punit-poster-bottom{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;padding:20px}
 .punit-poster-bottom>div>span{font-size:10px;letter-spacing:1px}
-.punit-poster-bottom h3{font-family:Georgia,serif;font-size:24px;margin:10px 0}
+.punit-poster-bottom h3{font-family:var(--font-display);font-size:24px;margin:10px 0}
 .punit-poster-bottom p{font-size:12px;margin:6px 0}
 .punit-poster-bottom small{font-size:10px;opacity:.8;display:block;margin-top:10px}
 .punit-layout-preview{border:1px solid #a9cdd1;border-radius:8px;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#f0f8f6;font-size:12px;overflow:hidden}

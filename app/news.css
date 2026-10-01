@@ -1,4 +1,4 @@
-.nm{--nm-display:"Times New Roman","Noto Serif","Liberation Serif",Times,serif;--nm-ink:#10261c;--nm-muted:#52665b;--nm-line:#e3ece6;--nm-soft:#e3f7eb;--nm-accent:#9ff0c1;background:radial-gradient(1100px 520px at 50% -8%,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);color:#fff;padding:56px 0 88px}
+.nm{--nm-display:var(--font-display);--nm-ink:#10261c;--nm-muted:#52665b;--nm-line:#e3ece6;--nm-soft:#e3f7eb;--nm-accent:#9ff0c1;background:radial-gradient(1100px 520px at 50% -8%,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);color:#fff;padding:56px 0 88px}
 .nm-head,.nm-layout,.nm-tour{width:min(1200px,calc(100% - 40px));margin-inline:auto}
 .nm-head h1{margin:0;text-align:center;font-family:var(--nm-display);font-size:64px;font-weight:400;line-height:1.1;color:#fff}
 .nm-tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 28px;margin:22px 0 40px}

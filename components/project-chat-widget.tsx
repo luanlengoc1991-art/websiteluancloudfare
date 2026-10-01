@@ -6,12 +6,13 @@ import ContactForm from './contact-form';
 import Link from './site-link';
 import {projectPath} from '@/lib/project-routes';
 import {classifyCustomerMessage,normalizeCustomerMessage} from '@/lib/customer-care';
-import {publicContact} from '@/lib/public-contact';
+import {usePublicContact} from './public-contact-provider';
 import type {Project,Unit} from '@/lib/catalog';
 type Reply={role:'user'|'assistant';text:string;links?:{label:string;href:string}[]};
 const normalize=normalizeCustomerMessage;
 const money=(n:number)=>n.toLocaleString('vi-VN',{maximumFractionDigits:3});
 export default function ProjectChatWidget({projects,units,projectId,statusOf}:{projects:Project[];units:Unit[];projectId?:string;statusOf:(u:Unit)=>string}){
+ const publicContact=usePublicContact();
  const [open,setOpen]=useState(false),[selected,setSelected]=useState(projectId||''),[input,setInput]=useState(''),[contact,setContact]=useState(false);
  const [messages,setMessages]=useState<Reply[]>([{role:'assistant',text:'Chào bạn! Tôi là trợ lý tra cứu Alpha HUB. Bạn muốn xem dự án nào, tìm mã căn hay tra giá? Tôi sử dụng dữ liệu đang có trên website.'}]);
  const bottom=useRef<HTMLDivElement>(null);const phone=publicContact.phone;const digits=phone.replace(/\D/g,'');const hasPhone=digits.length>=8&&digits.length<=15;const chosen=projects.find(p=>p.id===selected);

@@ -49,7 +49,7 @@ export default function AdminMembers() {
       </section>
       <section className="admin-panel">
         <div className="admin-panel-title"><div><h2>Cách cấp quyền</h2><p>Tài khoản mới chỉ được xem website.</p></div><ShieldCheck size={18}/></div>
-        <p className="admin-permission-note">Bấm <b>Cấp quyền chỉnh sửa</b> nếu muốn người đó sửa dự án, quỹ căn, bài viết và thư viện. Quyền này không biến họ thành quản trị viên: khách hàng, giao dịch, cài đặt và danh sách này vẫn chỉ dành cho bạn.</p>
+        <p className="admin-permission-note">Bấm <b>Cấp quyền chỉnh sửa</b> nếu muốn người đó sửa giới thiệu, dự án, quỹ căn, tin tức, hướng dẫn và thư viện. Khách hàng, giao dịch, cài đặt và danh sách tài khoản vẫn chỉ dành cho quản trị viên.</p>
       </section>
     </div>
     <section className="admin-panel">

@@ -6,6 +6,7 @@ import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {mockGoogle} from './mock-google.mjs';
+import {verifyPublicContent} from './public-content-test-helper.mjs';
 
 /**
  * Runs the real Worker on a local Cloudflare runtime with a disposable D1
@@ -54,7 +55,7 @@ async function start() {
   for (let i = 0; i < 300; i++) {
     if (server.exitCode !== null) throw new Error(logs);
     try {
-      if ((await fetch(origin + '/api/state')).status === 200) return;
+      if ((await fetch(origin + '/api/state', {signal: AbortSignal.timeout(1500)})).status === 200) return;
     } catch {}
     await new Promise((r) => setTimeout(r, 300));
   }
@@ -74,6 +75,8 @@ const post = (path, data, extra = {}) => fetch(origin + path, {
 const readState = (jar = cookie) => fetch(origin + '/api/state', {headers: jar ? {Cookie: jar} : {}}).then((r) => r.json());
 
 try {
+  // OpenNext appends environment exports; discard the generated file before rebuilding.
+  rmSync(join(process.cwd(), '.open-next', 'cloudflare', 'next-env.mjs'), {force: true});
   // Always rebuild: a stale bundle would test yesterday's code.
   console.log('Đang dựng Worker để kiểm thử...');
   await new Promise((resolve, reject) => {
@@ -176,6 +179,13 @@ try {
   assert.equal(googleAccount.provider, 'google');
   assert.ok(listed.google.some((event) => event.email === 'google-member@example.test'));
   assert.ok(listed.google.some((event) => event.email === adminEmail));
+  const about = {
+    headline: 'Giới thiệu đã đồng bộ', introduction: 'Nội dung từ admin.', featuredProjectId: 'du-an-phan-quyen', featuredTagline: 'Dự án dùng chung', featuredScale: '100 ha',
+    selectedProjectIds: ['green-paradise'], platformTitle: 'Nền tảng chung', platformBody: 'Nội dung nền tảng', journeyTitle: 'Hành trình', newsTitle: 'Tin mới',
+    faq: [{question: 'Câu hỏi từ admin?', answer: 'Trả lời đã lưu.'}], contactTitle: 'Liên hệ', contactBody: 'Tư vấn từ backend.'
+  };
+  const guide = {id: 'guide-1', title: 'Hướng dẫn được đồng bộ', body: 'Nội dung được sửa trong admin.', order: 1, visible: true};
+  const hiddenGuide = {id: 'guide-3', title: 'Hướng dẫn nháp cần ẩn', body: 'Nội dung nháp chưa công khai.', order: 3, visible: false};
   const grantedProject = {id: 'du-an-phan-quyen', name: 'Dự án được cấp phép', location: 'Cần Giờ', region: 'TP. Hồ Chí Minh', developer: 'Alpha', category: 'low', status: 'Đang mở bán', image: '', hot: false, description: 'Sửa bởi thành viên được cấp quyền.', lat: 10.4, lng: 106.91};
   cookie = adminCookie;
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: true})).status, 200);
@@ -183,6 +193,25 @@ try {
   assert.equal((await post('/api/action', {action: 'save', kind: 'customer', id: 'unauthorized', data: {}})).status, 403);
   assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: grantedProject})).status, 200);
   assert.equal((await readState('')).records.find((row) => row.id === grantedProject.id).data.name, grantedProject.name);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: about})).status, 200);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: guide})).status, 200);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: hiddenGuide.id, data: hiddenGuide})).status, 200);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {}})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'other', data: about})).status, 400);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: {...about, featuredProjectId: 'missing-project'}})).status, 400);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: {...guide, order: -1}})).status, 400);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: 'mismatch', data: guide})).status, 400);
+  assert.equal((await readState()).records.find(row => row.id === hiddenGuide.id).data.body, hiddenGuide.body, 'Editors can still edit hidden guides');
+  const publicContent = await readState('');
+  assert.equal(publicContent.records.find(row => row.kind === 'about').data.headline, about.headline);
+  assert.equal(publicContent.records.find(row => row.id === hiddenGuide.id).data.body, '', 'Draft guide text is private');
+  for (const path of ['/admin/gioi-thieu', '/admin/huong-dan']) {
+    const page = await fetch(origin + path, {headers: {Cookie: memberCookie}});
+    assert.equal(page.status, 200, path);
+    const html = await page.text();
+    assert.match(html, /admin-sidebar/);
+    assert.equal(html.includes('id="al-title"'), false, 'Public About must not duplicate inside the admin editor');
+  }
   const editorDirectory = await fetch(origin + '/admin/thanh-vien', {headers: {Cookie: memberCookie}, redirect: 'manual'});
   const editorHtml = await editorDirectory.text();
   if (editorDirectory.status === 307) assert.match(editorDirectory.headers.get('location') || '', /quan-ly-du-an/);
@@ -195,6 +224,8 @@ try {
   cookie = memberCookie;
   assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: {...grantedProject, name: 'Không được sửa'}})).status, 403);
   assert.equal((await readState('')).records.find((row) => row.id === grantedProject.id).data.name, grantedProject.name);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: about})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: guide})).status, 403);
   const memberAdmin = await fetch(origin + '/admin', {headers: {Cookie: cookie}, redirect: 'manual'});
   assert([200, 307].includes(memberAdmin.status));
   assert(!(await memberAdmin.text()).includes('admin-sidebar'));
@@ -215,6 +246,18 @@ try {
   const hold = snapshot.reservations[0];
   for (const operation of ['extend', 'cancel']) assert.equal((await post('/api/action', {action: 'reservation', id: hold.id, operation})).status, 200);
 
+  const settings = {brand: 'Alpha chung', phone: '0900000012', email: 'contact@example.test', address: 'Địa chỉ chung', holdHours: 24, notifications: true, profileName: 'Tên riêng admin'};
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: settings})).status, 200);
+  const contactState = await readState('');
+  assert.equal(contactState.records.find(row => row.kind === 'settings').data.phone, settings.phone);
+  assert.equal(contactState.records.find(row => row.kind === 'settings').data.profileName, undefined, 'Private settings remain private');
+  verifyPublicContent(contactState, {headline: about.headline, projectName: grantedProject.name, phone: settings.phone, guideTitle: guide.title, hiddenTitle: hiddenGuide.title});
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: {...guide, title: 'Hướng dẫn cập nhật lần hai'}})).status, 200);
+  assert.equal((await readState('')).records.find(row => row.id === guide.id).data.title, 'Hướng dẫn cập nhật lần hai');
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: hiddenGuide.id, data: {...hiddenGuide, visible: true}})).status, 200);
+  assert.equal((await readState('')).records.find(row => row.id === hiddenGuide.id).data.body, hiddenGuide.body);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: hiddenGuide.id, data: hiddenGuide})).status, 200);
+
   const form = new FormData();
   form.set('projectId', 'green-paradise');
   form.set('kind', 'document');
@@ -225,6 +268,17 @@ try {
   assert.equal((await fetch(origin + '/api/files/' + fileId)).status, 404);
   assert.equal(await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: cookie}}).then((r) => r.text()), '%PDF-1.4 test');
 
+  form.set('projectId', 'missing-project');
+  assert.equal((await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: cookie, Origin: origin}, body: form})).status, 400, 'Uploads cannot create orphan project assets');
+  assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: true})).status, 200);
+  const editorLogin = await post('/api/auth/login', {email: 'member@example.test', password: 'long-password'});
+  assert.equal(editorLogin.status, 200);
+  const editorCookie = editorLogin.headers.getSetCookie().find(value => value.startsWith('alpha_session=')).split(';')[0];
+  assert.ok((await readState(editorCookie)).files.some(file => file.id === fileId), 'Editor library must show the protected documents it can access');
+  assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 200);
+  assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: false})).status, 200);
+  assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 404);
+
   // Website forms reach the administrator without exposing private records.
   const lead = await fetch(origin + '/api/leads', {method: 'POST', headers: {Origin: origin, 'Content-Type': 'application/json'}, body: JSON.stringify({name: 'Khách website kiểm thử', phone: '0900000001', email: '', note: 'Tư vấn'})});
   assert.equal(lead.status, 201);
@@ -233,12 +287,12 @@ try {
   assert.equal(publicState.records.some((r) => r.kind === 'customer'), false);
   assert.equal(publicState.files.some((f) => f.id === fileId), false);
 
-  for (const path of ['/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
+  for (const path of ['/gioi-thieu', '/huong-dan', '/tin-tuc', '/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
     const page = await fetch(origin + path);
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /Alpha/);
   }
-  for (const path of ['/admin', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
+  for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /admin-sidebar/);
@@ -253,6 +307,14 @@ try {
   assert.equal(saved.status, 200, 'save project');
   const publicProjects = await readState('');
   assert.equal(publicProjects.records.find((r) => r.kind === 'project' && r.id === project.id).data.name, editedName);
+  const sharedUnit = {id: 'shared-unit', code: 'TEST-SHARED-001', projectId: project.id, category: 'low', zone: 'Phân khu kiểm thử', type: 'Liền kề', group: 'Quỹ kiểm thử', direction: 'Đông', area: 100, builtArea: 300, price: 8.3, status: 'Còn hàng', beds: 3, floor: 3, x: 30, y: 40, note: 'Ghi chú nội bộ'};
+  const sharedArticle = {id: 'shared-article', title: 'Tin tức được lưu từ admin', category: 'Tin tức', body: 'Nội dung bài viết dùng chung.', date: '2026-10-01', image: ''};
+  assert.equal((await post('/api/action', {action: 'save', kind: 'unit', id: sharedUnit.id, data: sharedUnit})).status, 200);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'article', id: sharedArticle.id, data: sharedArticle})).status, 200);
+  const sharedState = await readState('');
+  assert.equal(sharedState.records.find(row => row.id === sharedUnit.id).data.price, sharedUnit.price);
+  assert.equal(sharedState.records.find(row => row.id === sharedUnit.id).data.note, '', 'Unit private notes remain hidden');
+  assert.equal(sharedState.records.find(row => row.id === sharedArticle.id).data.body, sharedArticle.body);
   // The public page renders its data in the browser from /api/state.
   const page = await fetch(origin + '/du-an');
   assert.equal(page.status, 200);
@@ -264,11 +326,15 @@ try {
   snapshot = await readState();
   assert.equal(snapshot.records.find((r) => r.id === customer.id).data.name, customer.name);
   assert.equal(snapshot.files[0].id, fileId);
+  assert.equal(snapshot.records.find(row => row.kind === 'about').data.headline, about.headline);
+  assert.equal(snapshot.records.find(row => row.id === guide.id).data.title, 'Hướng dẫn cập nhật lần hai');
+  assert.equal(snapshot.records.find(row => row.id === sharedUnit.id).data.price, sharedUnit.price);
+  assert.equal(snapshot.records.find(row => row.id === sharedArticle.id).data.title, sharedArticle.title);
   assert.equal(await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: cookie}}).then((r) => r.text()), '%PDF-1.4 test');
   assert.equal((await post('/api/auth/logout', {})).status, 303);
   assert.equal((await readState()).user, null);
 
-  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, Google sign-in log, grant and revoke content edits, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, Next.js pages, persistence across restart, logout revocation.');
+  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, Google sign-in log, grant and revoke content edits, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, shared About/Guides/contact content rendered by public components, hidden guide overrides, content route permissions and validation, Next.js pages, persistence across restart, logout revocation.');
 } catch (error) {
   console.error(error);
   if (logs) console.error(logs.slice(-4000));

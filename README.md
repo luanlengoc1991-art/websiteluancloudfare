@@ -5,13 +5,13 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 ## Website và trang quản trị
 
 - Website: `/quy-hang`, `/du-an`, `/tin-tuc`.
-- Admin: `/admin` — tổng quan, dự án, quỹ căn, khách hàng, giao dịch, thư viện, bài viết, cài đặt.
+- Admin: `/admin` — tổng quan, giới thiệu, dự án, quỹ căn, tin tức, hướng dẫn, khách hàng, giao dịch, thư viện, tài khoản và cài đặt.
 - Đăng nhập: `/dang-nhap`.
 - Khách gửi form đăng ký tư vấn sẽ xuất hiện trong Khách hàng của admin.
 
 Admin sử dụng một tài khoản quản trị. Toàn bộ dữ liệu nằm trên Cloudflare: bản ghi trong D1 `alpha-hub`, ảnh và PDF trong bucket R2 `alpha-assets`, phiên đăng nhập và tài khoản thành viên cũng trong D1. Ảnh dự án hiển thị trên website; PDF cần đăng nhập để tải. Nội dung khách hàng không công khai.
 
-**Production chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`, tự triển khai khi push `main`. Binding và biến môi trường xem [ADMIN_SETUP.md](ADMIN_SETUP.md).**
+**Website chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`. Cập nhật mã nguồn trên GitHub; chủ dự án tự triển khai bằng Cursor. Binding và biến môi trường xem [ADMIN_SETUP.md](ADMIN_SETUP.md).**
 
 ## Chạy trên máy tính
 
@@ -42,3 +42,11 @@ Dự án và quỹ căn khởi tạo trong `lib/catalog.ts` là dữ liệu minh
 Giới hạn upload hiện tại: 4 MiB/file, JPG/PNG/WEBP/PDF. Không có phân quyền nhân viên, tự động gửi email hoặc xóa/lưu trữ bản ghi trong phiên bản này.
 
 Schema D1 nằm trong `migrations/`; `npm run db:migrate` áp dụng lên database thật.
+
+## Đồng bộ nội dung website
+
+Menu admin dùng chung ánh xạ với năm tab công khai: Giới thiệu, Dự án, Quỹ căn, Tin tức và Hướng dẫn. Mỗi tab có nút mở trang tương ứng. Nội dung Giới thiệu lưu dưới bản ghi `about/main`; Hướng dẫn lưu theo từng bản ghi `guide`. Không cần migration mới vì sử dụng bảng records hiện có.
+
+Nội dung mặc định được giữ cho tới khi lưu chỉnh sửa. Dự án nổi bật và dự án gợi ý trong Giới thiệu tham chiếu ID từ danh mục Dự án; tên, ảnh, vị trí và số căn đọc cùng dữ liệu với trang ngoài. Hướng dẫn có thứ tự và công tắc hiển thị; bản ẩn không công khai nội dung. Hotline, email và Zalo trên chân trang, Giới thiệu, khung tư vấn và chatbot lấy chung từ Cài đặt (để trống dùng thông tin mặc định).
+
+Sau khi lưu, các tab cùng trình duyệt được thông báo tải dữ liệu mới. Khi quay lại tab, dữ liệu được làm mới; các thiết bị khác cập nhật qua chu kỳ 60 giây. Khách hàng, giao dịch, cấu hình riêng và PDF giữ nguyên kiểm soát quyền.

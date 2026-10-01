@@ -143,3 +143,28 @@
 @media(prefers-reduced-motion:reduce){
   .admin-projects-site .admin-overview a {transition: none;}
 }
+
+/* Public tabs use the same order and names in the administration workspace. */
+.admin-preview-link {display: inline-flex; align-items: center; gap: 7px; color: #d5f6e3; font-size: 12px; white-space: nowrap;}
+.admin-content-sync {display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 20px 24px; margin-bottom: 24px; border: 1px solid var(--ap-line); border-radius: 18px; background: #ffffff0d; color: #f1fff7;}
+.admin-content-sync strong {font-size: 15px; font-weight: 600;}
+.admin-content-sync p {margin: 5px 0 0; color: #c3dfd0; font-size: 12px;}
+.admin-content-sync .button {color: #062d1d; background: #d5f6e3; border-color: #d5f6e3; font-size: 12px;}
+.admin-content-form {max-width: 1000px;}
+.admin-content-form .settings-card, .admin-guides .settings-card {background: #f8fcfa; border-color: #d9e8dd; box-shadow: 0 12px 32px #00180d14;}
+.admin-content-form .field small {color: #526c5e; font-size: 11px; line-height: 1.6;}
+.admin-content-form .field select {width: 100%; padding: 12px; border: 1px solid #c7dfd1; border-radius: 8px; background: #fff; color: #182e27;}
+.admin-content-form textarea, .admin-guides textarea {resize: vertical;}
+.admin-project-options {margin-top: 22px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; border-top: 1px solid #d9e8dd; padding-top: 18px;}
+.admin-project-options legend {font-size: 13px; font-weight: 600; padding-top: 22px;}
+.admin-project-options label, .admin-check {display: flex; align-items: center; gap: 10px; color: #244d37; font-size: 13px;}
+.admin-project-options input, .admin-check input {accent-color: #218455; flex-shrink: 0; width: 16px; height: 16px;}
+.admin-faq-editor {border-bottom: 1px solid #d9e8dd; padding-bottom: 20px; margin-bottom: 20px; display: grid; gap: 14px;}
+.admin-faq-editor .button {justify-self: start;}
+.admin-guides {display: grid; grid-template-columns: minmax(250px,.65fr) minmax(0,1fr); align-items: start; gap: 24px;}
+.admin-guides nav {display: flex; flex-direction: column; margin-top: 20px; gap: 8px;}
+.admin-guides nav button {text-align: left; padding: 12px; border: 1px solid #d9e8dd; border-radius: 10px; display: grid; gap: 4px; font-size: 13px; color: #244d37;}
+.admin-guides nav button small {color: #526c5e; font-size: 11px;}
+.admin-guides nav button.selected {background: #dcf5e5; border-color: #75be94;}
+@media(max-width:900px){.admin-guides {grid-template-columns: 1fr;}.admin-content-sync {align-items: flex-start; flex-direction: column;}.admin-project-options {grid-template-columns: 1fr;}}
+@media(max-width:600px){.admin-preview-link span {display: none;}.admin-content-sync {padding: 18px;}}

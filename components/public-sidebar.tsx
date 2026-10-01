@@ -3,9 +3,10 @@
 import {useState, type FormEvent, type ReactNode} from 'react';
 import {ArrowRight, MessageCircle, Phone, Search} from 'lucide-react';
 import type {Project} from '@/lib/catalog';
-import {publicContact} from '@/lib/public-contact';
+import {usePublicContact} from './public-contact-provider';
 
 export function LeadPanel({projects, source = 'Trang tin tức'}: {projects: Project[]; source?: string}) {
+ const publicContact=usePublicContact();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ok: boolean; text: string} | null>(null);
   async function submit(event: FormEvent<HTMLFormElement>) {

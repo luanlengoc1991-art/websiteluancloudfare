@@ -4,7 +4,6 @@ import {useState} from 'react';
 import Image from 'next/image';
 import {ArrowUpRight, Building2, FileText, Globe, Images, Layers, List, MapPin, Phone, Search} from 'lucide-react';
 import Link from './site-link';
-import PublicSidebar from './public-sidebar';
 import {projectPath} from '@/lib/project-routes';
 import {publicContact} from '@/lib/public-contact';
 import type {Article, Project, Unit} from '@/lib/catalog';
@@ -71,7 +70,6 @@ export default function AboutLanding({brand, projects, units, articles, sourceSt
         ].map(({tab, label, Icon}) => <Link key={tab} href={projectPath(green.id, tab)}><Icon size={22}/><span>{label}</span></Link>)}</nav>
     </section>}
 
-    <div className="al-content-layout public-content-layout"><div className="al-content-main public-content-main">
     <section className="al-finder al-container al-panel" aria-labelledby="al-finder-title">
       <div className="al-section-heading"><div><span className="al-kicker">BẮT ĐẦU KHÁM PHÁ</span><h2 id="al-finder-title">Tìm dự án dành cho bạn</h2></div><Link className="al-text-link" href="/quy-hang">Tra cứu quỹ căn <ArrowUpRight size={16}/></Link></div>
       <form className="al-search" role="search" onSubmit={event => {event.preventDefault(); onSearch(query.trim());}}>
@@ -110,6 +108,5 @@ export default function AboutLanding({brand, projects, units, articles, sourceSt
       ['Tôi có thể xem mặt bằng 360° không?', 'Chọn Quỹ căn 360° trong dự án để khám phá phối cảnh và mặt bằng. Hình ảnh, vị trí căn được hiển thị theo dữ liệu đang có trên hệ thống.'],
       ['Làm sao để được tư vấn về dự án?', 'Bạn có thể gọi hotline, nhắn Zalo hoặc để lại thông tin ở cuối trang. Giá và tình trạng căn cần được xác nhận cùng đội ngũ tư vấn trước khi giao dịch.'],
     ].map(([question, answer])=><details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div><div className="al-contact al-panel"><span className="al-kicker">{brand} · LUÔN SẴN SÀNG ĐỒNG HÀNH</span><h2>Tìm không gian sống<br/>dành cho bạn.</h2><p>Trao đổi nhu cầu, tìm hiểu dự án và quỹ căn bạn quan tâm.</p><div className="al-actions"><a className="al-button al-button-primary" href={`tel:${publicContact.phone}`}><Phone size={18}/>{publicContact.phone}</a><a className="al-button al-button-outline" href={publicContact.zaloHref} target="_blank" rel="noreferrer">Tư vấn qua Zalo <ArrowUpRight size={16}/></a></div></div></section>
-    </div><PublicSidebar projects={projects} source="Trang giới thiệu" query={query} onQuery={setQuery} onSearch={onSearch} placeholder="Nhập tên dự án" searchLabel="Tìm tên dự án"/></div>
   </main>;
 }

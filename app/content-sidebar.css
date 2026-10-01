@@ -1,7 +1,7 @@
 /* Shared gutters and the news page's search/consultation column. */
 .public-site .public-content-layout{width:min(1200px,calc(100% - 40px));margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start;padding-block:40px 64px}
 .public-content-main{min-width:0;container-type:inline-size}
-.public-content-main .container,.al-content-main .al-container{width:100%;max-width:none;margin-inline:0}
+.public-content-main .container{width:100%;max-width:none;margin-inline:0}
 .public-site .public-sidebar{--nm-display:var(--font-display);--nm-ink:#10261c;position:sticky;top:104px;display:grid;align-self:start;gap:16px;min-width:0;max-height:calc(100dvh - 128px);overflow-y:auto;scrollbar-width:thin;color:#fff}
 .public-sidebar .nm-panel{padding:18px}
 .public-sidebar .nm-panel h2{font:500 30px/1.15 var(--font-display);letter-spacing:0;color:#fff;margin:0 0 14px}
@@ -14,36 +14,17 @@
 .public-sidebar button:focus-visible,.public-sidebar a:focus-visible{outline:2px solid #9ff0c1;outline-offset:3px}
 .public-sidebar .nm-note{font-size:13px;line-height:1.5;margin:0}
 .public-sidebar .nm-hotline{margin-bottom:2px}
-.public-content-main>.catalog-inventory-hero{padding-top:0}
-.public-content-main>.section-space{padding-top:0}
-.public-content-main>.compact-hero{background:transparent;padding-top:0}
-.public-content-main>.compact-hero .eyebrow{color:var(--shell-muted)}
 .inventory-market-site .public-content-main .container{width:100%;max-width:none}
 .inventory-market-site .public-content-main .results-heading{flex-wrap:wrap}
 .inventory-market-site .public-content-main .filter-selects{grid-template-columns:repeat(3,minmax(0,1fr))}
 .inventory-market-site .public-content-main .unit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.public-site .al-content-layout{padding-top:40px}
-.al-content-main .al-finder{margin-top:0}
-.al-content-main .al-platform,.al-content-main .al-help{grid-template-columns:1fr;gap:28px}
-.al-content-main .al-project-list,.al-content-main .al-news-list{grid-template-columns:repeat(2,minmax(0,1fr))}
-.public-site .pd-content-layout{padding-top:36px}
-.public-content-layout .pd-finder-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-.public-content-layout .pd-finder .pd-search{grid-column:1/-1}
-.public-content-layout .pd-process,.public-content-layout .pd-news,.public-content-layout .pd-consult{gap:28px}
 @container(max-width:900px){
   .inventory-market-site .filter-head{grid-template-columns:1fr;gap:14px}
-  .public-content-main>.section-space .project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @container(max-width:600px){
   .inventory-market-site .public-content-main .filter-selects{grid-template-columns:repeat(2,minmax(0,1fr))}
   .inventory-market-site .filter-selects>.field:first-child{grid-column:1/-1}
   .inventory-market-site .filter-ranges{grid-template-columns:1fr;gap:22px}
-  .public-content-main>.section-space .project-grid{grid-template-columns:1fr}
-}
-@container(max-width:740px){
-  .public-content-layout .pd-grid,.public-content-layout .pd-process,.public-content-layout .pd-news,.public-content-layout .pd-consult,.al-content-main .al-services{grid-template-columns:1fr}
-  .al-content-main .al-services>a{padding:0 0 24px;border:0;border-bottom:1px solid var(--al-line)}
-  .al-content-main .al-services>a:last-child{padding-bottom:0;border:0}
 }
 @media(max-width:1024px){
   .public-site .public-content-layout{grid-template-columns:1fr;gap:28px}
@@ -51,13 +32,9 @@
 }
 @media(max-width:760px){
   .public-site .public-content-layout{width:calc(100% - 32px);padding-block:28px 40px}
-  .public-site .al-content-layout{padding-top:28px}
-  .al-content-main .al-project-list,.al-content-main .al-news-list{grid-template-columns:1fr}
 }
 @media(max-width:480px){
   .inventory-market-site .public-content-main .unit-grid{grid-template-columns:1fr}
   .inventory-market-site .public-content-main .filter-selects{grid-template-columns:1fr}
-  .public-content-layout .pd-finder-form{grid-template-columns:1fr}
-  .public-content-layout .pd-finder .pd-search{grid-column:auto}
 }
 @media print{.public-sidebar{display:none!important}.public-site .public-content-layout{display:block}}

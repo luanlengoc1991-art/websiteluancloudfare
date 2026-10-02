@@ -21,6 +21,14 @@
 - GitHub lưu mã nguồn. Cloudflare D1 và R2 lưu dữ liệu ứng dụng và file; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.
 - Quy trình này áp dụng cho các tác vụ đã được yêu cầu; vẫn tuân thủ các yêu cầu quyền truy cập bắt buộc và không tự ý thực hiện thao tác phá hủy ngoài phạm vi công việc.
 
+## Ảnh, video và dung lượng repository
+
+- Repository chỉ giữ code và asset thật sự cần cho giao diện/build, như logo, icon, font và ảnh mẫu nhỏ. Ảnh/video dung lượng lớn, media gốc và file người dùng tải lên lưu ở object storage; không đưa vào GitHub hoặc checkout Codex nếu công việc không cần đến chúng.
+- Dự án này ưu tiên R2 `alpha-assets` đang có, qua binding `MEDIA` và `db/store.ts`. Metadata và tham chiếu file lưu ở D1. Chỉ bổ sung Supabase Storage hoặc dịch vụ khác khi chủ dự án yêu cầu; không tạo thêm hệ thống lưu trữ chỉ để áp dụng quy tắc này.
+- Khi cần xử lý media, chỉ tải file cần thiết vào thư mục tạm ngoài repository. Không tải toàn bộ kho media vào repo, nhúng ảnh/video lớn dạng base64 trong code hoặc commit bản xuất, bản sao dự phòng.
+- Với media đã được Git theo dõi, kiểm tra tham chiếu và xác minh file đọc được từ object storage trước khi gỡ bản trong repo. Giữ asset cần thiết cho website hoạt động; không tự viết lại lịch sử Git.
+- `.gitignore` loại trừ `uploads/` và `media-originals/`. Các quy tắc ignore không tự gỡ file đã được Git theo dõi.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

@@ -4,6 +4,8 @@ node_modules/
 .wrangler/
 out/
 data/
+uploads/
+media-originals/
 .env*
 !.env.example
 *.tsbuildinfo

@@ -67,7 +67,7 @@
 .ah-share-card{width:min(960px,100%);margin-inline:auto;padding:44px 60px;background:var(--surface-dark,linear-gradient(155deg,#ffffff18,#032e2352))}
 .ah-share-card>h2{text-align:center}
 .ah-share-card>p{text-align:center;font-size:14px;margin-top:12px;margin-bottom:28px}
-.ah-news-section{background:#05241a66;border-top:1px solid #ffffff26;padding:128px 0}
+.ah-news-section{background:linear-gradient(180deg,#34c47f00 0%,#34c47f1a 48%,#34c47f00 100%);border-top:1px solid transparent;padding:128px 0}
 .ah-news-heading{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-bottom:48px}
 .ah-news-heading>h2{font-size:48px;line-height:60px}
 .ah-news-heading>div{grid-column:span 2}
@@ -177,3 +177,10 @@
 .ah .ah-outlook-grid article{background:#0f5a3d80;border-color:#9ff0c133}
 .ah .ah-outlook-card :is(.ah-section-kicker,.ah-outlook-grid article>span){color:#9ff0c1;font-weight:700}
 .ah .ah-value-card .ah-service-icon{background:#1f9d6826;color:#9ff0c1;border-color:#9ff0c14d}
+
+/* Light value cards and a continuous green wash without a dark section edge. */
+.ah .ah-values-grid .ah-value-card{background:linear-gradient(145deg,#fffffff2,#edf9f0eb);color:#146c48;border-color:#ffffffb3;box-shadow:none}
+.ah .ah-values-grid .ah-value-card h3{color:#146c48}
+.ah .ah-values-grid .ah-value-card p{color:#285943}
+.ah .ah-values-grid .ah-value-card .ah-service-icon{background:#34c47f1f;color:#167a51;border-color:#34c47f40}
+.ah .ah-news-heading p{color:#e1f5e9}

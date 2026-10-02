@@ -13,8 +13,10 @@
 
 - Kho mã nguồn: `luanlengoc1991-art/websiteluancloudfare`; nhánh phát hành: `main`. Remote `origin` là `https://github.com/luanlengoc1991-art/websiteluancloudfare.git`. Không đẩy sang `websiteluan`.
 - Trước khi sửa, lấy phiên bản mới nhất từ GitHub (`git fetch` rồi cập nhật `origin/main`), đọc file này và bảo toàn thay đổi đang có.
+- Chủ dự án có thể yêu cầu sửa code và giao diện ngay trong cuộc trò chuyện Codex này. Codex xử lý trong checkout cloud hiện có, kiểm tra rồi cập nhật GitHub; không cần chuyển yêu cầu sang GPT khác. Quy tắc được lưu trong repository để các thiết bị và phiên làm việc lấy cùng hướng dẫn khi clone/pull.
 - Với công việc chủ dự án yêu cầu, thực hiện đầy đủ, kiểm tra phù hợp, commit và push trực tiếp lên `origin/main`. Chủ dự án đã cho phép quy trình này; không hỏi lại xác nhận cho các bước thông thường.
 - Chủ dự án yêu cầu chỉ cập nhật GitHub để tự triển khai bằng Cursor. Codex commit và push lên `main`, không chạy lệnh triển khai, không điều khiển Cloudflare hoặc chờ triển khai. Báo kết quả theo commit GitHub. Kết nối Workers Builds có sẵn có thể vẫn tự build khi push; không tự thay đổi cấu hình kết nối này.
+- Code và giao diện phải phù hợp với Cloudflare Workers qua OpenNext và các binding D1/R2 hiện có. Không dựa vào server Node chạy lâu dài hoặc filesystem local để lưu dữ liệu bền vững; kiểm tra tương thích runtime khi thêm dependency hoặc API mới. Với thay đổi ứng dụng, chạy typecheck/build và test phù hợp; thay đổi backend hoặc binding cần kiểm thử Worker local trước khi push. Nếu cần migration hay biến môi trường mới, báo rõ hướng dẫn để chủ dự án thực hiện khi triển khai bằng Cursor.
 - Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`ALPHA_ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) đặt trong Settings của Worker, không commit.
 - Báo ngắn gọn bằng tiếng Việt: nội dung cập nhật, mã commit trên GitHub, kiểm tra đã thực hiện và phần nào chưa kiểm chứng hoặc bị chặn.
 - Khi đổi thiết bị: clone/pull trước khi sửa; commit và push sau khi sửa để các thiết bị và Cloudflare dùng cùng nguồn.

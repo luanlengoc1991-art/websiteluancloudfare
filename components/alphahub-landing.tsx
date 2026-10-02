@@ -1,16 +1,16 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {ArrowRight, CalendarDays, ChevronDown, HeartHandshake, Mail, Minus, Phone, Plus, Search, ShieldCheck, Sparkles} from 'lucide-react';
+import {ArrowRight, CalendarDays, ChevronDown, Mail, Minus, Phone, Plus, Search} from 'lucide-react';
 import Link from './site-link';
 import AlphaHubRequestForm from './alphahub-request-form';
 import {usePublicContact} from './public-contact-provider';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from './ui/dialog';
 import {projectPath} from '@/lib/project-routes';
 import {alphaHubContent} from '@/lib/alphahub-content';
-import type {Project, Unit} from '@/lib/catalog';
+import type {Article, Project, Unit} from '@/lib/catalog';
 
-type Props = {projects: Project[]; units: Unit[]};
+type Props = {projects: Project[]; units: Unit[]; articles: Article[]};
 const normalize = (value: string) => value.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replaceAll('đ', 'd');
 
 function Background() {
@@ -22,21 +22,27 @@ function Background() {
   return <img ref={image} src={failed ? '/images/green-paradise.webp' : alphaHubContent.backgroundImage} alt="" fetchPriority="high" onError={() => setFailed(true)}/>;
 }
 
-export default function AlphaHubLanding({projects, units}: Props) {
+export default function AlphaHubLanding({projects, units, articles}: Props) {
   const contact = usePublicContact();
   const [visitOpen, setVisitOpen] = useState(false);
   const [topicId, setTopicId] = useState<string>(alphaHubContent.topics[0].id);
   const [query, setQuery] = useState('');
-  const [openPoint, setOpenPoint] = useState<string | null>(null);
+  const [openPoint, setOpenPoint] = useState('');
+  const [showAllPoints, setShowAllPoints] = useState(false);
   const [unitCode, setUnitCode] = useState('');
   const [lookupMessage, setLookupMessage] = useState('');
   const activeTopic = alphaHubContent.topics.find(topic => topic.id === topicId) || alphaHubContent.topics[0];
   const needle = normalize(query.trim());
-  const points = activeTopic.points.map((point, index) => ({...point, id: activeTopic.id + '-' + index})).filter(point => !needle || normalize(activeTopic.title + ' ' + point.title + ' ' + point.body).includes(needle));
-  const expandedPoint = openPoint === null ? points[0]?.id : openPoint;
-  const selectTopic = (id: string) => {setTopicId(id); setQuery(''); setOpenPoint(null);};
-  const developers = [...new Set(projects.map(project => project.developer).filter(Boolean))];
-  const valueIcons = [ShieldCheck, HeartHandshake, Sparkles];
+  const topicPoints = [
+    {title: activeTopic.title, body: activeTopic.body},
+    ...activeTopic.points,
+    ...alphaHubContent.values,
+    ...alphaHubContent.outlook,
+  ];
+  const points = topicPoints.map((point, index) => ({...point, id: activeTopic.id + '-' + index})).filter(point => !needle || normalize(point.title + ' ' + point.body).includes(needle));
+  const visiblePoints = needle || showAllPoints ? points : points.slice(0, 6);
+  const selectTopic = (id: string) => {setTopicId(id); setQuery(''); setOpenPoint(''); setShowAllPoints(false);};
+  const latestArticles = [...articles].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
 
   return <main className="ah" id="ah-top">
     <div className="ah-background" aria-hidden="true"><Background/></div>
@@ -78,45 +84,50 @@ export default function AlphaHubLanding({projects, units}: Props) {
 
     <section className="ah-faq-section" id="ah-gioi-thieu" aria-labelledby="ah-about-title">
       <div className="ah-container">
-        <h2 id="ah-about-title">Về AlphaHub</h2>
+        <h2 id="ah-about-title">Câu hỏi thường gặp</h2>
         <div className="ah-faq-layout">
           <nav className="ah-glass ah-faq-sidebar" aria-label="Nội dung giới thiệu">
             <h3>Giải pháp nền tảng</h3>
-            {alphaHubContent.topics.filter(topic => topic.group === 'platform').map(topic => <button type="button" key={topic.id} aria-pressed={activeTopic.id === topic.id} onClick={() => selectTopic(topic.id)}>{topic.title}</button>)}
+            {alphaHubContent.topics.slice(0, 6).map(topic => <button type="button" key={topic.id} aria-pressed={activeTopic.id === topic.id} onClick={() => selectTopic(topic.id)}>{topic.title}</button>)}
             <h3>Lợi ích cộng hưởng</h3>
-            {alphaHubContent.topics.filter(topic => topic.group === 'benefits').map(topic => <button type="button" key={topic.id} aria-pressed={activeTopic.id === topic.id} onClick={() => selectTopic(topic.id)}>{topic.title}</button>)}
+            {alphaHubContent.topics.slice(6).map(topic => <button type="button" key={topic.id} aria-pressed={activeTopic.id === topic.id} onClick={() => selectTopic(topic.id)}>{topic.title}</button>)}
           </nav>
-          <label className="ah-glass ah-mobile-topics"><span>Khám phá AlphaHub</span><span className="ah-select-wrap"><select aria-label="Nội dung giới thiệu" value={activeTopic.id} onChange={event => selectTopic(event.target.value)}><optgroup label="Giải pháp nền tảng">{alphaHubContent.topics.filter(topic => topic.group === 'platform').map(topic => <option key={topic.id} value={topic.id}>{topic.title}</option>)}</optgroup><optgroup label="Lợi ích cộng hưởng">{alphaHubContent.topics.filter(topic => topic.group === 'benefits').map(topic => <option key={topic.id} value={topic.id}>{topic.title}</option>)}</optgroup></select><ChevronDown size={18} aria-hidden="true"/></span></label>
+          <label className="ah-glass ah-mobile-topics"><span>Khám phá AlphaHub</span><span className="ah-select-wrap"><select aria-label="Nội dung giới thiệu" value={activeTopic.id} onChange={event => selectTopic(event.target.value)}><optgroup label="Giải pháp nền tảng">{alphaHubContent.topics.slice(0, 6).map(topic => <option key={topic.id} value={topic.id}>{topic.title}</option>)}</optgroup><optgroup label="Lợi ích cộng hưởng">{alphaHubContent.topics.slice(6).map(topic => <option key={topic.id} value={topic.id}>{topic.title}</option>)}</optgroup></select><ChevronDown size={18} aria-hidden="true"/></span></label>
           <div className="ah-faq-panel">
-            <div className="ah-faq-panel-heading"><h3>{activeTopic.group === 'platform' ? 'Giải pháp nền tảng' : 'Lợi ích cộng hưởng'}</h3><label className="ah-search-input"><Search size={18} aria-hidden="true"/><input type="search" aria-label="Tìm nội dung giới thiệu" placeholder="Nhập từ khóa để tìm kiếm" value={query} onChange={event => {setQuery(event.target.value); setOpenPoint(null);}}/></label></div>
+            <div className="ah-faq-panel-heading"><h3>{alphaHubContent.topics.slice(0, 6).some(topic => topic.id === activeTopic.id) ? 'Giải pháp nền tảng' : 'Lợi ích cộng hưởng'}</h3><label className="ah-search-input"><Search size={18} aria-hidden="true"/><input type="search" aria-label="Tìm nội dung giới thiệu" placeholder="Nhập từ khóa để tìm kiếm" value={query} onChange={event => {setQuery(event.target.value); setOpenPoint('');}}/></label></div>
             <p className="ah-topic-title">{activeTopic.title}</p>
-            <p className="ah-topic-body">{activeTopic.body}</p>
-            {activeTopic.id === 'inventory' && <div className="ah-catalog-summary"><span><strong>{projects.length.toLocaleString('vi-VN')}</strong> dự án trên hệ thống</span><span><strong>{units.length.toLocaleString('vi-VN')}</strong> sản phẩm trong quỹ căn</span></div>}
             <div className="ah-questions" aria-live="polite">
-              {points.map(point => <details key={point.id} open={expandedPoint === point.id}><summary onClick={event => {event.preventDefault(); setOpenPoint(expandedPoint === point.id ? '' : point.id);}}><span>{point.title}</span>{expandedPoint === point.id ? <Minus size={19} aria-hidden="true"/> : <Plus size={19} aria-hidden="true"/>}</summary><div className="ah-answer"><p>{point.body}</p></div></details>)}
+              {visiblePoints.map(point => <details key={point.id} open={openPoint === point.id}><summary onClick={event => {event.preventDefault(); setOpenPoint(openPoint === point.id ? '' : point.id);}}><span>{point.title}</span>{openPoint === point.id ? <Minus size={19} aria-hidden="true"/> : <Plus size={19} aria-hidden="true"/>}</summary><div className="ah-answer"><p>{point.body}</p>{point.id === 'inventory-0' && <p>{projects.length.toLocaleString('vi-VN')} dự án trên hệ thống · {units.length.toLocaleString('vi-VN')} sản phẩm trong quỹ căn.</p>}{point.id.endsWith('-0') && <Link className="ah-answer-link" href={activeTopic.href}>{activeTopic.action} <ArrowRight size={16} aria-hidden="true"/></Link>}</div></details>)}
               {!points.length && <div className="ah-faq-empty"><p>Chưa có nội dung phù hợp.</p><button type="button" onClick={() => setQuery('')}>Xóa từ khóa</button></div>}
             </div>
-            <Link className="ah-answer-link" href={activeTopic.href}>{activeTopic.action} <ArrowRight size={16} aria-hidden="true"/></Link>
+            {!needle && points.length > 6 && <button className="ah-more-questions" type="button" onClick={() => setShowAllPoints(value => !value)}>{showAllPoints ? 'Thu gọn' : 'Xem thêm'} <ChevronDown size={16} aria-hidden="true"/></button>}
           </div>
         </div>
       </div>
     </section>
 
-    <section className="ah-share-section" aria-labelledby="ah-outlook-title">
-      <div className="ah-glass ah-share-card ah-outlook-card">
-        <span className="ah-section-kicker">GÓC NHÌN THỊ TRƯỜNG 2026</span>
-        <h2 id="ah-outlook-title">Khởi đầu của chu kỳ tăng trưởng bền vững</h2>
-        <p>Bắt nhịp xu thế thị trường, mở rộng góc nhìn trong hành trình tìm hiểu bất động sản.</p>
-        <div className="ah-outlook-grid">{alphaHubContent.outlook.map((item, index) => <article key={item.title}><span>{String(index + 1).padStart(2, '0')}</span><h3>{item.title}</h3><p>{item.body}</p></article>)}</div>
-        <div className="ah-outlook-action"><h3>Sẵn sàng đầu tư thông minh?</h3><p>Nắm luật, hiểu quy hoạch và sử dụng đòn bẩy an toàn. Kết nối AlphaHub để tìm hiểu những lựa chọn phù hợp.</p><div><Link className="ah-button ah-primary" href="/dang-ky">Đăng ký thành viên <ArrowRight size={17}/></Link><Link className="ah-text-link" href="/du-an">Xem danh sách dự án <ArrowRight size={17}/></Link></div></div>
+    <section className="ah-share-section" aria-labelledby="ah-share-title">
+      <div className="ah-glass ah-share-card">
+        <div className="ah-share-inner">
+          <h2 id="ah-share-title">Góc chia sẻ</h2>
+          <p>Chia sẻ thắc mắc để cùng xây dựng Câu hỏi thường gặp hữu ích hơn.</p>
+          <AlphaHubRequestForm kind="question" projects={projects}/>
+        </div>
       </div>
     </section>
 
-    <section className="ah-news-section" aria-labelledby="ah-values-title">
+    <section className="ah-news-section" aria-labelledby="ah-news-title">
       <div className="ah-container">
-        <div className="ah-news-heading"><h2 id="ah-values-title">Giá trị cốt lõi</h2><div><p>Những nguyên tắc định hướng mọi hành động của chúng tôi.</p><a className="ah-button ah-news-button" href="#ah-tu-van">Tư vấn miễn phí <ArrowRight size={18} aria-hidden="true"/></a></div></div>
-        <div className="ah-news-grid ah-values-grid">{alphaHubContent.values.map((value, index) => {const Icon = valueIcons[index]; return <article key={value.title} className="ah-glass ah-value-card"><span className="ah-service-icon"><Icon size={29} aria-hidden="true"/></span><h3>{value.title}</h3><p>{value.body}</p></article>;})}</div>
-        <div className="ah-developers"><h3>Khám phá dự án từ các chủ đầu tư</h3><div>{developers.map(developer => <span key={developer}>{developer}</span>)}</div></div>
+        <div className="ah-news-heading"><h2 id="ah-news-title">Tin tức</h2><div><p>Khám phá cách AlphaHub đồng hành cùng khách hàng, từng bước hiện thực hóa giấc mơ sở hữu bất động sản.</p><Link className="ah-button ah-news-button" href="/tin-tuc">Khám phá ngay <ArrowRight size={18} aria-hidden="true"/></Link></div></div>
+        <div className="ah-news-grid">{latestArticles.map(article => {
+          const href = '/tin-tuc/' + encodeURIComponent(article.id);
+          return <article key={article.id} className="ah-news-card">
+            <Link className="ah-news-cover" href={href} aria-label={article.title}><img src={article.image || '/images/green-paradise.webp'} alt={article.title} loading="lazy" onError={event => {if (!event.currentTarget.src.endsWith('/images/green-paradise.webp')) event.currentTarget.src = '/images/green-paradise.webp';}}/></Link>
+            <h3><Link href={href}>{article.title}</Link></h3>
+            <p>{article.body}</p>
+            <time dateTime={article.date}>{article.date.split('-').reverse().join('/')}</time>
+          </article>;
+        })}</div>
       </div>
     </section>
 

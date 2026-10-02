@@ -283,6 +283,15 @@ try {
   const lead = await fetch(origin + '/api/leads', {method: 'POST', headers: {Origin: origin, 'Content-Type': 'application/json'}, body: JSON.stringify({name: 'Khách website kiểm thử', phone: '0900000001', email: '', note: 'Tư vấn'})});
   assert.equal(lead.status, 201);
   assert((await readState()).records.some((r) => r.data.name === 'Khách website kiểm thử'));
+  for (const [name, note] of [
+    ['Khách tham quan AlphaHub', '[AlphaHub · Yêu cầu tham quan]\nDự án: Dự án kiểm thử (green-paradise)\nNgày mong muốn: 2026-12-01\nKhung giờ: Buổi sáng (08:00–12:00)'],
+    ['Khách hỏi AlphaHub', '[AlphaHub · Góc chia sẻ]\nCâu hỏi: Tôi muốn tìm hiểu quỹ căn và chính sách của dự án.'],
+  ]) {
+    const response = await fetch(origin + '/api/leads', {method: 'POST', headers: {Origin: origin, 'Content-Type': 'application/json'}, body: JSON.stringify({name, phone: '0900000002', email: '', note, website: ''})});
+    assert.equal(response.status, 201, name);
+    const saved = (await readState()).records.find(row => row.kind === 'customer' && row.data.name === name);
+    assert.equal(saved.data.note, 'Đăng ký từ website. ' + note, 'AlphaHub request details must reach the administrator');
+  }
   const publicState = await readState('');
   assert.equal(publicState.records.some((r) => r.kind === 'customer'), false);
   assert.equal(publicState.files.some((f) => f.id === fileId), false);
@@ -293,9 +302,9 @@ try {
     assert.match(await page.text(), /Alpha/);
   }
   const alphaHubPage = await fetch(origin + '/alphahub').then(response => response.text());
-  assert.match(alphaHubPage, /Tiên phong số hóa/);
-  assert.match(alphaHubPage, /Giá trị cốt lõi/);
-  assert.match(alphaHubPage, /AlphaHub \| Không gian kết nối bất động sản/);
+  assert.match(alphaHubPage, /Tư vấn cùng/);
+  assert.match(alphaHubPage, /Góc chia sẻ/);
+  assert.match(alphaHubPage, /AlphaHub \| Tư vấn và hỗ trợ bất động sản/);
   assert.equal(alphaHubPage.includes('Không tìm thấy trang'), false, 'AlphaHub must render its own route');
   for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});

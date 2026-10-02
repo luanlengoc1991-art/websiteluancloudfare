@@ -5,7 +5,7 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 ## Website và trang quản trị
 
 - Website: `/quy-hang`, `/du-an`, `/tin-tuc`.
-- Trang thương hiệu: `/alphahub` — giới thiệu nền tảng AlphaHub với giao diện xanh trong suốt, nhóm giá trị cốt lõi và tab theo vai trò. Dự án, số căn và liên hệ đọc từ dữ liệu dùng chung; các mục 3D chưa triển khai được ghi rõ là định hướng phát triển. Trang `/gioi-thieu` và phần quản trị nội dung hiện có vẫn được giữ riêng.
+- Trang AlphaHub: `/alphahub` — bố cục tư vấn tham khảo Vinhomes Market `/tu-van`, giữ thương hiệu xanh trong suốt. Gồm đăng ký tư vấn, yêu cầu tham quan, tra cứu mã căn, câu hỏi theo dự án/hướng dẫn, Góc chia sẻ và tin tức. Dự án, quỹ căn, bài viết, hướng dẫn và liên hệ đọc từ dữ liệu dùng chung. Ba biểu mẫu gửi cùng nguồn `/api/leads`, lưu yêu cầu vào khách hàng quản trị; yêu cầu tham quan cần đội ngũ liên hệ xác nhận. Ảnh dùng URL hiện có, ảnh nền dự phòng là asset nhỏ đã có trong repository. Trang `/gioi-thieu` và phần quản trị nội dung hiện có vẫn được giữ riêng.
 - Admin: `/admin` — tổng quan, giới thiệu, dự án, quỹ căn, tin tức, hướng dẫn, khách hàng, giao dịch, thư viện, tài khoản và cài đặt.
 - Đăng nhập: `/dang-nhap`.
 - Khách gửi form đăng ký tư vấn sẽ xuất hiện trong Khách hàng của admin.

@@ -36,7 +36,7 @@ import {publicNavigation,publicTabForAdmin} from '@/lib/site-navigation';
 const ProjectWorkspace=dynamic(()=>import('./project-workspace'),{loading:ModuleLoading});
 const UnitDetailSheet=dynamic(()=>import('./unit-detail-sheet'),{loading:ModuleLoading});
 const AdminOverview=dynamic(()=>import('./admin-overview'),{loading:ModuleLoading});
-const AdminMembers=dynamic(()=>import('./admin-members'),{loading:ModuleLoading});
+const AdminMembers=dynamic(()=>import('./admin-members'),{loading:ModuleLoading});\nconst AdminClaude=dynamic(()=>import('./admin-claude'),{loading:ModuleLoading});
 const AdminProjects=dynamic(()=>import('./admin-projects'),{loading:ModuleLoading});
 const AdminAbout=dynamic(()=>import('./admin-site-content').then(module=>module.AdminAbout),{loading:ModuleLoading});
 const AdminGuides=dynamic(()=>import('./admin-site-content').then(module=>module.AdminGuides),{loading:ModuleLoading});

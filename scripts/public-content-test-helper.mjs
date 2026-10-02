@@ -45,16 +45,19 @@ export function verifyPublicContent(snapshot, expected) {
   assert.ok(html.includes(expected.projectName), 'Featured About project must use the shared saved project');
   assert.ok(html.includes('tel:' + expected.phone), 'About must use the saved contact phone');
   assert.ok(html.includes('https://zalo.me/' + expected.phone), 'About must use the same saved Zalo phone');
-  // Exercise a persisted project in the FAQ's limited project navigation.
+  // Shared saved project names must populate AlphaHub's consultation picker.
   const alphaHubProjects = [...projects.values()].sort((a, b) => Number(b.name === expected.projectName) - Number(a.name === expected.projectName));
-  const alphaHub = renderToStaticMarkup(React.createElement(PublicContactProvider, {contact}, React.createElement(AlphaHubLanding, {projects: alphaHubProjects, units: [], articles: [], guides: mergeGuides(snapshot.records), faq: about.faq})));
+  const alphaHub = renderToStaticMarkup(React.createElement(PublicContactProvider, {contact}, React.createElement(AlphaHubLanding, {projects: alphaHubProjects, units: []})));
   assert.ok(alphaHub.includes(expected.projectName), 'AlphaHub must use shared saved project names');
   assert.ok(alphaHub.includes('tel:' + expected.phone), 'AlphaHub must use the configured contact phone');
   assert.ok(alphaHub.includes('https://zalo.me/' + expected.phone), 'AlphaHub must use the configured Zalo contact');
   assert.equal(alphaHub.includes('0862 892 896'), false, 'Reference site contact details must not appear on AlphaHub');
   assert.equal(alphaHub.includes('1900 998 823'), false, 'Vinhomes hotline must not appear on AlphaHub');
+  assert.equal(alphaHub.includes('0978 730 416'), false, 'SalePro hotline must not replace AlphaHub contact details');
   assert.equal(alphaHub.includes(expected.hiddenTitle), false, 'AlphaHub must not expose hidden guides');
   assert.ok(alphaHub.includes('Yêu cầu tư vấn'), 'AlphaHub must render the consultation form');
+  assert.ok(alphaHub.includes('Lợi ích cộng hưởng'), 'AlphaHub must render the adapted SalePro introduction');
+  assert.ok(alphaHub.includes('Giá trị cốt lõi'), 'AlphaHub must render its core values');
   const guides = renderToStaticMarkup(React.createElement(GuideCenter, {brand: 'Alpha', guides: mergeGuides(snapshot.records)}));
   assert.ok(guides.includes(expected.guideTitle), 'Public Guides must render saved content');
   assert.equal(guides.includes(expected.hiddenTitle), false, 'Hidden guide text must stay hidden');

@@ -302,9 +302,9 @@ try {
     assert.match(await page.text(), /Alpha/);
   }
   const alphaHubPage = await fetch(origin + '/alphahub').then(response => response.text());
-  assert.match(alphaHubPage, /Tư vấn cùng/);
-  assert.match(alphaHubPage, /Góc chia sẻ/);
-  assert.match(alphaHubPage, /AlphaHub \| Tư vấn và hỗ trợ bất động sản/);
+  assert.match(alphaHubPage, /Nền tảng công nghệ hỗ trợ kinh doanh bất động sản/);
+  assert.match(alphaHubPage, /Giá trị cốt lõi/);
+  assert.match(alphaHubPage, /AlphaHub \| Nền tảng công nghệ bất động sản/);
   assert.equal(alphaHubPage.includes('Không tìm thấy trang'), false, 'AlphaHub must render its own route');
   for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});

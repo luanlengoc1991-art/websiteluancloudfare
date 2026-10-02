@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState, type CSSProperties} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {ArrowRight, Building2, CalendarDays, ChevronDown, HeartHandshake, Mail, Minus, Phone, Plus, Search, ShieldCheck, Sparkles} from 'lucide-react';
 import Link from './site-link';
 import AlphaHubRequestForm from './alphahub-request-form';
@@ -38,9 +38,9 @@ export default function AlphaHubLanding({projects, units}: Props) {
   const developers = [...new Set(projects.map(project => project.developer).filter(Boolean))];
   const valueIcons = [ShieldCheck, HeartHandshake, Sparkles];
 
-  return <main className="ah" id="ah-top" style={{'--ah-background': `url("${alphaHubContent.backgroundImage}")`} as CSSProperties}>
+  return <main className="ah" id="ah-top">
+    <div className="ah-background" aria-hidden="true"><Background/></div>
     <section className="ah-hero" aria-labelledby="ah-title">
-      <div className="ah-hero-background" aria-hidden="true"><Background/></div>
       <div className="ah-container">
         <p className="ah-brand-kicker">ALPHAHUB</p>
         <h1 id="ah-title">{alphaHubContent.title}</h1>

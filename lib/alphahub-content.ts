@@ -4,7 +4,8 @@
  */
 export const alphaHubContent = {
   sourceUrl: 'https://salepro.com/?redirect=0',
-  backgroundImage: 'https://market.vinhomes.vn/_next/image?url=%2Fimages%2Frevamp%2Fproject-duan.png&w=1920&q=75',
+  // Grand Park's waterfront neighborhood: one optimized photo for the entire page.
+  backgroundImage: 'https://market.vinhomes.vn/photo/get/vhLPcNW8PgXwtBSScWzEWxfIUSSqCAhHkSgGCyLb30hsCHGksnspPUeDVG5weC5WSWWv8KLXAEB3fIkjy_Cfx2qQ==/2025x1350/image.jpg?ext=webp',
   title: 'Nền tảng công nghệ hỗ trợ kinh doanh bất động sản',
   introduction: 'Kết nối khách hàng với những sản phẩm bất động sản giá trị thực thông qua nền tảng công nghệ hiện đại, dịch vụ tư vấn chuyên nghiệp và đội ngũ phân phối uy tín.',
   topics: [

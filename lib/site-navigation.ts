@@ -9,7 +9,7 @@ export const contentNavigation = [
 
 export const publicNavigation = [{id: 'alphahub', label: 'AlphaHub', href: '/alphahub'}, ...contentNavigation] as const;
 
-export const adminSections = new Set(['tong-quan', ...contentNavigation.map(tab => tab.adminSection), 'khach-hang', 'giao-dich', 'thu-vien', 'thanh-vien', 'cau-hinh']);
+export const adminSections = new Set(['tong-quan', ...contentNavigation.map(tab => tab.adminSection), 'khach-hang', 'giao-dich', 'thu-vien', 'thanh-vien', 'claude-ai', 'cau-hinh']);
 export const editorSections = new Set<string>([...contentNavigation.map(tab => tab.adminSection), 'thu-vien']);
 
 export function publicTabForAdmin(section: string) {

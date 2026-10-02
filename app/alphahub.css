@@ -162,3 +162,18 @@
 @media(min-width:1536px){.ah h1{font-size:48px;line-height:56px}.ah-service-card>h2,.ah-consult-card>h2{font-size:36px;line-height:48px}}
 @media(max-width:1023px){.ah-service-grid>.ah-glass{min-height:260px}.ah-service-grid>.ah-consult-card{min-height:0}}
 @media(max-width:640px){.ah-service-grid{margin-top:48px}.ah-service-grid>.ah-glass{min-height:0;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}.ah-service-card{padding:24px 20px}.ah-service-card>h2{font-size:24px;line-height:30px}.ah-consents>label{font-size:13px}.ah h1{font-size:28px;line-height:36px}}
+
+/* The three content groups use the news palette over the unchanged photograph. */
+.ah :is(.ah-faq-sidebar,.ah-mobile-topics,.ah-faq-panel,.ah-outlook-card,.ah-value-card){background:linear-gradient(160deg,#083526f2,#0a4630e6);border-color:#9ff0c133}
+.ah :is(.ah-faq-sidebar,.ah-mobile-topics,.ah-faq-panel,.ah-outlook-card,.ah-value-card) :is(h2,h3){color:#fff;font-weight:600}
+.ah :is(.ah-faq-panel,.ah-outlook-card,.ah-value-card) p{color:#dcefe4;font-weight:500}
+.ah .ah-faq-sidebar button{background:#0f5a3d66;color:#dcefe4;font-weight:600}
+.ah .ah-faq-sidebar button:hover{background:#1f9d6833;color:#fff}
+.ah .ah-faq-sidebar button[aria-pressed=true]{background:#1f9d684d;color:#fff;border-left-color:#9ff0c1}
+.ah .ah-faq-panel .ah-topic-title,.ah .ah-questions summary{color:#fff;font-weight:700}
+.ah .ah-questions summary:hover{color:#9ff0c1}
+.ah .ah-catalog-summary>span{background:#0f5a3d80;color:#dcefe4;border-color:#9ff0c133;font-weight:600}
+.ah .ah-catalog-summary strong{color:#9ff0c1;font-weight:700}
+.ah .ah-outlook-grid article{background:#0f5a3d80;border-color:#9ff0c133}
+.ah .ah-outlook-card :is(.ah-section-kicker,.ah-outlook-grid article>span){color:#9ff0c1;font-weight:700}
+.ah .ah-value-card .ah-service-icon{background:#1f9d6826;color:#9ff0c1;border-color:#9ff0c14d}

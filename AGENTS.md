@@ -2,7 +2,7 @@
 
 - Next.js App Router, React, TypeScript, Tailwind, Node.js 24.
 - Keep Vietnamese user-facing text and the Alpha HUB green brand.
-- Riêng `/alphahub`: giữ bố cục/kính mờ theo `https://market.vinhomes.vn/tu-van`, nội dung giới thiệu biên tập từ `https://salepro.com/?redirect=0` và biểu mẫu tư vấn ở đầu. Theo yêu cầu mới nhất của chủ dự án, phối nhiều mảng trắng/kính sáng, xanh lá chỉ làm điểm nhấn; ảnh bất động sản phù hợp hiện xuyên suốt trang, phủ trắng nhẹ thay cho lớp xanh đậm. Giữ nguyên nội dung và chức năng khi phối màu. Logo AlphaHub và liên hệ vẫn dùng riêng.
+- Riêng `/alphahub`: giữ bố cục/kính mờ theo `https://market.vinhomes.vn/tu-van`, nội dung giới thiệu biên tập từ `https://salepro.com/?redirect=0` và biểu mẫu tư vấn ở đầu. Theo yêu cầu mới nhất của chủ dự án, dùng tone xanh emerald đậm và kính transparent đồng bộ trang `/tin-tuc`; giữ ảnh bất động sản ẩn nhẹ xuyên suốt trang dưới lớp xanh, không dùng lớp phủ trắng/kính sáng làm màu chủ đạo. Giữ nguyên nội dung và chức năng khi phối màu. Logo AlphaHub và liên hệ vẫn dùng riêng.
 - Run npm run typecheck and npm run build after meaningful changes; npm test verifies the backend against disposable data.
 - Never commit .env.local, admin passwords, session tokens, data/, uploads, or customer records.
 - Preserve same-origin native links and per-project routes. Do not restore the ChatGPT Sites auth headers or cloudflare:workers imports.

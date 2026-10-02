@@ -2,9 +2,9 @@
 import {useState} from 'react';
 import Link from 'next/link';
 import {LayoutDashboard,Building2,House,Users,BriefcaseBusiness,Image,FileText,Settings,ExternalLink,LogOut,Menu,X,RefreshCw,ShieldCheck,KeyRound,Info,BookOpen} from 'lucide-react';
-import {publicNavigation,publicTabForAdmin,editorSections} from '@/lib/site-navigation';
+import {contentNavigation,publicTabForAdmin,editorSections} from '@/lib/site-navigation';
 const contentIcons={ 'gioi-thieu':Info,'du-an':Building2,'quy-hang':House,'tin-tuc':FileText,'huong-dan':BookOpen};
-export const adminNavigation=[['tong-quan','Tổng quan',LayoutDashboard],...publicNavigation.map(tab=>[tab.adminSection,tab.label,contentIcons[tab.id]] as const),['khach-hang','Khách hàng',Users],['giao-dich','Giao dịch',BriefcaseBusiness],['thu-vien','Thư viện',Image],['thanh-vien','Tài khoản',KeyRound],['cau-hinh','Cài đặt',Settings]] as const;
+export const adminNavigation=[['tong-quan','Tổng quan',LayoutDashboard],...contentNavigation.map(tab=>[tab.adminSection,tab.label,contentIcons[tab.id]] as const),['khach-hang','Khách hàng',Users],['giao-dich','Giao dịch',BriefcaseBusiness],['thu-vien','Thư viện',Image],['thanh-vien','Tài khoản',KeyRound],['cau-hinh','Cài đặt',Settings]] as const;
 export default function AdminShell({section,name,onRefresh,limited=false,role='Quản trị viên'}:{section:string;name:string;onRefresh:()=>void;limited?:boolean;role?:string}){
  const publicTab=publicTabForAdmin(section);
  const [open,setOpen]=useState(false),[error,setError]=useState('');

@@ -5,6 +5,7 @@ Website bất động sản dùng Next.js App Router, React, TypeScript và Node
 ## Website và trang quản trị
 
 - Website: `/quy-hang`, `/du-an`, `/tin-tuc`.
+- Trang thương hiệu: `/alphahub` — giới thiệu nền tảng AlphaHub với giao diện xanh trong suốt, nhóm giá trị cốt lõi và tab theo vai trò. Dự án, số căn và liên hệ đọc từ dữ liệu dùng chung; các mục 3D chưa triển khai được ghi rõ là định hướng phát triển. Trang `/gioi-thieu` và phần quản trị nội dung hiện có vẫn được giữ riêng.
 - Admin: `/admin` — tổng quan, giới thiệu, dự án, quỹ căn, tin tức, hướng dẫn, khách hàng, giao dịch, thư viện, tài khoản và cài đặt.
 - Đăng nhập: `/dang-nhap`.
 - Khách gửi form đăng ký tư vấn sẽ xuất hiện trong Khách hàng của admin.

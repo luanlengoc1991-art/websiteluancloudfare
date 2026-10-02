@@ -9,6 +9,7 @@ import "./projects.css";
 import "./project-unit.css";
 import "./inventory-market.css";
 import "./about.css";
+import "./alphahub.css";
 import "./site-shell.css";
 import "./content-sidebar.css";
 import "./typography.css";

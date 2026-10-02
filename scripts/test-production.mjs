@@ -287,11 +287,16 @@ try {
   assert.equal(publicState.records.some((r) => r.kind === 'customer'), false);
   assert.equal(publicState.files.some((f) => f.id === fileId), false);
 
-  for (const path of ['/gioi-thieu', '/huong-dan', '/tin-tuc', '/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
+  for (const path of ['/alphahub', '/gioi-thieu', '/huong-dan', '/tin-tuc', '/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
     const page = await fetch(origin + path);
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /Alpha/);
   }
+  const alphaHubPage = await fetch(origin + '/alphahub').then(response => response.text());
+  assert.match(alphaHubPage, /Tiên phong số hóa/);
+  assert.match(alphaHubPage, /Giá trị cốt lõi/);
+  assert.match(alphaHubPage, /AlphaHub \| Không gian kết nối bất động sản/);
+  assert.equal(alphaHubPage.includes('Không tìm thấy trang'), false, 'AlphaHub must render its own route');
   for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});
     assert.equal(page.status, 200, path);

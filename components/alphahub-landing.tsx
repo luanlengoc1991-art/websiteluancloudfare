@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {ArrowRight, Building2, CalendarDays, ChevronDown, HeartHandshake, Mail, Minus, Phone, Plus, Search, ShieldCheck, Sparkles} from 'lucide-react';
+import {ArrowRight, CalendarDays, ChevronDown, HeartHandshake, Mail, Minus, Phone, Plus, Search, ShieldCheck, Sparkles} from 'lucide-react';
 import Link from './site-link';
 import AlphaHubRequestForm from './alphahub-request-form';
 import {usePublicContact} from './public-contact-provider';
@@ -42,20 +42,18 @@ export default function AlphaHubLanding({projects, units}: Props) {
     <div className="ah-background" aria-hidden="true"><Background/></div>
     <section className="ah-hero" aria-labelledby="ah-title">
       <div className="ah-container">
-        <p className="ah-brand-kicker">ALPHAHUB</p>
-        <h1 id="ah-title">{alphaHubContent.title}</h1>
-        <p className="ah-hero-introduction">{alphaHubContent.introduction}</p>
+        <h1 id="ah-title">Tư vấn cùng AlphaHub</h1>
+        <p className="sr-only">{alphaHubContent.title}. {alphaHubContent.introduction}</p>
         <div className="ah-service-grid">
           <div className="ah-glass ah-consult-card" id="ah-tu-van">
             <h2>Yêu cầu tư vấn</h2>
             <AlphaHubRequestForm kind="consultation" projects={projects}/>
           </div>
           <article className="ah-glass ah-service-card">
-            <span className="ah-service-icon"><Building2 size={27} aria-hidden="true"/></span>
-            <h2>Khám phá dự án</h2>
-            <p>Quỹ hàng phong phú với căn hộ cao tầng, biệt thự, liền kề và shophouse từ nhiều dự án.</p>
-            <Link className="ah-text-link" href="/du-an">Xem danh sách dự án <ArrowRight size={18} aria-hidden="true"/></Link>
-            <button className="ah-text-link ah-visit-link" type="button" onClick={() => setVisitOpen(true)}><CalendarDays size={16} aria-hidden="true"/>Đặt lịch tham quan</button>
+            <span className="ah-service-icon"><CalendarDays size={27} aria-hidden="true"/></span>
+            <h2>Đặt lịch tham quan</h2>
+            <p>Tham quan dự án và nhà mẫu, trao đổi trực tiếp với đội ngũ tư vấn AlphaHub.</p>
+            <button className="ah-text-link ah-visit-link" type="button" onClick={() => setVisitOpen(true)}>Đặt lịch ngay <ArrowRight size={18} aria-hidden="true"/></button>
           </article>
           <article className="ah-glass ah-service-card ah-lookup-card">
             <span className="ah-service-icon"><Search size={27} aria-hidden="true"/></span>

@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef} from 'react';
+import {useEffect} from 'react';
 import {usePathname} from 'next/navigation';
 
 const figures = '.unit-code,.price,.detail-price,.money,.unit-price-card strong,.punit-price-main strong,.pd-feature-count b,.pd-count-value b,.pd-band-count b,.project-unit-count strong,.al-green-count>strong,.al-platform-stats dd,.ap-metric strong,.admin-metrics strong,.stat-card>strong';
@@ -9,81 +9,9 @@ const excludedText = 'input,textarea,select,label,small,time,svg,.eyebrow,.resul
 
 /** One decorative canvas persists while pages and transparent surfaces scroll over it. */
 export default function SiteAtmosphere() {
-  const canvas = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const node = canvas.current;
-    if (!node) return;
-
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let frame: number | null = null;
-    let shift = 0;
-    let targetShift = 0;
-    let measurePending = true;
-    let scroller: HTMLElement | null = null;
-
-    function render() {
-      frame = null;
-      if (!node) return;
-      // Read layout once per scroll/resize, not on every easing frame.
-      if (measurePending) {
-        measurePending = false;
-        if (scroller && !scroller.isConnected) scroller = null;
-        const height = scroller ? scroller.scrollHeight - scroller.clientHeight : document.documentElement.scrollHeight - window.innerHeight;
-        const offset = scroller ? scroller.scrollTop : window.scrollY;
-        const progress = height > 0 ? Math.max(0, Math.min(1, offset / height)) : 0;
-        targetShift = motion.matches ? 0 : -window.innerHeight * .55 * progress;
-      }
-      shift = motion.matches ? 0 : shift + (targetShift - shift) * .16;
-      if (Math.abs(targetShift - shift) < .1) shift = targetShift;
-
-      node.style.setProperty('--atmosphere-shift', `${shift.toFixed(2)}px`);
-      node.style.setProperty('--atmosphere-light-shift', `${(-shift * .35).toFixed(2)}px`);
-      if (shift !== targetShift) frame = window.requestAnimationFrame(render);
-    }
-
-    function schedule() {
-      measurePending = true;
-      if (!document.hidden && frame === null) frame = window.requestAnimationFrame(render);
-    }
-
-    function onVisibility() {
-      if (document.hidden && frame !== null) {
-        window.cancelAnimationFrame(frame);
-        frame = null;
-      } else if (!document.hidden) schedule();
-    }
-
-    function onScroll(event: Event) {
-      const target = event.target;
-      // Fixed project workspaces scroll inside their panels instead of the document.
-      if (target instanceof HTMLElement) {
-        if (!target.matches('.workspace-panel-body,.floating-unit-list,.punit-detail-scroll,.editor-panel')) return;
-        scroller = target;
-      } else {
-        scroller = null;
-      }
-      schedule();
-    }
-
-    const resize = new ResizeObserver(schedule);
-    resize.observe(document.body);
-    document.addEventListener('scroll', onScroll, {passive: true, capture: true});
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('resize', schedule, {passive: true});
-    motion.addEventListener('change', schedule);
-    schedule();
-
-    return () => {
-      resize.disconnect();
-      document.removeEventListener('scroll', onScroll, true);
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('resize', schedule);
-      motion.removeEventListener('change', schedule);
-      if (frame !== null) window.cancelAnimationFrame(frame);
-    };
-  }, [pathname]);
+  const isAlphaHub = pathname === '/alphahub';
+  const hasProjectBackdrop = pathname.startsWith('/du-an/');
 
   useEffect(() => {
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -174,8 +102,8 @@ export default function SiteAtmosphere() {
     };
   }, [pathname]);
 
-  return <div ref={canvas} className="site-atmosphere" aria-hidden="true">
+  return <div className={`site-atmosphere${isAlphaHub ? ' is-alphahub' : ''}`} aria-hidden="true">
+    {!isAlphaHub && !hasProjectBackdrop && <img className="site-atmosphere-photo" src="/images/green-paradise.webp" alt="" decoding="async"/>}
     <div className="site-atmosphere-base"/>
-    <div className="site-atmosphere-light"/>
   </div>;
 }

@@ -1,6 +1,11 @@
 .site.public-site.alphahub-site{padding-top:0;background:transparent;--shell-mint:#b5f2ce;--shell-text:#ecfff3;--shell-muted:#c0ddcd}
 /* Shape colors sampled from the approved green gradient reference. */
-.ah,.ah-dialog{--ah-shape-gradient:linear-gradient(180deg,#02cf52e0 0%,#01853ee0 30%,#006837e0 50%,#015d36e0 60%,#005332e0 100%)}
+.ah,.ah-dialog{
+  --ah-shape-gradient:
+    radial-gradient(ellipse 82% 72% at 0% 12%,#00ef40eb 0%,#00d34c66 28%,#00b35e00 72%),
+    radial-gradient(ellipse 82% 72% at 100% 12%,#00f7f5d9 0%,#00c9c66b 30%,#00a19700 72%),
+    linear-gradient(180deg,#008e70e0 0%,#009d75e0 28%,#007d61e0 50%,#005545e0 70%,#00221de0 100%);
+}
 .ah{position:relative;isolation:isolate;--ah-accent:#d3ffe7;--ah-muted:#effff5;--ah-line:#ffffff40;color:#ecfff3;background:transparent;font-family:var(--font-body);line-height:1.6;overflow:clip}
 .ah-container{width:min(1440px,calc(100% - 96px));margin-inline:auto}
 .ah h1,.ah h2,.ah h3{margin:0;color:inherit;letter-spacing:0}

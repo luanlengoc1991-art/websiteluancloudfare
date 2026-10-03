@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import {usePathname} from 'next/navigation';
-import {defaultBackgroundImage, resolveBackgroundImage, sanitizeBackgrounds, type SiteBackgrounds} from '@/lib/site-backgrounds';
+import {defaultBackgroundImage, resolveBackgroundImage, sanitizeBackgrounds, sanitizeBackgroundAppearances, resolveBackgroundAppearance, backgroundLayers, type SiteBackgrounds, type BackgroundAppearances} from '@/lib/site-backgrounds';
 
 const figures = '.unit-code,.price,.detail-price,.money,.unit-price-card strong,.punit-price-main strong,.pd-feature-count b,.pd-count-value b,.pd-band-count b,.project-unit-count strong,.al-green-count>strong,.al-platform-stats dd,.ap-metric strong,.admin-metrics strong,.stat-card>strong';
 const largeText = `h1,h2,h3,h4,${figures}`;
@@ -14,6 +14,9 @@ export default function SiteAtmosphere() {
   const isAlphaHub = pathname === '/alphahub';
   const hasProjectBackdrop = pathname.startsWith('/du-an/');
   const [backgrounds, setBackgrounds] = useState<SiteBackgrounds>({});
+  const [appearances, setAppearances] = useState<BackgroundAppearances>({});
+  const layers = backgroundLayers(resolveBackgroundAppearance(pathname, appearances));
+  const usesSharedBackdrop = !isAlphaHub && !hasProjectBackdrop;
   const [failedImage, setFailedImage] = useState('');
   const selectedImage = resolveBackgroundImage(pathname, backgrounds);
   const imageSrc = failedImage === selectedImage ? defaultBackgroundImage : selectedImage;
@@ -28,7 +31,10 @@ export default function SiteAtmosphere() {
         const response = await fetch('/api/backgrounds', {cache: 'no-store', signal: controller.signal});
         if (!response.ok) return;
         const data = await response.json();
-        if (!controller.signal.aborted) setBackgrounds(sanitizeBackgrounds(data.backgrounds));
+        if (!controller.signal.aborted) {
+          setBackgrounds(sanitizeBackgrounds(data.backgrounds));
+          setAppearances(sanitizeBackgroundAppearances(data.backgroundAppearance));
+        }
       } catch { /* The bundled photo remains available when storage is offline. */ }
       finally { pending = false; }
     };
@@ -132,8 +138,8 @@ export default function SiteAtmosphere() {
     };
   }, [pathname]);
 
-  return <div className={`site-atmosphere${isAlphaHub ? ' is-alphahub' : ''}`} aria-hidden="true">
-    {!isAlphaHub && !hasProjectBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={imageSrc} alt="" decoding="async" onError={() => setFailedImage(selectedImage)}/>}
-    <div className="site-atmosphere-base"/>
+  return <div className={`site-atmosphere${isAlphaHub ? ' is-alphahub' : ''}`} aria-hidden="true" style={usesSharedBackdrop ? {backgroundImage: layers.canvas} : undefined}>
+    {usesSharedBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={imageSrc} alt="" decoding="async" onError={() => setFailedImage(selectedImage)} style={{opacity: layers.imageOpacity}}/>}
+    <div className="site-atmosphere-base" style={usesSharedBackdrop ? {backgroundImage: layers.overlay} : undefined}/>
   </div>;
 }

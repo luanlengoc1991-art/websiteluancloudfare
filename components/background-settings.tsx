@@ -2,12 +2,13 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
-import {backgroundPages, defaultBackgroundImage, type BackgroundPage, type SiteBackgrounds} from '@/lib/site-backgrounds';
+import {backgroundPages, backgroundLayers, defaultBackgroundAppearance, defaultBackgroundImage, type BackgroundPage, type SiteBackgrounds, type BackgroundAppearance, type BackgroundAppearances} from '@/lib/site-backgrounds';
 import type {Asset} from '@/lib/catalog';
 
-export default function BackgroundSettings({backgrounds = {}, files, busy, onChange, onUploadingChange}: {
-  backgrounds?: SiteBackgrounds; files: Asset[]; busy: boolean;
+export default function BackgroundSettings({backgrounds = {}, appearances = {}, files, busy, onChange, onAppearanceChange, onUploadingChange}: {
+  backgrounds?: SiteBackgrounds; appearances?: BackgroundAppearances; files: Asset[]; busy: boolean;
   onChange: (page: BackgroundPage, image: string) => void; onUploadingChange: (uploading: boolean) => void;
+  onAppearanceChange: (page: BackgroundPage, appearance: BackgroundAppearance | undefined) => void;
 }) {
   const [page, setPage] = useState<BackgroundPage>('default');
   const [uploading, setUploading] = useState(false);
@@ -16,6 +17,9 @@ export default function BackgroundSettings({backgrounds = {}, files, busy, onCha
   const value = backgrounds[page] || '';
   const preview = value || backgrounds.default || defaultBackgroundImage;
   const images = files.filter(file => file.kind !== 'document');
+  const appearance = {...defaultBackgroundAppearance, ...appearances.default, ...appearances[page]};
+  const layers = backgroundLayers(appearance);
+  const changeAppearance = (key: keyof BackgroundAppearance, value: number | string) => onAppearanceChange(page, {...appearances[page], [key]: value});
 
   async function upload(file: File) {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 4 * 1024 * 1024) {
@@ -44,7 +48,19 @@ export default function BackgroundSettings({backgrounds = {}, files, busy, onCha
       <label className="field"><span>Đường dẫn ảnh nền</span><input disabled={busy || uploading} maxLength={2000} value={value} placeholder="https://… hoặc /api/files/…" onChange={event => onChange(page, event.target.value)}/><small>Để trống để dùng nền chung; nền chung trống sẽ dùng ảnh mặc định.</small></label>
       <label className="field"><span>Tải ảnh nền từ máy</span><input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || uploading} onChange={event => {const file = event.target.files?.[0]; event.target.value = ''; if (file) upload(file);}}/><small>{uploading ? 'Đang tải ảnh…' : 'JPG, PNG hoặc WEBP · Tối đa 4 MB. Nhấn Lưu cấu hình sau khi chọn ảnh.'}</small></label>
     </div>
-    <img key={preview} src={preview} alt="Xem trước ảnh nền ẩn" loading="lazy" style={{width: '100%', maxHeight: 220, objectFit: 'cover', borderRadius: 12, marginTop: 16}}/>
+    <p>Điều chỉnh nền chung hoặc riêng trang đang chọn. Các trang chưa chỉnh riêng sẽ dùng thiết lập nền chung.</p>
+    <div className="form-grid">
+      <label className="field"><span>Độ hiện ảnh nền: {Math.round(appearance.imageOpacity * 100)}%</span><input type="range" min={0} max={100} step={1} disabled={busy || uploading} value={Math.round(appearance.imageOpacity * 100)} onChange={event => changeAppearance('imageOpacity', Number(event.target.value) / 100)}/><small>Giảm để ảnh ẩn hơn, tăng để ảnh rõ hơn.</small></label>
+      <label className="field"><span>Độ đậm lớp màu: {Math.round(appearance.overlayOpacity * 100)}%</span><input type="range" min={0} max={100} step={1} disabled={busy || uploading} value={Math.round(appearance.overlayOpacity * 100)} onChange={event => changeAppearance('overlayOpacity', Number(event.target.value) / 100)}/><small>Tăng để lớp màu phủ đậm hơn, giảm để thấy ảnh rõ hơn.</small></label>
+      <label className="field"><span>Màu đầu gradient</span><input type="color" disabled={busy || uploading} value={appearance.gradientStart || '#004f3e'} onChange={event => changeAppearance('gradientStart', event.target.value)}/><small>{appearance.gradientStart || '#004f3e'}</small></label>
+      <label className="field"><span>Màu cuối gradient</span><input type="color" disabled={busy || uploading} value={appearance.gradientEnd || '#00231d'} onChange={event => changeAppearance('gradientEnd', event.target.value)}/><small>{appearance.gradientEnd || '#00231d'}</small></label>
+    </div>
+    <p>Xem trước ảnh, màu và độ đậm. Nhấn Lưu cấu hình để áp dụng lên website.</p>
+    <div className="site-atmosphere" aria-hidden="true" style={{position: 'relative', zIndex: 0, width: '100%', height: 220, borderRadius: 12, marginBlock: 16, backgroundImage: layers.canvas}}>
+      <img className="site-atmosphere-photo" key={preview} src={preview} alt="" loading="lazy" style={{opacity: layers.imageOpacity}}/>
+      <div className="site-atmosphere-base" style={{backgroundImage: layers.overlay}}/>
+    </div>
     <button type="button" className="button subtle" disabled={busy || uploading || !value} onClick={() => onChange(page, '')}>Dùng nền mặc định</button>
+    <button type="button" className="button subtle" disabled={busy || uploading || !appearances[page]} onClick={() => onAppearanceChange(page, undefined)}>Khôi phục độ đậm và màu mặc định</button>
   </div>;
 }

@@ -250,7 +250,7 @@ try {
   assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: settings})).status, 200);
   const backgrounds = {default: 'https://example.test/background.webp', 'tin-tuc': '/images/green-paradise.webp'};
   assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds}})).status, 200);
-  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())), {backgrounds});
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())), {backgrounds, backgroundAppearance: {}});
   assert.deepEqual((await readState()).records.find(row => row.kind === 'settings').data.backgrounds, backgrounds);
   for (const image of ['javascript:alert(1)', '//other.test/photo.png', 'data:image/png;base64,abc', 'https://user:password@example.test/photo.png']) {
     assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {default: image}}})).status, 400);
@@ -260,6 +260,17 @@ try {
   assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds, {});
   assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds}})).status, 200);
 
+
+  const backgroundAppearance = {default: {imageOpacity: 0, overlayOpacity: 1, gradientStart: '#123ABC', gradientEnd: '#654321'}, 'tin-tuc': {imageOpacity: 1, overlayOpacity: 0}};
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds, backgroundAppearance}})).status, 200);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgroundAppearance, backgroundAppearance);
+  assert.deepEqual((await readState()).records.find(row => row.kind === 'settings').data.backgroundAppearance, backgroundAppearance);
+  for (const appearance of [{imageOpacity: -0.1}, {imageOpacity: 1.1}, {overlayOpacity: null}, {gradientStart: 'red;display:none'}, {gradientEnd: '#123'}, {unknown: 1}]) {
+    assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgroundAppearance: {default: appearance}}})).status, 400);
+  }
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgroundAppearance: {alphahub: {imageOpacity: 1}}}})).status, 400);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgroundAppearance: {}}})).status, 200);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgroundAppearance, {});
   const contactState = await readState('');
   assert.equal(contactState.records.find(row => row.kind === 'settings').data.phone, settings.phone);
   assert.equal(contactState.records.find(row => row.kind === 'settings').data.profileName, undefined, 'Private settings remain private');
@@ -288,8 +299,9 @@ try {
   const backgroundId = (await backgroundUpload.json()).id;
   const backgroundUrl = '/api/files/' + backgroundId;
   assert.equal((await fetch(origin + backgroundUrl)).headers.get('content-type'), 'image/png');
-  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {default: backgroundUrl}}})).status, 200);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {default: backgroundUrl}, backgroundAppearance}})).status, 200);
   assert.equal((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds.default, backgroundUrl);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgroundAppearance, backgroundAppearance);
   assert.equal((await readState('')).files.find(file => file.id === backgroundId).kind, 'background', 'Decorative backgrounds stay out of project galleries');
 
 
@@ -372,6 +384,7 @@ try {
   assert.equal(snapshot.records.find(row => row.id === sharedArticle.id).data.title, sharedArticle.title);
   assert.equal(await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: cookie}}).then((r) => r.text()), '%PDF-1.4 test');
   assert.equal((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds.default, backgroundUrl);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgroundAppearance, backgroundAppearance);
   assert.equal((await fetch(origin + backgroundUrl)).headers.get('content-type'), 'image/png');
 
   assert.equal((await post('/api/auth/logout', {})).status, 303);

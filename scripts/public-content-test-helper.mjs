@@ -47,7 +47,7 @@ export function verifyPublicContent(snapshot, expected) {
   assert.ok(html.includes('https://zalo.me/' + expected.phone), 'About must use the same saved Zalo phone');
   // Shared saved project names must populate AlphaHub's consultation picker.
   const alphaHubProjects = [...projects.values()].sort((a, b) => Number(b.name === expected.projectName) - Number(a.name === expected.projectName));
-  const alphaHub = renderToStaticMarkup(React.createElement(PublicContactProvider, {contact}, React.createElement(AlphaHubLanding, {projects: alphaHubProjects, units: []})));
+  const alphaHub = renderToStaticMarkup(React.createElement(PublicContactProvider, {contact}, React.createElement(AlphaHubLanding, {projects: alphaHubProjects, units: [], articles: []})));
   assert.ok(alphaHub.includes(expected.projectName), 'AlphaHub must use shared saved project names');
   assert.ok(alphaHub.includes('tel:' + expected.phone), 'AlphaHub must use the configured contact phone');
   assert.ok(alphaHub.includes('https://zalo.me/' + expected.phone), 'AlphaHub must use the configured Zalo contact');
@@ -57,7 +57,7 @@ export function verifyPublicContent(snapshot, expected) {
   assert.equal(alphaHub.includes(expected.hiddenTitle), false, 'AlphaHub must not expose hidden guides');
   assert.ok(alphaHub.includes('Yêu cầu tư vấn'), 'AlphaHub must render the consultation form');
   assert.ok(alphaHub.includes('Lợi ích cộng hưởng'), 'AlphaHub must render the adapted SalePro introduction');
-  assert.ok(alphaHub.includes('Giá trị cốt lõi'), 'AlphaHub must render its core values');
+  assert.ok(alphaHub.includes('Uy tín'), 'AlphaHub must render its core values in the FAQ');
   const guides = renderToStaticMarkup(React.createElement(GuideCenter, {brand: 'Alpha', guides: mergeGuides(snapshot.records)}));
   assert.ok(guides.includes(expected.guideTitle), 'Public Guides must render saved content');
   assert.equal(guides.includes(expected.hiddenTitle), false, 'Hidden guide text must stay hidden');

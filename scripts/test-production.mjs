@@ -248,6 +248,18 @@ try {
 
   const settings = {brand: 'Alpha chung', phone: '0900000012', email: 'contact@example.test', address: 'Địa chỉ chung', holdHours: 24, notifications: true, profileName: 'Tên riêng admin'};
   assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: settings})).status, 200);
+  const backgrounds = {default: 'https://example.test/background.webp', 'tin-tuc': '/images/green-paradise.webp'};
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds}})).status, 200);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())), {backgrounds});
+  assert.deepEqual((await readState()).records.find(row => row.kind === 'settings').data.backgrounds, backgrounds);
+  for (const image of ['javascript:alert(1)', '//other.test/photo.png', 'data:image/png;base64,abc', 'https://user:password@example.test/photo.png']) {
+    assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {default: image}}})).status, 400);
+  }
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {'alphahub': backgrounds.default}}})).status, 400);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {}}})).status, 200);
+  assert.deepEqual((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds, {});
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds}})).status, 200);
+
   const contactState = await readState('');
   assert.equal(contactState.records.find(row => row.kind === 'settings').data.phone, settings.phone);
   assert.equal(contactState.records.find(row => row.kind === 'settings').data.profileName, undefined, 'Private settings remain private');
@@ -267,6 +279,19 @@ try {
   const fileId = (await upload.json()).id;
   assert.equal((await fetch(origin + '/api/files/' + fileId)).status, 404);
   assert.equal(await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: cookie}}).then((r) => r.text()), '%PDF-1.4 test');
+  const backgroundForm = new FormData();
+  backgroundForm.set('projectId', 'site-backgrounds');
+  backgroundForm.set('kind', 'background');
+  backgroundForm.set('file', new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP1sAAAAASUVORK5CYII=', 'base64')], {type: 'image/png'}), 'background.png');
+  const backgroundUpload = await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: cookie, Origin: origin}, body: backgroundForm});
+  assert.equal(backgroundUpload.status, 200);
+  const backgroundId = (await backgroundUpload.json()).id;
+  const backgroundUrl = '/api/files/' + backgroundId;
+  assert.equal((await fetch(origin + backgroundUrl)).headers.get('content-type'), 'image/png');
+  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {...settings, backgrounds: {default: backgroundUrl}}})).status, 200);
+  assert.equal((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds.default, backgroundUrl);
+  assert.equal((await readState('')).files.find(file => file.id === backgroundId).kind, 'background', 'Decorative backgrounds stay out of project galleries');
+
 
   form.set('projectId', 'missing-project');
   assert.equal((await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: cookie, Origin: origin}, body: form})).status, 400, 'Uploads cannot create orphan project assets');
@@ -274,6 +299,7 @@ try {
   const editorLogin = await post('/api/auth/login', {email: 'member@example.test', password: 'long-password'});
   assert.equal(editorLogin.status, 200);
   const editorCookie = editorLogin.headers.getSetCookie().find(value => value.startsWith('alpha_session=')).split(';')[0];
+  assert.equal((await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: editorCookie, Origin: origin}, body: backgroundForm})).status, 403);
   assert.ok((await readState(editorCookie)).files.some(file => file.id === fileId), 'Editor library must show the protected documents it can access');
   assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 200);
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: false})).status, 200);
@@ -303,7 +329,7 @@ try {
   }
   const alphaHubPage = await fetch(origin + '/alphahub').then(response => response.text());
   assert.match(alphaHubPage, /Nền tảng công nghệ hỗ trợ kinh doanh bất động sản/);
-  assert.match(alphaHubPage, /Giá trị cốt lõi/);
+  assert.match(alphaHubPage, /Câu hỏi thường gặp/);
   assert.match(alphaHubPage, /AlphaHub \| Nền tảng công nghệ bất động sản/);
   assert.equal(alphaHubPage.includes('Không tìm thấy trang'), false, 'AlphaHub must render its own route');
   for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
@@ -339,12 +365,15 @@ try {
   await start();
   snapshot = await readState();
   assert.equal(snapshot.records.find((r) => r.id === customer.id).data.name, customer.name);
-  assert.equal(snapshot.files[0].id, fileId);
+  assert.ok(snapshot.files.some(file => file.id === fileId));
   assert.equal(snapshot.records.find(row => row.kind === 'about').data.headline, about.headline);
   assert.equal(snapshot.records.find(row => row.id === guide.id).data.title, 'Hướng dẫn cập nhật lần hai');
   assert.equal(snapshot.records.find(row => row.id === sharedUnit.id).data.price, sharedUnit.price);
   assert.equal(snapshot.records.find(row => row.id === sharedArticle.id).data.title, sharedArticle.title);
   assert.equal(await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: cookie}}).then((r) => r.text()), '%PDF-1.4 test');
+  assert.equal((await fetch(origin + '/api/backgrounds').then(r => r.json())).backgrounds.default, backgroundUrl);
+  assert.equal((await fetch(origin + backgroundUrl)).headers.get('content-type'), 'image/png');
+
   assert.equal((await post('/api/auth/logout', {})).status, 303);
   assert.equal((await readState()).user, null);
 

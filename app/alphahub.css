@@ -1,7 +1,12 @@
 .site.public-site.alphahub-site{padding-top:0;background:transparent;--shell-mint:#b5f2ce;--shell-text:#ecfff3;--shell-muted:#c0ddcd}
 /* Shape colors sampled from the approved green gradient reference. */
 .ah,.ah-dialog{--ah-gradient-opacity:.88;--ah-gradient-glow:.32}
-.ah,.ah-dialog,.ah-news-section{--ah-shape-gradient:var(--theme-green-gradient)}
+.ah,.ah-dialog,.ah-news-section{
+  --ah-shape-gradient:
+    radial-gradient(ellipse 90% 65% at 0% 28%,rgb(0 161 156 / var(--ah-gradient-glow)) 0%,#00a19c00 74%),
+    radial-gradient(ellipse 90% 65% at 100% 25%,rgb(0 141 71 / var(--ah-gradient-glow)) 0%,#008d4700 74%),
+    linear-gradient(180deg,rgb(0 79 62 / var(--ah-gradient-opacity)) 0%,rgb(0 118 90 / var(--ah-gradient-opacity)) 15%,rgb(0 138 105 / var(--ah-gradient-opacity)) 32%,rgb(0 130 102 / var(--ah-gradient-opacity)) 50%,rgb(0 93 75 / var(--ah-gradient-opacity)) 70%,rgb(0 35 29 / var(--ah-gradient-opacity)) 100%);
+}
 .ah{position:relative;isolation:isolate;--ah-accent:#d3ffe7;--ah-muted:#effff5;--ah-line:#ffffff40;color:#ecfff3;background:transparent;font-family:var(--font-body);line-height:1.6;overflow:clip}
 .ah-container{width:min(1440px,calc(100% - 96px));margin-inline:auto}
 .ah h1,.ah h2,.ah h3{margin:0;color:inherit;letter-spacing:0}

@@ -1,31 +1,18 @@
-/* AlphaHub's approved gradient is the shared palette; pages keep their own layouts. */
-:root,.ah,.ah-dialog,.ah-news-section,.site-atmosphere-base{
-  --theme-green-gradient:
-    radial-gradient(ellipse 90% 65% at 0% 28%,rgb(0 161 156 / var(--theme-gradient-glow)) 0%,#00a19c00 74%),
-    radial-gradient(ellipse 90% 65% at 100% 25%,rgb(0 141 71 / var(--theme-gradient-glow)) 0%,#008d4700 74%),
-    linear-gradient(180deg,rgb(0 79 62 / var(--theme-gradient-opacity)) 0%,rgb(0 118 90 / var(--theme-gradient-opacity)) 15%,rgb(0 138 105 / var(--theme-gradient-opacity)) 32%,rgb(0 130 102 / var(--theme-gradient-opacity)) 50%,rgb(0 93 75 / var(--theme-gradient-opacity)) 70%,rgb(0 35 29 / var(--theme-gradient-opacity)) 100%);
-}
+/* The news page's emerald palette is the shared canvas for every route. */
 :root{
-  --theme-gradient-opacity:.88;
-  --theme-gradient-glow:.32;
-  --site-background:linear-gradient(180deg,#004f3e 0%,#00765a 15%,#008a69 32%,#008266 50%,#005d4b 70%,#00231d 100%);
-  --surface-dark:var(--theme-green-gradient);
-  --surface-light:linear-gradient(145deg,#fffffff0,#f2fff7de);
+  --site-background:radial-gradient(1100px 520px at 50% -80px,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%);
+  --surface-dark:linear-gradient(155deg,#ffffff18,#032e2352);
+  --surface-light:#f5fcf7d9;
   --surface-line:#ffffff30;
   --glass-blur:8px;
   --chrome-blur:12px;
-  --primary:#087e61;
-  --primary-foreground:#fff;
-  --ring:#31c395;
-  --accent:#e0f4e8;
-  --accent-foreground:#145d3c;
 }
-.ah,.ah-dialog,.ah-news-section{--theme-gradient-opacity:var(--ah-gradient-opacity);--theme-gradient-glow:var(--ah-gradient-glow)}
-html body{isolation:isolate;min-height:100dvh;background:var(--site-background)}
-/* A single fixed photo stays behind the content while the page scrolls naturally. */
-.site-atmosphere{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:var(--site-background)}
+html body{isolation:isolate;min-height:100dvh;background:var(--site-background);background-attachment:scroll}
+/* Only this decorative canvas changes; existing card, text and button colors stay intact. */
+.site-atmosphere{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,#004f3e 0%,#00765a 15%,#008a69 32%,#008266 50%,#005d4b 70%,#00231d 100%)}
 .site-atmosphere-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.65;filter:saturate(.95)}
-.site-atmosphere-base{position:absolute;inset:0;--theme-gradient-opacity:.46;--theme-gradient-glow:.18;background:var(--theme-green-gradient)}
+.site-atmosphere-base{position:absolute;inset:0;background:radial-gradient(ellipse 90% 65% at 0% 28%,#00a19c2e 0%,#00a19c00 74%),radial-gradient(ellipse 90% 65% at 100% 25%,#008d472e 0%,#008d4700 74%),linear-gradient(180deg,#004f3e75 0%,#00765a75 15%,#008a6975 32%,#00826675 50%,#005d4b75 70%,#00231d75 100%)}
+.site-atmosphere.is-alphahub{background:var(--site-background)}
 .site-atmosphere.is-alphahub .site-atmosphere-base{display:none}
 @media(hover:hover) and (pointer:fine){
   [data-atmosphere-text] small{color:var(--atmosphere-text-rest);-webkit-text-fill-color:currentColor;text-shadow:none}
@@ -48,7 +35,7 @@ html body{isolation:isolate;min-height:100dvh;background:var(--site-background)}
   background:var(--surface-dark);border-color:var(--surface-line);
   backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
 }
-.project-directory-site .pd-card-body{background:transparent}
+.project-directory-site .pd-card-body{background:linear-gradient(180deg,#043b2c30,#043b2c99)}
 .public-site>.site-header{background:linear-gradient(110deg,#154e40b8,#1763448c);backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
 .public-site>.site-footer{background:linear-gradient(180deg,#073b2ab8,#052c21d9);backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
 .admin-projects-site .admin-sidebar{background:#04271fcc;backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur))}
@@ -77,39 +64,10 @@ body .studio-header,.studio-layout .editor-panel{background:var(--surface-light)
 .studio-layout .workspace-heading{color:#fff}
 .studio-layout .workspace-note{color:#c3dfd0}
 
-/* Remaining public sections and admin/editor chrome share the same glass surfaces. */
-.public-site:not(.alphahub-site)>.site-header,
-.public-site:not(.alphahub-site)>.site-footer,
-.admin-projects-site :is(.admin-sidebar,.admin-topbar,.admin-welcome,.admin-content-sync),
-.project-directory-site .pd-consult,
-.news-site .nm-hotline,.public-sidebar .nm-hotline,
-.public-site .guide-list details,
-.studio-layout .unit-manager{
-  background:var(--surface-dark);border-color:var(--surface-line);
-  backdrop-filter:blur(var(--chrome-blur));-webkit-backdrop-filter:blur(var(--chrome-blur));
-}
-.public-site:not(.alphahub-site)>.site-footer{border-top-color:transparent}
-.public-site :is(.empty,.loading,.login-prompt,.article-card,.transaction-list article,.table-wrap,.zone-card,.location-panel,.asset-grid>a,.settings-card,.upload-panel){background:var(--surface-light);color:#183e2e;backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur))}
-.inventory-market-site .filter-panel{background:var(--surface-light)}
-.project-directory-site .pd-finder{background:var(--surface-light)}
-.public-site :is(.compare-bar,.trending-button){background:var(--surface-dark);color:#effff5}
-
-/* Functional plans, panorama media and export artwork retain their own backgrounds. */
-.punit-view[data-slot=dialog-content]{background:var(--surface-dark);--pu-gold:#188851;--pu-border:#d6e8dd}
-.punit-view .punit-rail-heading{color:#effff5}
-.punit-view .punit-rail-heading svg{color:#b5f2ce}
-.punit-view :is(.punit-stage,.punit-details,.punit-stage-scroll,.punit-stage-top,.punit-stage-bottom){background:var(--surface-light)}
-.immersive-site :is(.vt-workspace,.workspace-dock){background:var(--surface-light)}
-
-/* Chat controls use the same green palette while messages and form fields stay legible. */
-.project-chat-header{background:var(--surface-dark)}
-.project-chat-compose button,.chat-message.user,.dock-chat{background:linear-gradient(135deg,#00765a,#005d4b);color:#fff}
-.chat-result-links a,.chat-direct-links a{background:#edf9f2;color:#145d3c}
-.project-chat-panel[data-slot=dialog-content]{background:var(--surface-light)}
-
 .module-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:32px;font-size:14px}
 @media(max-width:760px){
   :root{--glass-blur:4px;--chrome-blur:6px}
+  :root{--site-background:radial-gradient(680px 420px at 50% -40px,#1f9d68 0%,transparent 62%),linear-gradient(180deg,#05241a 0%,#0a3a29 28%,#0f5a3d 62%,#137a51 100%)}
 }
 @media(prefers-reduced-motion:reduce){
   [data-atmosphere-text]{transition:none}

@@ -1,10 +1,11 @@
+import type {SiteBackgrounds} from './site-backgrounds';
 import {masteriAccountSnapshot} from './masteri-account-snapshot';
 export type Project={id:string;name:string;location:string;region:string;developer:string;category:string;status:string;image:string;hot:boolean;description:string;lat:number;lng:number;};
 export type Unit={drawing?:import('./green-paradise').UnitDrawing;tower?:string;id:string;code:string;projectId:string;category:string;zone:string;type:string;group:string;direction:string;area:number;builtArea:number;price:number;status:string;beds:number;floor:number;x:number;y:number;note:string;priceTts?:number|string;priceTttd?:number|string;priceLoan?:number|string;pricePerMeter?:number|string;totalPrice?:number|string;gift?:string;policyDate?:string;layoutUrl?:string;posterUrl?:string;sourceLabel?:string;sourceCheckedAt?:string;sourceUrl?:string;};
 export type Customer={id:string;name:string;phone:string;email:string;note:string;stage:string;};
 export type Article={id:string;title:string;category:string;body:string;date:string;image:string;};
 export type Asset={id:string;projectId:string;kind:string;name:string;url:string;};
-export type Settings={brand:string;phone:string;email:string;address:string;holdHours:number;notifications:boolean;profileName:string;};
+export type Settings={brand:string;phone:string;email:string;address:string;holdHours:number;notifications:boolean;profileName:string;backgrounds?:SiteBackgrounds;};
 export type Reservation={id:string;unit_id:string;customer_id:string;note:string;status:string;expires_at:number;created_at:number;};
 const rows=[
 ['ha-long','Vinhomes Global Gate Hạ Long','Tuần Châu, Quảng Ninh','Quảng Ninh','1789714544076_14d8d57f','low',20.95,107.03],

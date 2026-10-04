@@ -7,6 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {mockGoogle} from './mock-google.mjs';
 import {verifyPublicContent} from './public-content-test-helper.mjs';
+import {verifyMediaAssistant} from './media-assistant-test-helper.mjs';
 
 /**
  * Runs the real Worker on a local Cloudflare runtime with a disposable D1
@@ -305,6 +306,8 @@ try {
   assert.equal((await readState('')).files.find(file => file.id === backgroundId).kind, 'background', 'Decorative backgrounds stay out of project galleries');
 
 
+  const mediaVerified = await verifyMediaAssistant({origin,adminCookie,memberCookie,post,readState,project:grantedProject});
+
   form.set('projectId', 'missing-project');
   assert.equal((await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: cookie, Origin: origin}, body: form})).status, 400, 'Uploads cannot create orphan project assets');
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: true})).status, 200);
@@ -378,6 +381,9 @@ try {
   snapshot = await readState();
   assert.equal(snapshot.records.find((r) => r.id === customer.id).data.name, customer.name);
   assert.ok(snapshot.files.some(file => file.id === fileId));
+  for(const url of [mediaVerified.originalUrl,mediaVerified.projectUrl,mediaVerified.articleUrl])assert.equal((await fetch(origin+url)).status,200,'Images persist across Worker restart');
+  assert.equal(snapshot.records.find(r=>r.id===mediaVerified.projectId).data.image,mediaVerified.projectUrl);
+  assert.equal(snapshot.records.find(r=>r.id===mediaVerified.articleId).data.image,mediaVerified.articleUrl);
   assert.equal(snapshot.records.find(row => row.kind === 'about').data.headline, about.headline);
   assert.equal(snapshot.records.find(row => row.id === guide.id).data.title, 'Hướng dẫn cập nhật lần hai');
   assert.equal(snapshot.records.find(row => row.id === sharedUnit.id).data.price, sharedUnit.price);
@@ -390,7 +396,7 @@ try {
   assert.equal((await post('/api/auth/logout', {})).status, 303);
   assert.equal((await readState()).user, null);
 
-  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, Google sign-in log, grant and revoke content edits, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, shared About/Guides/contact content rendered by public components, hidden guide overrides, content route permissions and validation, Next.js pages, persistence across restart, logout revocation.');
+  console.log('PASS (disposable local D1 + R2; not a live cloud test): Google PKCE with state binding, one-time codes, admin allowlist, rejected unverified identities, member signup/login in D1, member isolation from the admin area, Google sign-in log, grant and revoke content edits, rejected spoofed identity, CSRF, optional admin password, HttpOnly sessions, customer persistence, atomic holds, extension and cancellation, protected upload and download, website lead form, private records hidden from the public API, shared About/Guides/contact content rendered by public components, hidden guide overrides, content route permissions and validation, Next.js pages, persistence across restart, logout revocation; media staging and replacement, original retention and image publication, AI chat permissions, MCP file metadata, OAuth PKCE/CSRF/audience/code replay/refresh rotation/revocation, external image updates and persistence.');
 } catch (error) {
   console.error(error);
   if (logs) console.error(logs.slice(-4000));

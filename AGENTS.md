@@ -28,6 +28,12 @@
 - GitHub lưu mã nguồn. Cloudflare D1 và R2 lưu dữ liệu ứng dụng và file; không đưa dữ liệu khách hàng, file tải lên hay thông tin bí mật vào GitHub.
 - Quy trình này áp dụng cho các tác vụ đã được yêu cầu; vẫn tuân thủ các yêu cầu quyền truy cập bắt buộc và không tự ý thực hiện thao tác phá hủy ngoài phạm vi công việc.
 
+## Cập nhật ảnh và chat ngày 04/10/2026
+
+- Yêu cầu mới này cho phép triển khai website thật sau khi sửa lỗi ảnh và thêm chat ảnh, thay cho giới hạn chỉ push GitHub ở trên trong phạm vi tác vụ này. Chỉ deploy đúng Worker/tài khoản hiện có khi đã có quyền truy cập; không dùng tài khoản preview thay thế.
+- Ảnh admin/chat lưu nguyên bản vào R2 và metadata/tham chiếu D1; không xóa ảnh cũ khi thay ảnh. Luồng upload dùng `lib/media-storage.ts`; vị trí và cập nhật dùng `lib/media-actions.ts`. Chat và MCP chỉ sửa ảnh công khai, không đọc dữ liệu khách hàng hay sửa quyền tài khoản.
+- Mục AI sửa website hỗ trợ ChatGPT/Claude và Áp dụng trực tiếp. Connector ngoài cần OAuth bằng tài khoản admin allowlist; không tin identity header từ ChatGPT/Claude. Chạy migration 0003 trước khi sử dụng. Xem README-media.md để triển khai/kết nối và biết giới hạn truyền file của từng client. Không khẳng định đã nối ứng dụng hoặc đã deploy chỉ vì code đã được push.
+
 ## Ảnh, video và dung lượng repository
 
 - Repository chỉ giữ code và asset thật sự cần cho giao diện/build, như logo, icon, font và ảnh mẫu nhỏ. Ảnh/video dung lượng lớn, media gốc và file người dùng tải lên lưu ở object storage; không đưa vào GitHub hoặc checkout Codex nếu công việc không cần đến chúng.

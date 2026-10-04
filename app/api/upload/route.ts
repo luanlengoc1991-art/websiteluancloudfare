@@ -1,4 +1,17 @@
-import {seedProjects} from '@/lib/catalog';
 import {isSameOrigin} from '@/lib/request-origin';
-import {getSignedInUser} from '@/lib/auth';import {database,bucket} from '@/db/store';
-export async function POST(req:Request){try{if(!isSameOrigin(req))return Response.json({error:'Yêu cầu không hợp lệ'},{status:403});const user=await getSignedInUser();if(!user)return Response.json({error:'Vui lòng đăng nhập.'},{status:401});if(!user.canEdit)return Response.json({error:'Chỉ tài khoản quản trị được tải tài liệu lên.'},{status:403});if(Number(req.headers.get('content-length')||0)>4.25*1024*1024)return Response.json({error:'Tối đa 4 MB mỗi file.'},{status:413});const form=await req.formData(),file=form.get('file'),project=String(form.get('projectId')||''),kind=String(form.get('kind')||'');if(!(file instanceof File)||!file.size||file.size>4*1024*1024||!project||project.length>100||!['gallery','plan','panorama','document','model','amenity','background'].includes(kind))return Response.json({error:'Kiểm tra file, dự án và loại tài liệu; tối đa 4 MB.'},{status:400});if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)||(kind!=='document'&&file.type==='application/pdf'))return Response.json({error:'Chỉ hỗ trợ JPG, PNG, WEBP và tài liệu PDF.'},{status:400});if(kind==='background'&&!user.isAdmin)return Response.json({error:'Chỉ quản trị được đổi ảnh nền website.'},{status:403});if(!(kind==='background'&&project==='site-backgrounds')&&!seedProjects.some(p=>p.id===project)&&!await database().prepare("SELECT id FROM records WHERE owner='admin' AND kind='project' AND id=?").bind(project).first())return Response.json({error:'Dự án không tồn tại.'},{status:400});const id=crypto.randomUUID(),key=`admin/${id}`;await bucket().put(key,await file.arrayBuffer(),{httpMetadata:{contentType:file.type}});try{await database().prepare('INSERT INTO files(id,owner,project_id,kind,name,mime,object_key) VALUES(?,?,?,?,?,?,?)').bind(id,'admin',project,kind,file.name.slice(0,200),file.type,key).run();}catch(e){await bucket().delete(key);throw e;}return Response.json({ok:true,id});}catch(e){console.error(e);return Response.json({error:'Không thể tải file lên. Vui lòng thử lại.'},{status:503});}}
+import {getSignedInUser} from '@/lib/auth';
+import {mediaLimit, mediaFailure, storeMedia} from '@/lib/media-storage';
+
+export async function POST(req: Request) {
+  try {
+    if (!isSameOrigin(req)) return Response.json({error: 'Yêu cầu không hợp lệ.'}, {status: 403});
+    const user = await getSignedInUser();
+    if (!user) return Response.json({error: 'Vui lòng đăng nhập.'}, {status: 401});
+    if (!user.canEdit) return Response.json({error: 'Tài khoản chưa được cấp quyền tải ảnh.'}, {status: 403});
+    if (Number(req.headers.get('content-length') || 0) > mediaLimit + 256 * 1024) return Response.json({error: 'Tối đa 4 MB mỗi file.'}, {status: 413});
+    const form = await req.formData(), file = form.get('file');
+    if (!(file instanceof File)) return Response.json({error: 'Vui lòng chọn file.'}, {status: 400});
+    const saved = await storeMedia(file, String(form.get('projectId') || ''), String(form.get('kind') || ''), user.isAdmin);
+    return Response.json({ok: true, ...saved}, {headers: {'Cache-Control': 'no-store'}});
+  } catch (error) { return mediaFailure(error); }
+}

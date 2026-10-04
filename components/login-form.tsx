@@ -20,7 +20,7 @@ export default function LoginForm({mode='login'}:{mode?:'login'|'signup'}){
   try{
    const response=await fetch('/api/auth/'+(signup?'signup':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:data.get('email'),password:data.get('password'),name:data.get('name')})});
    const result=await response.json();if(!response.ok)throw new Error(result.error||'Không thể xử lý. Vui lòng thử lại.');
-   if(result.redirect){window.location.assign(result.redirect);return;}
+   if(result.redirect){const destination=target.startsWith('/')&&!target.startsWith('//')&&!/[\\\x00-\x20]/.test(target)&&target!=='/tai-khoan'?target:result.redirect;window.location.assign(destination);return;}
    setMessage(result.message);form.reset();
   }catch(e){setError(e instanceof Error?e.message:'Kết nối gián đoạn. Vui lòng thử lại.');}finally{setBusy(false);}
  }

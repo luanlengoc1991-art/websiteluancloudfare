@@ -7,11 +7,10 @@
 Lấy `main` mới nhất, chạy `npm ci`, đăng nhập Cloudflare đúng tài khoản đang có Worker `websiteluancloudfare`, rồi:
 
 ```bash
-npm run db:migrate
 npm run deploy
 ```
 
-Migration `0003_media_assistant.sql` thêm lịch sử đổi ảnh và thông tin OAuth cho kết nối AI. Phải chạy migration trước khi mở mục chat ảnh. Không đổi tên database, bucket hoặc binding; không dùng `wrangler deploy --temporary` thay website thật.
+`npm run deploy` tự dựng Worker, áp dụng migration D1 cần thiết rồi deploy; giữ nguyên các biến runtime/secret hiện có bằng `--keep-vars`. Migration `0003_media_assistant.sql` thêm lịch sử đổi ảnh và thông tin OAuth cho kết nối AI. Phải chạy migration trước khi mở mục chat ảnh. Không đổi tên database, bucket hoặc binding; không dùng `wrangler deploy --temporary` thay website thật.
 
 Sau triển khai, thử bằng một dự án thử: đổi ảnh trong Quản trị → Dự án, bấm Lưu thông tin, mở trang công khai trong cửa sổ chưa đăng nhập, rồi kiểm tra ảnh cũ trong Thư viện. Có thể quay lại ảnh cũ bằng danh sách ảnh đã lưu. Các lần đổi ảnh/nền tiếp theo chỉ cập nhật R2/D1, không cần triển khai lại code. Trang công khai đang mở nhận dữ liệu mới khi mở lại, đổi tab hoặc trong chu kỳ cập nhật 60 giây.
 

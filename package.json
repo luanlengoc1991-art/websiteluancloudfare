@@ -10,7 +10,7 @@
     "build": "next build --webpack",
     "build:worker": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy": "npm run build:worker && npm run db:migrate && opennextjs-cloudflare deploy --keep-vars",
     "start": "next start",
     "setup": "node scripts/setup.mjs",
     "admin:password": "node scripts/admin-password.mjs",

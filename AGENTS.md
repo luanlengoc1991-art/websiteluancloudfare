@@ -19,7 +19,7 @@
 - Chủ dự án có thể yêu cầu sửa code và giao diện ngay trong cuộc trò chuyện Codex này. Codex xử lý trong checkout cloud hiện có, kiểm tra rồi cập nhật GitHub; không cần chuyển yêu cầu sang GPT khác. Quy tắc được lưu trong repository để các thiết bị và phiên làm việc lấy cùng hướng dẫn khi clone/pull.
 - Với công việc chủ dự án yêu cầu, thực hiện đầy đủ, kiểm tra phù hợp, commit và push trực tiếp lên `origin/main`. Chủ dự án đã cho phép quy trình này; không hỏi lại xác nhận cho các bước thông thường.
 - Trước khi push, fetch lại để phát hiện thay đổi từ model hoặc thiết bị khác; nếu `main` đã tiến thêm, tích hợp thay đổi, xử lý xung đột và kiểm tra lại phần bị ảnh hưởng rồi mới push. Không force-push hoặc bỏ commit của người khác. Sau khi push, xác nhận commit đã có trên GitHub và báo mã commit.
-- Chủ dự án yêu cầu chỉ cập nhật GitHub để tự triển khai bằng Cursor. Codex commit và push lên `main`, không chạy lệnh triển khai, không điều khiển Cloudflare hoặc chờ triển khai. Báo kết quả theo commit GitHub. Kết nối Workers Builds có sẵn có thể vẫn tự build khi push; không tự thay đổi cấu hình kết nối này.
+- Theo chỉ dẫn mới nhất ngày 04/10/2026, mặc định xử lý trên website thật: kiểm tra, commit/push GitHub `main`, chạy migration cần thiết và deploy đúng Cloudflare Worker hiện có khi đã có quyền truy cập. Không hỏi lại cho thao tác thông thường đã được yêu cầu. Nếu người dùng chỉ yêu cầu cập nhật GitHub hoặc dặn chưa deploy trong một tác vụ cụ thể thì làm theo giới hạn đó. Kết nối Workers Builds có sẵn có thể tự build khi push; không tự thay đổi cấu hình kết nối này.
 - Khi triển khai bằng Cursor, lấy bản `main` mới nhất từ đúng repository GitHub này, bảo toàn thay đổi local và xác nhận phiên bản triển khai đã được push lên GitHub. Mã dùng để triển khai phải khớp commit trên GitHub; không dùng bản sửa chỉ còn ở một máy hoặc cuộc trò chuyện. Nếu GitHub có cập nhật mới trong lúc chuẩn bị, đồng bộ và kiểm tra lại trước khi triển khai.
 - Code và giao diện phải phù hợp với Cloudflare Workers qua OpenNext và các binding D1/R2 hiện có. Không dựa vào server Node chạy lâu dài hoặc filesystem local để lưu dữ liệu bền vững; kiểm tra tương thích runtime khi thêm dependency hoặc API mới. Với thay đổi ứng dụng, chạy typecheck/build và test phù hợp; thay đổi backend hoặc binding cần kiểm thử Worker local trước khi push. Nếu cần migration hay biến môi trường mới, báo rõ hướng dẫn để chủ dự án thực hiện khi triển khai bằng Cursor.
 - Cloudflare dùng build token của chính Worker, không cần secret trên GitHub. Biến runtime (`ALPHA_ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) đặt trong Settings của Worker, không commit.
@@ -30,9 +30,16 @@
 
 ## Cập nhật ảnh và chat ngày 04/10/2026
 
-- Yêu cầu mới này cho phép triển khai website thật sau khi sửa lỗi ảnh và thêm chat ảnh, thay cho giới hạn chỉ push GitHub ở trên trong phạm vi tác vụ này. Chỉ deploy đúng Worker/tài khoản hiện có khi đã có quyền truy cập; không dùng tài khoản preview thay thế.
+- Chỉ deploy đúng Worker/tài khoản hiện có khi đã có quyền truy cập; không dùng tài khoản preview thay thế. `npm run deploy` dựng Worker, chạy migration D1 rồi deploy với `--keep-vars`; giữ biến runtime và secret đang cấu hình trên Cloudflare.
 - Ảnh admin/chat lưu nguyên bản vào R2 và metadata/tham chiếu D1; không xóa ảnh cũ khi thay ảnh. Luồng upload dùng `lib/media-storage.ts`; vị trí và cập nhật dùng `lib/media-actions.ts`. Chat và MCP chỉ sửa ảnh công khai, không đọc dữ liệu khách hàng hay sửa quyền tài khoản.
 - Mục AI sửa website hỗ trợ ChatGPT/Claude và Áp dụng trực tiếp. Connector ngoài cần OAuth bằng tài khoản admin allowlist; không tin identity header từ ChatGPT/Claude. Chạy migration 0003 trước khi sử dụng. Xem README-media.md để triển khai/kết nối và biết giới hạn truyền file của từng client. Không khẳng định đã nối ứng dụng hoặc đã deploy chỉ vì code đã được push.
+
+## Quy tắc quản trị lâu dài ngày 04/10/2026
+
+- Mặc định ảnh và tài liệu người dùng tải lên admin hoặc chat là dữ liệu thật: lưu R2 `alpha-assets`, giữ metadata/tham chiếu trong D1 `alpha-hub`. Dữ liệu quản trị, nội dung, lựa chọn ảnh/nền và cài đặt chỉnh từ admin nằm trong D1 để áp dụng ngay trên website thật; không chuyển thành asset trong GitHub.
+- Mã nguồn, giao diện, cấu hình build/triển khai, migration và hướng dẫn tiếp tục phát triển phải lưu GitHub `luanlengoc1991-art/websiteluancloudfare` / `main`. Secret và thông tin riêng chỉ ở Cloudflare, không đưa lên GitHub.
+- Tối ưu thao tác: đọc hướng dẫn hiện hành và fetch khi bắt đầu tác vụ; trước push fetch lại để bảo toàn công việc thiết bị khác. Trong cùng tác vụ, không hỏi lại quyền đã có, không đọc lại tài liệu hoặc chạy lại kiểm tra đã qua nếu không có thay đổi/lỗi/lo ngại mới. Chỉ yêu cầu đăng nhập khi thực sự thiếu quyền truy cập, hoặc hỏi khi thiếu thông tin thiết yếu không suy ra được.
+- Khi tiếp tục bằng Codex, Cursor hoặc Claude: lấy main mới nhất, dùng cùng Worker/DB/R2, không dựng kho media hoặc website riêng. Thay ảnh/nội dung trong admin cập nhật D1/R2 trực tiếp, không cần build/deploy mỗi ảnh. Không sửa palette/bố cục ngoài yêu cầu cụ thể.
 
 ## Ảnh, video và dung lượng repository
 

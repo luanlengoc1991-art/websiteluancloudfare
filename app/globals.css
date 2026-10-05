@@ -423,3 +423,32 @@
 
 /* Vinh Tien: saved source drawing, scoped to Green Paradise. */
 .vt-workspace{position:absolute;inset:150px 360px 115px 90px;z-index:5;overflow:auto;padding:18px;background:#eaf0ed;border-radius:16px;color:#153e34}.vt-workspace.vt-expanded{right:90px}.vt-source-status{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:12px}.vt-source-status a,.vt-drawing header a{color:#087f69;text-decoration:underline}.vt-drawing{container-type:inline-size;background:#fff;color:#154137;border-radius:12px;overflow:hidden;width:100%}.vt-drawing header{padding:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}.vt-drawing h2{font-size:26px;margin:5px 0}.vt-drawing small{font-size:12px}.vt-drawing header a{font-size:14px}.vt-facts{display:flex;justify-content:space-between;gap:12px;background:#064e40;color:white;padding:14px 18px}.vt-facts strong{color:#ffdf81;white-space:nowrap}.vt-frame{position:relative;overflow:hidden;width:96.7%;margin:1.65%;height:42cqw;background:#d9e5df}.vt-frame>img{position:absolute;left:50%;top:50%;max-width:none;object-fit:fill}.vt-marker{position:absolute;display:flex;align-items:center;font-size:4cqw;white-space:nowrap;z-index:2;transform-origin:center}.vt-marker b{font-size:2cqw;background:#c2172e;color:white;border:1px solid #f4d373;border-radius:.6cqw;padding:1cqw 2cqw;box-shadow:0 2px 9px #0005}.vt-lower{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr);gap:1.35cqw;margin:0 1.65%;height:76cqw}.vt-lower .vt-frame{width:100%;height:100%;margin:0}.vt-lower>div:last-child{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:1.35cqw;overflow:hidden}.vt-lower>div:last-child img{width:100%;height:100%;object-fit:cover}.vt-drawing footer{padding:16px;font-size:13px}.vt-empty{padding:32px}.vt-workspace>.button{margin-top:14px}@media(max-width:900px){.vt-workspace{inset:135px 320px 100px 18px}.vt-workspace.vt-expanded{right:18px}.vt-drawing header{flex-wrap:wrap}.vt-facts{flex-wrap:wrap}}@media(max-width:640px){.vt-workspace,.vt-workspace.vt-expanded{inset:125px 12px 105px}.vt-workspace{padding:10px}.vt-source-status{flex-wrap:wrap}.vt-drawing h2{font-size:22px}}
+/* Mặt bằng mã căn theo loại quỹ */
+.immersive-plan.plan-board{overflow:hidden}
+.plan-board .plan-stage{position:relative;width:100%;transform-origin:center center;transition:transform .2s;touch-action:none}
+.plan-board .plan-stage img{width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none}
+.plan-pin{z-index:1;cursor:pointer}
+.plan-pin.is-edit{cursor:grab}
+.plan-pin.is-active{outline:3px solid #fff;box-shadow:0 0 0 2px #0007,0 3px 12px #0005;z-index:3}
+.plan-legend{position:absolute;top:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;z-index:5}
+.plan-legend-item{display:inline-flex;align-items:center;gap:6px;background:#ffffffee;border:1px solid #00000014;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:600;color:#1f2430;box-shadow:0 2px 8px #0002}
+.plan-legend-item .dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
+.plan-legend-item b{font-weight:800}
+.plan-legend-item.off{opacity:.45;text-decoration:line-through}
+.plan-legend-item.static{cursor:default}
+.plan-edit-toggle{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;border:1px solid #2c795b;background:#fff;color:#2c795b;box-shadow:0 2px 8px #0002}
+.plan-edit-toggle.on{background:#2c795b;color:#fff}
+.plan-editor{position:absolute;right:12px;bottom:12px;width:min(282px,calc(100% - 24px));max-height:62%;overflow:auto;background:#fffffff7;backdrop-filter:blur(6px);border:1px solid #00000014;border-radius:14px;padding:14px;z-index:6;box-shadow:0 12px 32px #0003;display:flex;flex-direction:column;gap:9px}
+.plan-editor-head{display:flex;align-items:center;justify-content:space-between}
+.plan-editor-head strong{font-size:15px}
+.plan-muted{color:#5f6a80;font-size:12.5px;margin:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.plan-fund-row{display:flex;flex-direction:column;gap:5px}
+.plan-fund-row button{display:flex;align-items:center;gap:7px;border:1px solid #00000022;background:#fff;border-radius:9px;padding:7px 10px;font-size:12.5px;font-weight:600;color:#1f2430;text-align:left}
+.plan-fund-row .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.plan-code-list{display:flex;flex-direction:column;gap:3px;max-height:198px;overflow:auto}
+.plan-code{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid transparent;background:#f2f4f7;border-radius:8px;padding:6px 9px;font-size:12.5px;text-align:left;color:#1f2430}
+.plan-code.cur{background:#2c795b;color:#fff}
+.plan-code .m{font-weight:700}
+.plan-code small{opacity:.75}
+.plan-remove{color:#e0312b}
+@media(max-width:900px){.plan-editor{width:min(248px,calc(100% - 20px))}}

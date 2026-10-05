@@ -40,6 +40,13 @@
 - Mã nguồn, giao diện, cấu hình build/triển khai, migration và hướng dẫn tiếp tục phát triển phải lưu GitHub `luanlengoc1991-art/websiteluancloudfare` / `main`. Secret và thông tin riêng chỉ ở Cloudflare, không đưa lên GitHub.
 - Tối ưu thao tác: đọc hướng dẫn hiện hành và fetch khi bắt đầu tác vụ; trước push fetch lại để bảo toàn công việc thiết bị khác. Trong cùng tác vụ, không hỏi lại quyền đã có, không đọc lại tài liệu hoặc chạy lại kiểm tra đã qua nếu không có thay đổi/lỗi/lo ngại mới. Chỉ yêu cầu đăng nhập khi thực sự thiếu quyền truy cập, hoặc hỏi khi thiếu thông tin thiết yếu không suy ra được.
 - Khi tiếp tục bằng Codex, Cursor hoặc Claude: lấy main mới nhất, dùng cùng Worker/DB/R2, không dựng kho media hoặc website riêng. Thay ảnh/nội dung trong admin cập nhật D1/R2 trực tiếp, không cần build/deploy mỗi ảnh. Không sửa palette/bố cục ngoài yêu cầu cụ thể.
+- Triển khai: push `main` → Cloudflare Workers Builds tự build và deploy Worker `websiteluancloudfare` (đã xác nhận 05/10/2026). Kiểm tra bằng check-run "Workers Builds: websiteluancloudfare" trên commit. Không cần wrangler login cho thay đổi code thường.
+
+## Mặt bằng mã căn (05/10/2026)
+
+- Tab "Mặt bằng" dùng `components/plan-board.tsx`: pin mã căn màu theo loại quỹ (`lib/plan-funds.ts`: độc quyền đỏ, ăn chia vàng, thường xanh; đã bán xám), chú thích lọc theo quỹ, và trình cắm/kéo/đổi quỹ/gỡ pin cho người có quyền sửa.
+- Pin lưu trong D1 bảng `records` với `kind='pin'`, id `<projectId>|<MÃ CĂN>`, payload `{projectId,code,x,y,fund}` (x/y là % trên ảnh). Lưu/xóa qua `/api/action` (`save`/`delete`). Giá, trạng thái vẫn lấy từ bảng hàng; pin chỉ là lớp phủ vị trí.
+- Ảnh nền mặt bằng là file `kind='plan'` của dự án, tải ở Quản trị → Thư viện. Bật cho Green Paradise và cho mọi dự án khi người xem có quyền sửa; dự án khác chưa có pin giữ cách hiển thị cũ.
 
 ## Ảnh, video và dung lượng repository
 

@@ -14,9 +14,13 @@ export const fundColor = (key: string) => fundMap.get(key as FundKey)?.color || 
 export const fundLabel = (key: string) => fundMap.get(key as FundKey)?.label || funds[0].label;
 export const isFundKey = (v: unknown): v is FundKey => typeof v === 'string' && fundKeys.includes(v as FundKey);
 
-/** Lớp phủ vị trí + loại quỹ cho một mã căn, lưu trong records (kind='pin'). */
-export type UnitPin = {projectId: string; code: string; x: number; y: number; fund: FundKey};
-export const pinId = (projectId: string, code: string) => `${projectId}|${code.trim().toUpperCase()}`;
+/** 'plan' = tab Mặt bằng (ảnh mặt bằng tải lên), 'map' = tab Quỹ căn 360° (bản đồ phối cảnh tổng thể). */
+export type PinLayer = 'plan' | 'map';
+
+/** Lớp phủ vị trí + loại quỹ cho một mã căn, lưu trong records (kind='pin'). Thiếu layer = 'plan'. */
+export type UnitPin = {projectId: string; code: string; layer?: PinLayer; x: number; y: number; fund: FundKey};
+export const pinLayer = (p: {layer?: string}): PinLayer => p.layer === 'map' ? 'map' : 'plan';
+export const pinId = (projectId: string, code: string, layer: PinLayer = 'plan') => `${projectId}|${layer === 'map' ? 'map|' : ''}${code.trim().toUpperCase()}`;
 
 /** Suy ra loại quỹ mặc định từ trường group sẵn có của căn. */
 export function fundFromGroup(group?: string): FundKey {

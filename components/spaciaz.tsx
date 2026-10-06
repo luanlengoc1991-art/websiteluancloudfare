@@ -231,33 +231,52 @@ function Quotes({faq, image}: {faq: AboutContent['faq']; image?: string}) {
 }
 
 /* ═══════════════════════════ Dự án ═══════════════════════════ */
+const budgets: [string, string, number, number][] = [['lt10', 'Dưới 10 tỷ', 0, 10], ['10-20', '10 – 20 tỷ', 10, 20], ['20-50', '20 – 50 tỷ', 20, 50], ['gt50', 'Trên 50 tỷ', 50, Infinity]];
+const PER_PAGE = 9;
+const blank = {status: '', type: '', region: '', budget: '', query: ''};
+
 export function SpaciazProjects({projects, units, favorites, onFavorite}: {projects: Project[]; units: Unit[]; favorites: Set<string>; onFavorite: (id: string) => void}) {
-  const [status, setStatus] = useState(''), [type, setType] = useState(''), [region, setRegion] = useState(''), [developer, setDeveloper] = useState(''), [query, setQuery] = useState('');
-  const [applied, setApplied] = useState({status: '', type: '', region: '', developer: '', query: ''});
+  const [draft, setDraft] = useState(blank), [applied, setApplied] = useState(blank), [page, setPage] = useState(1);
+  const top = useRef<HTMLDivElement>(null);
   const options = (key: keyof Project) => Array.from(new Set(projects.map(p => String(p[key])).filter(Boolean))).sort();
   const norm = (s: string) => s.toLocaleLowerCase('vi').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
-  const list = projects.filter(p => (!applied.status || p.status === applied.status) && (!applied.type || p.category === applied.type) && (!applied.region || p.region === applied.region) && (!applied.developer || p.developer === applied.developer) && (!applied.query || norm(`${p.name} ${p.location} ${p.developer}`).includes(norm(applied.query))));
+  const prices = useMemo(() => {const m = new Map<string, number[]>(); for (const u of units) if (u.price > 0) m.set(u.projectId, [...(m.get(u.projectId) || []), u.price]); return m;}, [units]);
   const count = (id: string) => units.filter(u => u.projectId === id).length;
+  const inBudget = (p: Project) => {
+    if (!applied.budget) return true;
+    const b = budgets.find(x => x[0] === applied.budget), v = prices.get(p.id);
+    return !!b && !!v && v.some(price => price >= b[2] && price < b[3]);
+  };
+  const list = projects.filter(p => (!applied.status || p.status === applied.status) && (!applied.type || p.category === applied.type) && (!applied.region || p.region === applied.region) && inBudget(p) && (!applied.query || norm(`${p.name} ${p.location} ${p.developer}`).includes(norm(applied.query))));
+  const pages = Math.max(1, Math.ceil(list.length / PER_PAGE)), current = Math.min(page, pages);
+  const shown = list.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const filtered = Object.values(applied).some(Boolean);
+  const go = (n: number) => {setPage(n); top.current?.scrollIntoView({behavior: 'smooth', block: 'start'});};
+  const set = (key: keyof typeof blank) => (e: {target: {value: string}}) => setDraft({...draft, [key]: e.target.value});
   return <div className="sz">
     <Banner title="Dự án" aside="Danh mục dự án Vinhomes, Masterise và các chủ đầu tư uy tín: vị trí, quỹ căn, mặt bằng và trải nghiệm 360°."/>
     <Sheet>
-      <section className="sz-wrap sz-listing">
-        <form className="sz-filter" onSubmit={e => {e.preventDefault(); setApplied({status, type, region, developer, query});}} data-fx="">
-          <label className="sz-filter-search"><Search size={16}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tên dự án, địa điểm…" aria-label="Tìm dự án"/></label>
-          <select value={status} onChange={e => setStatus(e.target.value)} aria-label="Trạng thái"><option value="">Trạng thái</option>{options('status').map(v => <option key={v}>{v}</option>)}</select>
-          <select value={type} onChange={e => setType(e.target.value)} aria-label="Loại hình"><option value="">Loại hình</option><option value="low">Thấp tầng</option><option value="high">Cao tầng</option></select>
-          <select value={region} onChange={e => setRegion(e.target.value)} aria-label="Khu vực"><option value="">Khu vực</option>{options('region').map(v => <option key={v}>{v}</option>)}</select>
-          <select value={developer} onChange={e => setDeveloper(e.target.value)} aria-label="Chủ đầu tư"><option value="">Chủ đầu tư</option>{options('developer').map(v => <option key={v}>{v}</option>)}</select>
+      <section className="sz-wrap sz-listing" ref={top}>
+        <form className="sz-filter" onSubmit={e => {e.preventDefault(); setApplied(draft); setPage(1);}} data-fx="">
+          <label className="sz-filter-search"><Search size={16}/><input value={draft.query} onChange={set('query')} placeholder="Tên dự án, địa điểm…" aria-label="Tìm dự án"/></label>
+          <select value={draft.status} onChange={set('status')} aria-label="Trạng thái"><option value="">Trạng thái</option>{options('status').map(v => <option key={v}>{v}</option>)}</select>
+          <select value={draft.type} onChange={set('type')} aria-label="Loại hình"><option value="">Loại hình</option><option value="low">Thấp tầng</option><option value="high">Cao tầng</option></select>
+          <select value={draft.region} onChange={set('region')} aria-label="Khu vực"><option value="">Khu vực</option>{options('region').map(v => <option key={v}>{v}</option>)}</select>
+          <select value={draft.budget} onChange={set('budget')} aria-label="Khoảng giá"><option value="">Khoảng giá</option>{budgets.map(b => <option key={b[0]} value={b[0]}>{b[1]}</option>)}</select>
           <button className="sz-pill-btn">Tìm kiếm</button>
         </form>
-        <p className="sz-result">Hiển thị <b>{list.length}</b> / {projects.length} dự án{(applied.status || applied.type || applied.region || applied.developer || applied.query) && <button type="button" onClick={() => {setStatus(''); setType(''); setRegion(''); setDeveloper(''); setQuery(''); setApplied({status: '', type: '', region: '', developer: '', query: ''});}}>Xóa bộ lọc</button>}</p>
-        <div className="sz-project-grid">{list.map(p => <article key={p.id} className="sz-project" data-fx="zoom">
+        <p className="sz-result">Hiển thị <b>{list.length}</b> / {projects.length} dự án{filtered && <button type="button" onClick={() => {setDraft(blank); setApplied(blank); setPage(1);}}>Xóa bộ lọc</button>}</p>
+        <div className="sz-project-grid">{shown.map(p => <article key={p.id} className="sz-project" data-fx="zoom">
           <Link href={projectPath(p.id)} className="sz-project-link" aria-label={p.name}><Img src={p.image} alt={p.name}/></Link>
           <span className="sz-status">{p.status}</span>
           <button type="button" className={'sz-heart' + (favorites.has(p.id) ? ' is-on' : '')} aria-label={`Yêu thích ${p.name}`} aria-pressed={favorites.has(p.id)} onClick={() => onFavorite(p.id)}><Heart size={16} fill={favorites.has(p.id) ? 'currentColor' : 'none'}/></button>
           <div className="sz-project-text"><span><MapPin size={14}/>{p.location}<em>{count(p.id)} căn</em></span><h3><Link href={projectPath(p.id)}>{p.name}</Link></h3></div>
         </article>)}</div>
         {!list.length && <div className="sz-empty"><Search size={28}/><h3>Không tìm thấy dự án phù hợp</h3><p>Thử bỏ bớt điều kiện lọc.</p></div>}
+        {pages > 1 && <nav className="sz-pages" aria-label="Phân trang dự án">
+          {Array.from({length: pages}, (_, i) => i + 1).map(n => <button key={n} type="button" className={n === current ? 'is-on' : ''} aria-current={n === current ? 'page' : undefined} onClick={() => go(n)}>{n}</button>)}
+          {current < pages && <button type="button" aria-label="Trang sau" onClick={() => go(current + 1)}><ChevronRight size={16}/></button>}
+        </nav>}
       </section>
     </Sheet>
   </div>;

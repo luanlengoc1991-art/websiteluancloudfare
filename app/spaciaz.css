@@ -484,3 +484,8 @@
 .sz-learn-card .sz-learn-art{height:36%;width:62%}
 .sz-learn-card.is-1 p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media(max-width:700px){.sz-hero-copy h1{font-size:40px;line-height:1}.sz-hero-copy p{font-size:15px}}
+.sz-listing{scroll-margin-top:110px}
+.sz-pages{display:flex;gap:10px;align-items:center;padding-bottom:110px;margin-top:-60px}
+.sz-pages button{width:46px;height:46px;border-radius:50%;border:0;background:transparent;font:600 14px var(--font-sans,'Be Vietnam Pro',sans-serif);color:var(--sz-ink);display:grid;place-items:center;cursor:pointer;transition:background .3s}
+.sz-pages button:hover{background:var(--sz-soft)}
+.sz-pages button.is-on{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))}

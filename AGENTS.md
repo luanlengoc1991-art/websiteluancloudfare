@@ -47,6 +47,7 @@
 - Tab "Mặt bằng" dùng `components/plan-board.tsx`: pin mã căn màu theo loại quỹ (`lib/plan-funds.ts`: độc quyền đỏ, ăn chia vàng, thường xanh; đã bán xám), chú thích lọc theo quỹ, và trình cắm/kéo/đổi quỹ/gỡ pin cho người có quyền sửa.
 - Pin lưu trong D1 bảng `records` với `kind='pin'`, id `<projectId>|<MÃ CĂN>`, payload `{projectId,code,x,y,fund}` (x/y là % trên ảnh). Lưu/xóa qua `/api/action` (`save`/`delete`). Giá, trạng thái vẫn lấy từ bảng hàng; pin chỉ là lớp phủ vị trí.
 - Tab "Quỹ căn 360°" là bản đồ: ảnh phối cảnh tổng thể của dự án (`project.image`) có kéo/thu phóng và pin lớp `map` (id `<projectId>|map|<MÃ CĂN>`, payload có `layer:'map'`). Pin tab Mặt bằng là lớp `plan` (không có `layer`, id cũ giữ nguyên). Ảnh 360° nếu có vẫn chọn được ở thanh cảnh phía dưới. Đổi ảnh bản đồ = đổi ảnh đại diện dự án trong admin; đổi ảnh khác tỷ lệ sẽ lệch pin cũ.
+- (06/10/2026) Tab "Quỹ căn 360°" ưu tiên ảnh mặt bằng (file kind='plan') làm cảnh đầu và dùng chung pin lớp 'plan' với tab Mặt bằng; phối cảnh và ảnh 360° vẫn chọn ở thanh cảnh. Chưa có ảnh mặt bằng thì hiện phối cảnh với pin lớp 'map' như cũ. Pin chỉ hiện mã căn; bấm pin mở thẻ thông tin (mã căn, loại hình, DT đất, DT XD, giá chưa VAT+KBPT, trạng thái, nút Xem chi tiết).
 - Ảnh nền mặt bằng là file `kind='plan'` của dự án, tải ở Quản trị → Thư viện. Bật cho Green Paradise và cho mọi dự án khi người xem có quyền sửa; dự án khác chưa có pin giữ cách hiển thị cũ.
 
 ## Ảnh, video và dung lượng repository

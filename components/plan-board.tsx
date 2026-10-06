@@ -6,22 +6,23 @@ import type {Unit} from '@/lib/catalog';
 import {funds,fundColor,soldColor,pinId,fundFromGroup,type FundKey,type PinLayer,type UnitPin} from '@/lib/plan-funds';
 
 type Props={
-  projectId:string;image:string;layer:PinLayer;units:Unit[];pins:UnitPin[];canManage:boolean;
+  projectId:string;image:string;layer:PinLayer;chrome?:PinLayer;units:Unit[];pins:UnitPin[];canManage:boolean;
   statusOf:(u:Unit)=>string;visibleCodes:Set<string>;onOpenUnit:(u:Unit)=>void;onSaved:()=>void;
 };
 type View={s:number;x:number;y:number};
 const up=(s:string)=>s.trim().toUpperCase();
 const MAX=8;
+const num=(n:number)=>n.toLocaleString('vi-VN',{maximumFractionDigits:2});
 
 /** Bản đồ/mặt bằng có pin mã căn: kéo để di chuyển, lăn chuột hoặc nút +/− để thu phóng. */
-export default function PlanBoard({projectId,image,layer,units,pins,canManage,statusOf,visibleCodes,onOpenUnit,onSaved}:Props){
+export default function PlanBoard({projectId,image,layer,chrome=layer,units,pins,canManage,statusOf,visibleCodes,onOpenUnit,onSaved}:Props){
   const [local,setLocal]=useState<UnitPin[]>(pins);
-  const [edit,setEdit]=useState(false),[placing,setPlacing]=useState<string|null>(null),[sel,setSel]=useState<string|null>(null),[hidden,setHidden]=useState<Set<FundKey>>(new Set());
+  const [edit,setEdit]=useState(false),[placing,setPlacing]=useState<string|null>(null),[sel,setSel]=useState<string|null>(null),[hidden,setHidden]=useState<Set<FundKey>>(new Set()),[info,setInfo]=useState<string|null>(null);
   const [view,setView]=useState<View>({s:1,x:0,y:0});const fit=useRef<View>({s:1,x:0,y:0});
   const box=useRef<HTMLDivElement>(null),img=useRef<HTMLImageElement>(null);
   const drag=useRef<string|null>(null),pan=useRef<{x:number;y:number;vx:number;vy:number;moved:boolean}|null>(null),moved=useRef(false);
   useEffect(()=>setLocal(pins),[pins]);
-  useEffect(()=>{if(!edit){setPlacing(null);setSel(null);}},[edit]);
+  useEffect(()=>{setInfo(null);if(!edit){setPlacing(null);setSel(null);}},[edit]);
 
   const unitByCode=useMemo(()=>{const m=new Map<string,Unit>();units.forEach(u=>m.set(up(u.code),u));return m;},[units]);
   const pinByCode=useMemo(()=>{const m=new Map<string,UnitPin>();local.forEach(p=>m.set(up(p.code),p));return m;},[local]);
@@ -54,22 +55,35 @@ export default function PlanBoard({projectId,image,layer,units,pins,canManage,st
     if(edit&&placing){const c=coords(e.clientX,e.clientY);if(!c)return;const u=unitByCode.get(up(placing));
       persist({projectId,code:placing,layer,x:c.x,y:c.y,fund:pinByCode.get(up(placing))?.fund||fundFromGroup(u?.group)});
       const next=unplaced.find(x=>up(x.code)!==up(placing));setPlacing(next?next.code:null);}
-    else setSel(null);
+    else {setSel(null);setInfo(null);}
   }
 
   const colorOf=(p:UnitPin)=>{const u=unitByCode.get(up(p.code));return u&&statusOf(u)==='Đã bán'?soldColor:fundColor(p.fund);};
   const shown=local.filter(p=>!hidden.has(p.fund)&&(visibleCodes.has(up(p.code))||(edit&&!unitByCode.has(up(p.code)))));
   const hasSold=local.some(p=>{const u=unitByCode.get(up(p.code));return u&&statusOf(u)==='Đã bán';});
   const selPin=sel?pinByCode.get(up(sel)):undefined;
+  const infoPin=!edit&&info?shown.find(p=>up(p.code)===up(info)):undefined;
 
-  return <div className={'plan-board plan-'+layer+(edit&&placing?' is-placing':'')}>
+  return <div className={'plan-board plan-'+chrome+(edit&&placing?' is-placing':'')}>
     <div className="plan-viewport" ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={upHandler} onPointerCancel={()=>{pan.current=null;drag.current=null;}}>
       <div className="plan-stage" style={{transform:`translate(${view.x}px,${view.y}px) scale(${view.s})`}}>
         <img ref={img} src={image} alt={layer==='map'?'Bản đồ dự án':'Mặt bằng dự án'} draggable={false} onLoad={reset}/>
-        {shown.map(p=>{const u=unitByCode.get(up(p.code));const active=sel===p.code;return (
+        {shown.map(p=>{const u=unitByCode.get(up(p.code));const active=sel===p.code||info===p.code;return (
           <button key={p.code} type="button" className={'plan-pin'+(active?' is-active':'')+(edit?' is-edit':'')} style={{left:`${p.x}%`,top:`${p.y}%`,transform:`translate(-50%,-100%) scale(${1/view.s})`,['--pin' as string]:colorOf(p)}}
-            onPointerDown={e=>pinDown(p.code,e)} onClick={e=>{e.stopPropagation();if(!edit&&u)onOpenUnit(u);}}
+            onPointerDown={e=>pinDown(p.code,e)} onClick={e=>{e.stopPropagation();if(!edit)setInfo(i=>i===p.code?null:p.code);}}
             aria-label={`Căn ${p.code}`}><span>{p.code}</span><svg viewBox="0 0 26 34" aria-hidden="true"><path d="M13 33C13 33 2 20 2 12a11 11 0 0 1 22 0c0 8-11 21-11 21z"/><circle cx="13" cy="12" r="4.5"/></svg></button>);})}
+        {infoPin&&(()=>{const p=infoPin,u=unitByCode.get(up(p.code)),ih=img.current?.clientHeight||0,below=view.y+p.y/100*ih*view.s<330;return (
+          <div className={'plan-card'+(below?' below':'')} style={{left:`${p.x}%`,top:`${p.y}%`,transform:`scale(${1/view.s}) translate(-50%,${below?'14px':'calc(-100% - 58px)'})`,['--pin' as string]:colorOf(p)}} onPointerDown={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()}>
+            <div className="plan-card-head"><strong>{p.code}</strong><button type="button" aria-label="Đóng" onClick={()=>setInfo(null)}><X size={15}/></button></div>
+            {u?<><dl>
+              <div><dt>Loại hình:</dt><dd>{u.type||'—'}</dd></div>
+              <div><dt>DT đất:</dt><dd>{u.area?<>{num(u.area)} <sup>m²</sup></>:'—'}</dd></div>
+              <div><dt>DT XD:</dt><dd>{u.builtArea?<>{num(u.builtArea)} <sup>m²</sup></>:'—'}</dd></div>
+            </dl>
+            <div className="plan-card-price"><span>Giá bán:<small>(Chưa VAT+KBPT)</small></span><b>{u.price?<>{num(u.price)} <sup>TỶ</sup></>:'Liên hệ'}</b></div>
+            <div className="plan-card-foot"><span className={'status '+(statusOf(u)==='Còn hàng'?'available':'held')}>{statusOf(u)}</span><button type="button" onClick={()=>onOpenUnit(u)}>Xem chi tiết</button></div></>
+            :<p className="plan-muted">Mã căn chưa có trong bảng hàng.</p>}
+          </div>);})()}
       </div>
     </div>
 
@@ -80,7 +94,7 @@ export default function PlanBoard({projectId,image,layer,units,pins,canManage,st
     </div>
 
     <div className="plan-zoom"><button type="button" aria-label="Phóng to" onClick={()=>zoomAt(1.4)}><Plus size={18}/></button><button type="button" aria-label="Thu nhỏ" onClick={()=>zoomAt(1/1.4)}><Minus size={18}/></button><button type="button" aria-label="Về toàn cảnh" onClick={reset}><RotateCcw size={16}/></button></div>
-    {edit&&placing&&<div className="plan-hint"><MapPin size={14}/>Bấm lên {layer==='map'?'bản đồ':'mặt bằng'} để ghim <b>{placing}</b> · Kéo để di chuyển</div>}
+    {edit&&placing&&<div className="plan-hint"><MapPin size={14}/>Bấm lên {chrome==='map'&&layer==='map'?'bản đồ':'mặt bằng'} để ghim <b>{placing}</b> · Kéo để di chuyển</div>}
 
     {edit&&<div className="plan-editor">
       {selPin?<>

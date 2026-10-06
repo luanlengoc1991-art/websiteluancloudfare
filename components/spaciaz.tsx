@@ -231,6 +231,38 @@ function Quotes({faq, image}: {faq: AboutContent['faq']; image?: string}) {
 }
 
 /* ═══════════════════════════ Dự án ═══════════════════════════ */
+/** Full-height hero: project photos crossfade with a slow zoom; glass cards jump between them. */
+function ProjectsHero({projects, units}: {projects: Project[]; units: Unit[]}) {
+  const slides = useMemo(() => [...projects].sort((a, b) => Number(b.hot) - Number(a.hot)).slice(0, 6), [projects]);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {if (slides.length < 2) return; const t = setInterval(() => setIndex(i => (i + 1) % slides.length), 6500); return () => clearInterval(t);}, [slides.length, index]);
+  const current = slides[index];
+  const available = units.length;
+  return <section className="sz-hero sz-phero">
+    <div className="sz-phero-slides" aria-hidden="true">{slides.map((p, i) => <div key={p.id} className={'sz-phero-slide' + (i === index ? ' is-on' : '')}><Img src={p.image} alt=""/></div>)}</div>
+    <div className="sz-wrap">
+      <div className="sz-hero-copy">
+        <h1 data-fx="title">Dự án nổi bật<br/>trên Alpha Hub</h1>
+        <p data-fx="">{projects.length} dự án Vinhomes, Masterise và các chủ đầu tư uy tín · {available} căn trong bảng hàng, cập nhật vị trí, mặt bằng và trải nghiệm 360°.</p>
+      </div>
+      <div className="sz-hero-row">
+        <div className="sz-phero-current" key={current?.id}>
+          <span className="sz-outline-num">{String(index + 1).padStart(2, '0')}</span>
+          <div><span className="sz-showcase-loc"><MapPin size={15}/>{current?.location}</span><p className="sz-hero-statement">{current?.name}</p></div>
+        </div>
+        <div className="sz-phero-actions" data-fx="right">
+          <div className="sz-phero-dots">{slides.map((p, i) => <button key={p.id} type="button" aria-label={p.name} className={i === index ? 'is-on' : ''} onClick={() => setIndex(i)}><i/></button>)}</div>
+          <ArrowButton href={current ? projectPath(current.id) : '/du-an'} tone="white">Khám phá dự án</ArrowButton>
+        </div>
+      </div>
+      <div className="sz-hero-cards">{slides.slice(0, 3).map(p => <Link key={p.id} href={projectPath(p.id)} className="sz-glass sz-phero-card" data-fx="">
+        <span className="sz-phero-thumb"><Img src={p.image} alt=""/></span>
+        <div><small>{p.developer} · {p.category === 'high' ? 'Cao tầng' : 'Thấp tầng'}</small><h3>{p.name}</h3><p><MapPin size={13}/> {p.location} · {units.filter(u => u.projectId === p.id).length} căn</p></div>
+        <ArrowUpRight size={20}/></Link>)}</div>
+    </div>
+  </section>;
+}
+
 const budgets: [string, string, number, number][] = [['lt10', 'Dưới 10 tỷ', 0, 10], ['10-20', '10 – 20 tỷ', 10, 20], ['20-50', '20 – 50 tỷ', 20, 50], ['gt50', 'Trên 50 tỷ', 50, Infinity]];
 const PER_PAGE = 9;
 const blank = {status: '', type: '', region: '', budget: '', query: ''};
@@ -253,10 +285,52 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
   const filtered = Object.values(applied).some(Boolean);
   const go = (n: number) => {setPage(n); top.current?.scrollIntoView({behavior: 'smooth', block: 'start'});};
   const set = (key: keyof typeof blank) => (e: {target: {value: string}}) => setDraft({...draft, [key]: e.target.value});
-  return <div className="sz">
-    <Banner title="Dự án" aside="Danh mục dự án Vinhomes, Masterise và các chủ đầu tư uy tín: vị trí, quỹ căn, mặt bằng và trải nghiệm 360°."/>
-    <Sheet>
-      <section className="sz-wrap sz-listing" ref={top}>
+  const regions = options('region');
+  const developers = options('developer');
+  const regionCount = (r: string) => projects.filter(p => p.region === r).length;
+  const pick = (patch: Partial<typeof blank>) => {const next = {...blank, ...patch}; setDraft(next); setApplied(next); setPage(1); setTimeout(() => top.current?.scrollIntoView({behavior: 'smooth', block: 'start'}), 30);};
+  const firstOf = (test: (p: Project) => boolean) => projects.find(test)?.image;
+  const groups = [
+    {title: 'Thấp tầng', body: `${projects.filter(p => p.category === 'low').length} dự án biệt thự, liền kề, shophouse`, image: firstOf(p => p.category === 'low'), on: () => pick({type: 'low'})},
+    {title: 'Cao tầng', body: `${projects.filter(p => p.category === 'high').length} dự án căn hộ`, image: firstOf(p => p.category === 'high'), on: () => pick({type: 'high'})},
+    ...regions.slice(0, 3).map(r => ({title: r, body: `${regionCount(r)} dự án`, image: firstOf(p => p.region === r), on: () => pick({region: r})})),
+  ];
+  const showcase = [...projects].sort((a, b) => Number(b.hot) - Number(a.hot)).slice(0, 6);
+  return <div className="sz sz-projects-page">
+    <ProjectsHero projects={projects} units={units}/>
+    <Sheet className="sz-home-sheet">
+      <section className="sz-section sz-who sz-wrap">
+        <div data-fx="left"><Eyebrow>Danh mục dự án</Eyebrow></div>
+        <div>
+          <h2 className="sz-h2" data-fx="title">Không gian sống chọn lọc,<br/>giá trị bền vững</h2>
+          <div className="sz-who-cols">
+            <div data-fx=""><h3><Building2 size={22}/>Thông tin minh bạch</h3><p>Vị trí, chủ đầu tư, loại hình và trạng thái mở bán của từng dự án được cập nhật trên một nền tảng.</p></div>
+            <div data-fx=""><h3><Globe size={22}/>Trải nghiệm trực quan</h3><p>Mở quỹ căn 360°, mặt bằng ghim mã căn và bảng hàng của từng dự án chỉ với một lần chạm.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="sz-bento sz-wrap">
+        <Link href={showcase[0] ? projectPath(showcase[0].id) : '#'} className="sz-bento-photo sz-notch-tl" data-fx="zoom"><Img src={showcase[0]?.image} alt={showcase[0]?.name}/><span className="sz-bento-caption"><MapPin size={14}/>{showcase[0]?.name}</span></Link>
+        <div className="sz-stat" data-fx=""><small>Dự án</small><strong><span className="fx-count">{projects.length}</span><sup>+</sup></strong><span>dự án trên hệ thống</span></div>
+        <div className="sz-stat" data-fx=""><small>Quỹ căn</small><strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><span>căn trong bảng hàng</span></div>
+        <div className="sz-stat" data-fx=""><small>Khu vực</small><strong><span className="fx-count">{regions.length}</span><sup>+</sup></strong><span>tỉnh, thành phố</span></div>
+        <Link href={showcase[1] ? projectPath(showcase[1].id) : '#'} className="sz-bento-small" data-fx="zoom"><Img src={showcase[1]?.image} alt={showcase[1]?.name}/></Link>
+      </section>
+
+      <section className="sz-section sz-services">
+        <div className="sz-wrap">
+          <div className="sz-center" data-fx=""><Eyebrow>Tìm theo nhu cầu</Eyebrow><h2 className="sz-h2" data-fx="title">Chọn nhanh dự án<br/>theo loại hình & khu vực</h2></div>
+          <div className="sz-service-grid">{groups.map((g, i) => <button key={g.title} type="button" onClick={g.on} className={'sz-service sz-notch-tr' + (i > 2 ? ' is-wide' : '')} data-fx="zoom">
+            <div className="sz-service-text"><h3>{g.title}</h3><p>{g.body}</p></div><Img src={g.image} alt={g.title}/><span className="sz-notch-btn"><ArrowUpRight size={16}/></span></button>)}</div>
+          <p className="sz-services-note" data-fx="">Xem toàn bộ {projects.length} dự án bên dưới. <a href="#tat-ca-du-an">Danh sách dự án</a></p>
+        </div>
+      </section>
+
+      <Showcase projects={showcase} units={units}/>
+
+      <section className="sz-wrap sz-listing sz-section" id="tat-ca-du-an" ref={top}>
+        <div className="sz-news-head sz-listing-head"><div data-fx="left"><Eyebrow>Tất cả dự án</Eyebrow><h2 className="sz-h2">Danh sách dự án</h2></div></div>
         <form className="sz-filter" onSubmit={e => {e.preventDefault(); setApplied(draft); setPage(1);}} data-fx="">
           <label className="sz-filter-search"><Search size={16}/><input value={draft.query} onChange={set('query')} placeholder="Tên dự án, địa điểm…" aria-label="Tìm dự án"/></label>
           <select value={draft.status} onChange={set('status')} aria-label="Trạng thái"><option value="">Trạng thái</option>{options('status').map(v => <option key={v}>{v}</option>)}</select>
@@ -277,6 +351,19 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
           {Array.from({length: pages}, (_, i) => i + 1).map(n => <button key={n} type="button" className={n === current ? 'is-on' : ''} aria-current={n === current ? 'page' : undefined} onClick={() => go(n)}>{n}</button>)}
           {current < pages && <button type="button" aria-label="Trang sau" onClick={() => go(current + 1)}><ChevronRight size={16}/></button>}
         </nav>}
+      </section>
+
+      {developers.length > 0 && <section className="sz-partners">
+        <p>Đồng hành cùng các chủ đầu tư uy tín</p>
+        <div className="sz-partners-track">{[0, 1].map(copy => <span key={copy} aria-hidden={copy > 0 || undefined}>{[...developers, ...projects.map(p => p.name)].map((name, i) => <b key={i}>{name}</b>)}</span>)}</div>
+      </section>}
+
+      <section className="sz-enquiry">
+        <div className="sz-enquiry-bg"><Img src={showcase[2]?.image || showcase[0]?.image} alt=""/></div>
+        <div className="sz-enquiry-card sz-wrap" data-fx="zoom">
+          <div className="sz-center"><Eyebrow>Tư vấn dự án</Eyebrow><h2 className="sz-h3">Nhận bảng giá & lịch tham quan<br/>dự án bạn quan tâm</h2></div>
+          <LeadForm projects={projects} note="Form tư vấn trang Dự án" compact/>
+        </div>
       </section>
     </Sheet>
   </div>;

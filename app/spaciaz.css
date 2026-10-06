@@ -489,3 +489,42 @@
 .sz-pages button{width:46px;height:46px;border-radius:50%;border:0;background:transparent;font:600 14px var(--font-sans,'Be Vietnam Pro',sans-serif);color:var(--sz-ink);display:grid;place-items:center;cursor:pointer;transition:background .3s}
 .sz-pages button:hover{background:var(--sz-soft)}
 .sz-pages button.is-on{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))}
+
+/* ══ Projects page on the Spaciaz home structure ══ */
+:root[data-skin=emerald]:has(.sz-projects-page) .site-atmosphere{display:none}
+.sz-projects-page{--sz-banner-h:max(1000px,100svh)}
+.sz-phero{background:var(--sz-deep);overflow:hidden;isolation:isolate}
+.sz-phero-slides{position:absolute;inset:0;z-index:-1}
+.sz-phero-slides::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#021a14b3 0%,#02261d4d 40%,#02261db3 100%)}
+.sz-phero-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
+.sz-phero-slide.is-on{opacity:1}
+.sz-phero-slide img{width:100%;height:100%;object-fit:cover;transform:scale(1.14);transition:transform 7s linear}
+.sz-phero-slide.is-on img{transform:scale(1)}
+.sz-phero-current{display:flex;align-items:flex-end;gap:22px;animation:sz-swap .8s var(--sz-ease)}
+.sz-phero-current .sz-outline-num{font-size:96px;-webkit-text-stroke:1px #ffffff70}
+.sz-phero-current .sz-hero-statement{margin-top:8px}
+.sz-phero-actions{display:flex;align-items:center;gap:26px}
+.sz-phero-dots{display:flex;gap:6px}
+.sz-phero-dots button{width:26px;height:26px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer}
+.sz-phero-dots i{width:8px;height:8px;border-radius:999px;background:#ffffff70;transition:width .4s var(--sz-ease),background .3s}
+.sz-phero-dots button.is-on i{width:26px;background:var(--sz-mint)}
+.sz-phero-card{display:grid;grid-template-columns:88px 1fr auto;gap:18px;align-items:center;padding:16px 20px 16px 16px}
+.sz-phero-card>svg{color:var(--sz-mint);transition:transform .4s var(--sz-ease)}
+.sz-phero-card:hover>svg{transform:rotate(45deg)}
+.sz-phero-thumb{width:88px;height:88px;border-radius:16px;overflow:hidden}
+.sz-phero-thumb img{width:100%;height:100%;object-fit:cover}
+.sz-phero-card small{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--sz-mint)}
+.sz-phero-card h3{font-size:19px;margin:6px 0 6px;padding:0;border:0}
+.sz-phero-card p{display:flex;align-items:center;gap:4px;font-size:13px;-webkit-line-clamp:1}
+button.sz-service{border:0;padding:0;font:inherit;text-align:left;cursor:pointer;width:100%}
+.sz-listing-head{margin-bottom:40px}
+.sz-projects-page .sz-listing{padding-bottom:0}
+.sz-projects-page .sz-project-grid{padding-bottom:40px}
+.sz-projects-page .sz-pages{margin-top:0;padding-bottom:40px}
+.sz-projects-page .sz-partners{margin-top:40px}
+@media(max-width:1100px){.sz-phero-card{grid-template-columns:64px 1fr}.sz-phero-card>svg{display:none}.sz-phero-thumb{width:64px;height:64px}}
+@media(max-width:700px){
+  .sz-projects-page{--sz-banner-h:960px}
+  .sz-phero-current .sz-outline-num{font-size:64px}
+  .sz-phero-actions{flex-direction:column;align-items:flex-start;gap:14px}
+}

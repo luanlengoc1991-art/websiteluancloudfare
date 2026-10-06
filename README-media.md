@@ -20,7 +20,7 @@ Quản trị → AI sửa website hỗ trợ đính kèm ảnh, chọn nơi cầ
 
 - `OPENAI_API_KEY` hoặc `ANTHROPIC_API_KEY`, chỉ đặt trong Worker secrets, không đưa vào GitHub/chat.
 - Model mặc định `gpt-5-mini` và `claude-sonnet-5-5`; có thể cấu hình `OPENAI_MEDIA_MODEL` và `ANTHROPIC_MEDIA_MODEL`.
-- Tối đa 4 MB mỗi ảnh, JPG/PNG/WEBP. PDF chỉ dành cho Thư viện tài liệu; chat ảnh không nhận PDF.
+- Tối đa 10 MB mỗi ảnh, JPG/PNG/WEBP. PDF chỉ dành cho Thư viện tài liệu; chat ảnh không nhận PDF.
 - Vị trí hỗ trợ: ảnh đại diện dự án/bài viết, phiếu căn/mặt bằng căn, thêm ảnh thư viện/mặt bằng/360°/nhà mẫu/tiện ích dự án và nền của các tab đã có trong Cài đặt.
 - Chat chỉ cập nhật ảnh. Không có quyền sửa mã nguồn, triển khai code, đọc khách hàng hoặc cấp quyền tài khoản. Lệnh mơ hồ cần chọn rõ vị trí.
 
@@ -36,7 +36,7 @@ Nếu dùng domain riêng, đặt `ALPHA_PUBLIC_ORIGIN` bằng HTTPS origin chí
 2. **Claude**: Add custom connector với MCP URL, Sign in, OAuth client **Register automatically**. Kết nối bằng cùng tài khoản quản trị. Tool nhận ảnh qua link tải đính kèm hoặc `publish_image_base64` cho client đọc được byte file thật (ví dụ Claude Code). Claude web không luôn cung cấp URL/byte của ảnh trong chat cho remote MCP; nếu client không cung cấp, cần tải ảnh trong quản trị rồi ra lệnh dùng lại ID ảnh trong Thư viện. Không thể hứa tự chuyển mọi ảnh hiển thị trong mọi phiên Claude.
 3. Thư viện, dữ liệu và lịch sử dùng chung giữa các client. Thu hồi kết nối ở Quản trị → AI sửa website. OAuth dùng PKCE S256, mã một lần, access token 1 giờ, refresh token xoay vòng tối đa 30 ngày, hash token trong D1 và ID kết nối ổn định để thu hồi được cả khi token vừa xoay vòng và kiểm tra admin allowlist ở mỗi request. Cookie đăng nhập không được chuyển cho ứng dụng ngoài.
 
-Nguồn đính kèm được giới hạn ở kho OpenAI và `files.claudeusercontent.com`. Nếu client dùng một hostname tải file khác, chỉ thêm hostname đáng tin vào `ALPHA_MEDIA_SOURCE_HOSTS` (phân cách dấu phẩy). Không dùng wildcard. Link nội bộ, HTTP, URL có thông tin đăng nhập và chuyển hướng sang hostname không được phép bị từ chối. Bộ đọc giới hạn 4 MB kể cả khi nguồn không khai báo Content-Length.
+Nguồn đính kèm được giới hạn ở kho OpenAI và `files.claudeusercontent.com`. Nếu client dùng một hostname tải file khác, chỉ thêm hostname đáng tin vào `ALPHA_MEDIA_SOURCE_HOSTS` (phân cách dấu phẩy). Không dùng wildcard. Link nội bộ, HTTP, URL có thông tin đăng nhập và chuyển hướng sang hostname không được phép bị từ chối. Bộ đọc giới hạn 10 MB kể cả khi nguồn không khai báo Content-Length.
 
 Cần thực hiện kết nối ứng dụng một lần trong tài khoản ChatGPT/Claude; deploy code không tự cài connector vào tài khoản của người dùng. ChatGPT/Claude ngoài không cần API key của website cho việc gọi MCP; key của website chỉ dùng ở chat quản trị.
 

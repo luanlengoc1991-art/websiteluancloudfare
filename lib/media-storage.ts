@@ -1,7 +1,7 @@
 import {bucket, database} from '@/db/store';
 import {seedProjects} from '@/lib/catalog';
 
-export const mediaLimit = 4 * 1024 * 1024;
+export const mediaLimit = 10 * 1024 * 1024;
 import {MediaError} from '@/lib/media-error';
 export {MediaError} from '@/lib/media-error';
 export const mediaKinds = ['gallery', 'plan', 'panorama', 'document', 'model', 'amenity', 'background', 'image'] as const;
@@ -27,7 +27,7 @@ export function detectedMime(bytes: Uint8Array) {
 /** R2 owns originals; D1 owns permanent IDs. Changing a reference never deletes an old file. */
 export async function storeMedia(file: File, projectId: string, kind: string, isAdmin: boolean) {
   await validateMediaScope(projectId, kind, isAdmin);
-  if (!file.size || file.size > mediaLimit) throw new MediaError('Tối đa 4 MB mỗi file.', 413);
+  if (!file.size || file.size > mediaLimit) throw new MediaError('Tối đa 10 MB mỗi file.', 413);
   const bytes = new Uint8Array(await file.arrayBuffer());
   const mime = detectedMime(bytes);
   if (mime === 'application/pdf' && kind !== 'document') throw new MediaError('Chỉ loại Tài liệu nhận PDF.');

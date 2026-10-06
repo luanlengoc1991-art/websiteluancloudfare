@@ -16,7 +16,7 @@ export async function POST(req:Request){
  try{
   if(!isSameOrigin(req))return Response.json({error:'Yêu cầu không hợp lệ.'},{status:403});
   const admin=await getCurrentUser();if(!admin)return Response.json({error:'Chỉ quản trị được dùng chat ảnh.'},{status:401});
-  if(Number(req.headers.get('content-length')||0)>mediaLimit+256*1024)return Response.json({error:'Ảnh tối đa 4 MB.'},{status:413});
+  if(Number(req.headers.get('content-length')||0)>mediaLimit+256*1024)return Response.json({error:'Ảnh tối đa 10 MB.'},{status:413});
   const form=await req.formData(),operation=form.get('operation');
   if(operation==='revoke'){
    const id=String(form.get('connectionId')||'');if(!/^[a-f0-9-]{36}$/.test(id))throw new MediaError('Kết nối không hợp lệ.');

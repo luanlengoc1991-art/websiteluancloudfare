@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const user = await getSignedInUser();
     if (!user) return Response.json({error: 'Vui lòng đăng nhập.'}, {status: 401});
     if (!user.canEdit) return Response.json({error: 'Tài khoản chưa được cấp quyền tải ảnh.'}, {status: 403});
-    if (Number(req.headers.get('content-length') || 0) > mediaLimit + 256 * 1024) return Response.json({error: 'Tối đa 4 MB mỗi file.'}, {status: 413});
+    if (Number(req.headers.get('content-length') || 0) > mediaLimit + 256 * 1024) return Response.json({error: 'Tối đa 10 MB mỗi file.'}, {status: 413});
     const form = await req.formData(), file = form.get('file');
     if (!(file instanceof File)) return Response.json({error: 'Vui lòng chọn file.'}, {status: 400});
     const saved = await storeMedia(file, String(form.get('projectId') || ''), String(form.get('kind') || ''), user.isAdmin);

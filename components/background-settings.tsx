@@ -22,8 +22,8 @@ export default function BackgroundSettings({backgrounds = {}, appearances = {}, 
   const changeAppearance = (key: keyof BackgroundAppearance, value: number | string) => onAppearanceChange(page, {...appearances[page], [key]: value});
 
   async function upload(file: File) {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 4 * 1024 * 1024) {
-      toast.error('Chọn ảnh JPG, PNG hoặc WEBP, tối đa 4 MB.'); return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      toast.error('Chọn ảnh JPG, PNG hoặc WEBP, tối đa 10 MB.'); return;
     }
     setUploading(true); onUploadingChange(true);
     try {
@@ -46,7 +46,7 @@ export default function BackgroundSettings({backgrounds = {}, appearances = {}, 
       <label className="field"><span>Trang cần đổi nền</span><select disabled={busy || uploading} value={page} onChange={event => setPage(event.target.value as BackgroundPage)}>{backgroundPages.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
       <label className="field"><span>Ảnh từ thư viện</span><select disabled={busy || uploading} value={images.some(image => image.url === value) ? value : ''} onChange={event => {if (event.target.value) onChange(page, event.target.value);}}><option value="">Chọn ảnh đã tải lên</option>{images.map(image => <option key={image.id} value={image.url}>{image.name}</option>)}</select></label>
       <label className="field"><span>Đường dẫn ảnh nền</span><input disabled={busy || uploading} maxLength={2000} value={value} placeholder="https://… hoặc /api/files/…" onChange={event => onChange(page, event.target.value)}/><small>Để trống để dùng nền chung; nền chung trống sẽ dùng ảnh mặc định.</small></label>
-      <label className="field"><span>Tải ảnh nền từ máy</span><input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || uploading} onChange={event => {const file = event.target.files?.[0]; event.target.value = ''; if (file) upload(file);}}/><small>{uploading ? 'Đang tải ảnh…' : 'JPG, PNG hoặc WEBP · Tối đa 4 MB. Nhấn Lưu cấu hình sau khi chọn ảnh.'}</small></label>
+      <label className="field"><span>Tải ảnh nền từ máy</span><input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || uploading} onChange={event => {const file = event.target.files?.[0]; event.target.value = ''; if (file) upload(file);}}/><small>{uploading ? 'Đang tải ảnh…' : 'JPG, PNG hoặc WEBP · Tối đa 10 MB. Nhấn Lưu cấu hình sau khi chọn ảnh.'}</small></label>
     </div>
     <p>Điều chỉnh nền chung hoặc riêng trang đang chọn. Các trang chưa chỉnh riêng sẽ dùng thiết lập nền chung.</p>
     <div className="form-grid">

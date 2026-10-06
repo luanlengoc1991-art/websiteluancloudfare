@@ -88,9 +88,9 @@ export async function attachmentFile(input: unknown) {
     const response = await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)});
     if ([301,302,303,307,308].includes(response.status)) { await response.body?.cancel(); url=new URL(response.headers.get('location') || '',url); continue; }
     if (!response.ok || !response.body) throw new MediaError('Không đọc được ảnh đính kèm. Link có thể đã hết hạn.',400);
-    if (Number(response.headers.get('content-length') || 0)>mediaLimit) { await response.body.cancel(); throw new MediaError('Ảnh tối đa 4 MB.',413); }
+    if (Number(response.headers.get('content-length') || 0)>mediaLimit) { await response.body.cancel(); throw new MediaError('Ảnh tối đa 10 MB.',413); }
     const reader=response.body.getReader(),chunks:Uint8Array[]=[]; let size=0;
-    try { while (true) { const {done,value}=await reader.read(); if (done) break; size+=value.length; if(size>mediaLimit)throw new MediaError('Ảnh tối đa 4 MB.',413); chunks.push(value); } } finally { await reader.cancel(); }
+    try { while (true) { const {done,value}=await reader.read(); if (done) break; size+=value.length; if(size>mediaLimit)throw new MediaError('Ảnh tối đa 10 MB.',413); chunks.push(value); } } finally { await reader.cancel(); }
     const bytes=new Uint8Array(size); let offset=0; for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
     return new File([bytes],file.file_name || 'chat-image', {type:file.mime_type || response.headers.get('content-type')?.split(';')[0] || ''});
   }

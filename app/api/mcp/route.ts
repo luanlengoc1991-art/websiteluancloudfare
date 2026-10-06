@@ -5,7 +5,7 @@ function originAllowed(req:Request){const origin=req.headers.get('origin');retur
 export async function POST(req:Request){
  if(!originAllowed(req))return new Response(null,{status:403});
  const identity=await mcpIdentity(req);if(!identity)return authChallenge(req);
- if(Number(req.headers.get('content-length')||0)>6*1024*1024)return new Response(null,{status:413});
+ if(Number(req.headers.get('content-length')||0)>15*1024*1024)return new Response(null,{status:413});
  const version=req.headers.get('mcp-protocol-version');if(version&&!versions.includes(version))return new Response(null,{status:400});
  let body:any;try{body=await req.json();}catch{return Response.json({jsonrpc:'2.0',id:null,error:{code:-32700,message:'Invalid JSON'}},{status:400});}
  if(!body||Array.isArray(body)||body.jsonrpc!=='2.0'||typeof body.method!=='string')return Response.json({jsonrpc:'2.0',id:null,error:{code:-32600,message:'Invalid Request'}},{status:400});

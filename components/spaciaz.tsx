@@ -558,25 +558,26 @@ type SliderProps = {items: Unit[]; projects: Project[]; statusOf: (u: Unit) => s
 
 /** "Quỹ căn toàn quốc" as a 3D coverflow: the active unit sits in front, neighbours turn away. */
 export function SpaciazUnitSlider({items, projects, statusOf, favorites, compare, onFavorite, onCompare, onOpenUnit}: SliderProps) {
-  const [active, setActive] = useState(0), [paused, setPaused] = useState(false);
+  const [active, setActive] = useState(0);
   const touch = useRef<number | null>(null);
   const n = items.length;
   const projectOf = (u: Unit) => projects.find(p => p.id === u.projectId);
   const go = (to: number) => setActive(((to % n) + n) % n);
-  useEffect(() => {setActive(0);}, [items]);
-  useEffect(() => {if (paused || n < 2) return; const t = setTimeout(() => go(active + 1), 4200); return () => clearTimeout(t);}, [active, paused, n]);
+  const itemKey = items.length + ':' + (items[0]?.id || '');
+  useEffect(() => {setActive(0);}, [itemKey]);
+  // Always running (owner's request, even with reduced motion on); any manual move restarts the timer.
+  useEffect(() => {if (n < 2) return; const t = setTimeout(() => go(active + 1), 3500); return () => clearTimeout(t);}, [active, n]);
   if (!n) return null;
   const range = Math.min(4, Math.floor((n - 1) / 2));
   const slots: {u: Unit; i: number; off: number}[] = [];
   for (let off = -range; off <= range; off++) {const i = ((active + off) % n + n) % n; slots.push({u: items[i], i, off});}
   if (n === 2) slots.splice(0, slots.length, {u: items[active], i: active, off: 0}, {u: items[(active + 1) % 2], i: (active + 1) % 2, off: 1});
   return <div className="sz sz-u3d" tabIndex={0} aria-roledescription="carousel" aria-label="Quỹ căn"
-    onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
     onKeyDown={e => {if (e.key === 'ArrowLeft') go(active - 1); if (e.key === 'ArrowRight') go(active + 1);}}
     onTouchStart={e => {touch.current = e.touches[0].clientX;}} onTouchEnd={e => {if (touch.current === null) return; const dx = e.changedTouches[0].clientX - touch.current; touch.current = null; if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));}}>
     <div className="sz-u3d-stage">
       {slots.map(({u, i, off}) => {const p = projectOf(u), status = statusOf(u), free = status === 'Còn hàng', on = off === 0, a = Math.abs(off);
-        return <article key={u.id + ':' + off} className={'sz-u-card sz-u3d-card' + (on ? ' is-active' : '')} aria-hidden={!on || undefined}
+        return <article key={u.id} className={'sz-u-card sz-u3d-card' + (on ? ' is-active' : '')} aria-hidden={!on || undefined}
           style={{transform: `translateX(calc(-50% + ${off} * var(--u3d-gap))) translateZ(${-a * 170}px) rotateY(${off * -24}deg) scale(${on ? 1 : 1 - a * .06})`, zIndex: 20 - a, opacity: a > 3 ? 0 : 1, ['--dim' as string]: on ? 1 : Math.max(.35, .75 - a * .12)}}
           onClick={() => {if (!on) go(i);}}>
           <button type="button" className="sz-u-card-photo" tabIndex={on ? 0 : -1} onClick={() => on && onOpenUnit(u)} aria-label={`Xem căn ${u.code}`}><Img src={u.posterUrl || p?.image} alt=""/></button>

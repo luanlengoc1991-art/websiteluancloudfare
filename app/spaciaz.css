@@ -826,7 +826,7 @@ button.sz-bento-photo{padding:0}
   .sz-u3d-card{height:590px}
   .sz-site.inventory-market-site .inventory-project-counts{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;margin-inline:-16px!important;padding-inline:16px}
 }
-@media(prefers-reduced-motion:reduce){.sz-u3d-card{transition:none}}
+
 /* Results sit on the same dark band, full-bleed. */
 .sz-site.inventory-market-site .catalog-inventory-results{position:relative;padding-top:56px!important;padding-bottom:90px!important;box-shadow:0 0 0 100vmax #032a21;clip-path:inset(0 -100vmax);background:#032a21}
 .sz-site.inventory-market-site .catalog-inventory-results+*{position:relative}
@@ -835,3 +835,24 @@ button.sz-bento-photo{padding:0}
 .sz-site.inventory-market-site .inventory-project-counts button{flex:0 0 calc((100% - 70px) / 8);flex-direction:column;justify-content:center;gap:6px!important;padding:12px 8px!important;border-radius:18px!important;white-space:normal!important;text-align:center!important;font-size:12.5px!important;font-weight:600}
 @media(max-width:1100px){.sz-site.inventory-market-site .inventory-project-counts button{flex-basis:calc((100% - 40px) / 5)}}
 @media(max-width:700px){.sz-site.inventory-market-site .inventory-project-counts button{flex:0 0 132px}}
+
+/* Moving emerald background shared by the search panel and results (fixed attachment keeps them seamless). */
+.sz-site.inventory-market-site{overflow-x:clip;--qc-flow:linear-gradient(90deg,#02261d 0%,#04473a 18%,#0a6b52 34%,#03352a 50%,#0d5e4a 66%,#05402f 82%,#02261d 100%)}
+.sz-site.inventory-market-site .sz-u-hero~.inventory-hero,.sz-site.inventory-market-site .catalog-inventory-results{background:#02261d!important;position:relative;isolation:isolate}
+.sz-site.inventory-market-site .sz-u-hero~.inventory-hero::before,.sz-site.inventory-market-site .catalog-inventory-results::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:radial-gradient(ellipse 70% 50% at 50% 0,#8ef0c414,transparent 70%),var(--qc-flow);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite;pointer-events:none}
+.sz-site.inventory-market-site .catalog-inventory-results{box-shadow:none!important;clip-path:none!important;width:100vw!important;max-width:none!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important;padding-inline:max(40px,calc((100vw - var(--sz-wrap)) / 2))!important}
+@keyframes qc-flow{0%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}100%{background-position:0 0,0% 50%}}
+.sz-u3d-stage::before{content:'';position:absolute;left:50%;top:50%;width:900px;height:620px;margin:-310px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c440,#10b98114 55%,transparent);filter:blur(10px);animation:qc-glow 7s ease-in-out infinite;pointer-events:none}
+@keyframes qc-glow{0%,100%{transform:scale(.9) translateX(-40px);opacity:.7}50%{transform:scale(1.1) translateX(40px);opacity:1}}
+.sz-u3d-card.is-active{animation:qc-float 5s ease-in-out infinite}
+@keyframes qc-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@media(max-width:700px){.sz-site.inventory-market-site .catalog-inventory-results{padding-inline:16px!important}}
+.sz-site.inventory-market-site .catalog-inventory-results::before{background:var(--qc-flow);background-size:400% 100%;animation-name:qc-flow-1}
+@keyframes qc-flow-1{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+/* One shared moving layer behind the search panel and results; neighbours stay opaque. */
+.sz-site.inventory-market-site .sz-u-hero~.inventory-hero,.sz-site.inventory-market-site .catalog-inventory-results{background:transparent!important}
+.sz-site.inventory-market-site .sz-u-hero~.inventory-hero::before,.sz-site.inventory-market-site .catalog-inventory-results::before{display:none}
+.sz-site.inventory-market-site{position:relative;isolation:isolate}
+.sz-site.inventory-market-site::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 45% at 50% 35%,#8ef0c412,transparent 70%),var(--qc-flow);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite;pointer-events:none}
+.sz-site.inventory-market-site .sz-u-hero{z-index:1}
+.sz-site.inventory-market-site .sz-inv6-outro{position:relative;background:#fff;padding-top:1px;border-radius:56px 56px 0 0;margin-top:-1px}

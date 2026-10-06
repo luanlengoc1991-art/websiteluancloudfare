@@ -528,3 +528,22 @@ button.sz-service{border:0;padding:0;font:inherit;text-align:left;cursor:pointer
   .sz-phero-current .sz-outline-num{font-size:64px}
   .sz-phero-actions{flex-direction:column;align-items:flex-start;gap:14px}
 }
+
+/* ══ Quỹ căn on the Spaciaz home structure ══ */
+:root[data-skin=emerald]:has(.sz-inventory-page) .site-atmosphere{display:none}
+button.sz-bento-photo,button.sz-stat-btn,button.sz-unit-glass{border:0;font:inherit;text-align:left;cursor:pointer;color:inherit;width:100%}
+button.sz-bento-photo{padding:0}
+.sz-stat-btn{transition:transform .5s var(--sz-ease),border-color .3s,box-shadow .5s}
+.sz-stat-btn:hover{transform:translateY(-6px);border-color:var(--sz-mint-2);box-shadow:0 26px 40px -30px #02261d66}
+.sz-stat-btn>span{color:var(--sz-em-2)!important;font-weight:600}
+.sz-bento:has(.sz-stat-btn){grid-template-columns:2fr 1fr 1fr}
+.sz-unit-glass{color:#fff}
+.sz-unit-glass h3{font-size:24px!important;letter-spacing:-.03em}
+.sz-unit-glass b{color:var(--sz-mint)}
+.sz-inventory-page .sz-services{padding-bottom:90px}
+.sz-site.inventory-market-site .sz-inventory-page+.inventory-hero,.sz-site .sz-inventory-page~.inventory-hero{padding-top:20px!important}
+.sz-inventory-outro .sz-partners{margin-top:20px}
+.sz-inventory-outro .sz-enquiry{margin-top:20px}
+.sz-site.inventory-market-site :is(.page-arrow,[data-slot=pagination-link]){width:46px!important;height:46px!important;border-radius:50%!important;border:0!important;background:transparent!important;color:var(--sz-ink)!important;font-weight:600}
+.sz-site.inventory-market-site [data-slot=pagination-link][data-active=true],.sz-site.inventory-market-site [data-slot=pagination-link][aria-current=page]{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))!important}
+.sz-site.inventory-market-site .catalog-unit-card .unit-photo{border-radius:18px;overflow:hidden}

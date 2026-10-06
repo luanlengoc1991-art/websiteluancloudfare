@@ -514,92 +514,125 @@ export function SpaciazFooter({brand, contact, logo, address}: {brand: string; c
   </footer>;
 }
 
-/* ═══════════════════════════ Quỹ căn ═══════════════════════════ */
+/* ═══════════════════════════ Quỹ căn (Spaciaz home-6) ═══════════════════════════ */
 type InventoryProps = {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; onPickProject: (p: Project) => void; onPickCategory: (category: 'low' | 'high') => void; onOpenUnit: (u: Unit) => void};
 const fmtNum = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
+const scrollToSearch = () => document.getElementById('tim-quy-can')?.scrollIntoView({behavior: 'smooth', block: 'start'});
 
-/** Spaciaz home-style opening for /quy-hang; the existing search panel and results follow it. */
-export function SpaciazInventoryIntro({projects, units, statusOf, onPickProject, onPickCategory, onOpenUnit}: InventoryProps) {
-  const available = units.filter(u => statusOf(u) === 'Còn hàng');
-  const byProject = useMemo(() => {const m = new Map<string, number>(); for (const u of units) m.set(u.projectId, (m.get(u.projectId) || 0) + 1); return m;}, [units]);
-  const ranked = useMemo(() => [...projects].filter(p => byProject.get(p.id)).sort((a, b) => (byProject.get(b.id) || 0) - (byProject.get(a.id) || 0)), [projects, byProject]);
-  const slides = ranked.slice(0, 6);
-  const [index, setIndex] = useState(0);
-  useEffect(() => {if (slides.length < 2) return; const t = setInterval(() => setIndex(i => (i + 1) % slides.length), 6500); return () => clearInterval(t);}, [slides.length, index]);
-  const current = slides[index % Math.max(1, slides.length)];
-  const featured = useMemo(() => [...available].filter(u => u.price > 0).sort((a, b) => Number(!!b.sourceLabel) - Number(!!a.sourceLabel) || b.price - a.price).slice(0, 3), [available]);
-  const projectOf = (u: Unit) => projects.find(p => p.id === u.projectId);
+function useInventoryStats(projects: Project[], units: Unit[], statusOf: (u: Unit) => string) {
+  return useMemo(() => {
+    const byProject = new Map<string, Unit[]>();
+    for (const u of units) byProject.set(u.projectId, [...(byProject.get(u.projectId) || []), u]);
+    const ranked = projects.filter(p => byProject.get(p.id)?.length).sort((a, b) => (byProject.get(b.id)!.length) - (byProject.get(a.id)!.length));
+    const available = units.filter(u => statusOf(u) === 'Còn hàng');
+    return {byProject, ranked, available};
+  }, [projects, units, statusOf]);
+}
+
+/** Opening of /quy-hang modelled on Spaciaz home-6: photo hero with giant running text,
+ *  "who we are" with a big figure, sticky stacked project cards and four numbered steps. */
+export function SpaciazInventoryIntro({projects, units, statusOf, onPickProject, onPickCategory}: InventoryProps) {
+  const {byProject, ranked, available} = useInventoryStats(projects, units, statusOf);
+  const hero = ranked[0] || projects[0];
   const low = units.filter(u => u.category === 'low').length, high = units.filter(u => u.category === 'high').length;
-  const scrollToSearch = () => document.getElementById('tim-quy-can')?.scrollIntoView({behavior: 'smooth', block: 'start'});
-  const quick = ranked.slice(0, 5);
-  return <div className="sz sz-projects-page sz-inventory-page">
-    <section className="sz-hero sz-phero">
-      <div className="sz-phero-slides" aria-hidden="true">{slides.map((p, i) => <div key={p.id} className={'sz-phero-slide' + (i === index ? ' is-on' : '')}><Img src={p.image} alt=""/></div>)}</div>
-      <div className="sz-wrap">
-        <div className="sz-hero-copy">
-          <h1 data-fx="title">Quỹ căn<br/>cập nhật liên tục</h1>
-          <p data-fx="">{units.length} căn từ {ranked.length} dự án · {available.length} căn còn hàng. Lọc theo dự án, phân khu, loại hình, diện tích và ngân sách để tìm căn phù hợp.</p>
-        </div>
-        <div className="sz-hero-row">
-          {current && <div className="sz-phero-current" key={current.id}>
-            <span className="sz-outline-num">{String(index + 1).padStart(2, '0')}</span>
-            <div><span className="sz-showcase-loc"><MapPin size={15}/>{current.location} · {byProject.get(current.id)} căn</span><p className="sz-hero-statement">{current.name}</p></div>
-          </div>}
-          <div className="sz-phero-actions" data-fx="right">
-            <div className="sz-phero-dots">{slides.map((p, i) => <button key={p.id} type="button" aria-label={p.name} className={i === index ? 'is-on' : ''} onClick={() => setIndex(i)}><i/></button>)}</div>
-            <button type="button" className="sz-btn is-white" onClick={scrollToSearch}><span>Tìm căn ngay</span><i aria-hidden="true"><ArrowUpRight size={16}/></i></button>
-          </div>
-        </div>
-        <div className="sz-hero-cards">{featured.map(u => {const p = projectOf(u); return <button key={u.id} type="button" onClick={() => onOpenUnit(u)} className="sz-glass sz-phero-card sz-unit-glass" data-fx="">
-          <span className="sz-phero-thumb"><Img src={u.posterUrl || p?.image} alt=""/></span>
-          <div><small>{p?.name || 'Quỹ căn'}</small><h3>{u.code}</h3><p>{u.type || 'Sản phẩm'}{u.area ? ` · ${fmtNum(u.area)} m²` : ''} · <b>{fmtNum(u.price)} tỷ</b></p></div>
-          <ArrowUpRight size={20}/></button>;})}</div>
+  const minPrice = (id: string) => {const v = (byProject.get(id) || []).map(u => u.price).filter(x => x > 0); return v.length ? Math.min(...v) : 0;};
+  const steps = [
+    {title: 'Lọc đúng nhu cầu', body: 'Chọn dự án, phân khu, loại hình, hướng, diện tích và khoảng giá trong một bộ lọc.', image: ranked[1]?.image},
+    {title: 'Xem chi tiết căn', body: 'Mở phiếu căn, mặt bằng, vị trí và bảng tính khoản vay cho từng mã căn.', image: ranked[2]?.image},
+    {title: 'So sánh & lưu căn', body: 'Lưu căn yêu thích, so sánh tối đa ba căn và xuất bảng hàng khi cần.', image: ranked[3]?.image},
+    {title: 'Xác nhận cùng tư vấn', body: 'Giá và trạng thái là tham khảo; đội ngũ tư vấn xác nhận trước khi giữ chỗ.', image: ranked[4]?.image},
+  ];
+  return <div className="sz sz-inv6">
+    <section className="sz-h6-hero">
+      <Img className="sz-h6-hero-img" src={hero?.image} alt=""/>
+      <div className="sz-wrap sz-h6-hero-copy">
+        <p data-fx="left">Bảng hàng {units.length} căn từ {ranked.length} dự án, cập nhật giá và trạng thái để bạn chọn đúng căn, đúng ngân sách.</p>
+        <div data-fx="left"><button type="button" className="sz-btn is-white" onClick={scrollToSearch}><span>Tìm căn ngay</span><i aria-hidden="true"><ArrowUpRight size={16}/></i></button></div>
       </div>
+      <div className="sz-h6-giant" aria-hidden="true"><div>{[0, 1].map(k => <span key={k}>Quỹ căn Alpha Hub · Thấp tầng · Cao tầng · </span>)}</div></div>
     </section>
-    <Sheet className="sz-home-sheet">
-      <section className="sz-section sz-who sz-wrap">
-        <div data-fx="left"><Eyebrow>Bảng hàng Alpha Hub</Eyebrow></div>
-        <div>
-          <h2 className="sz-h2" data-fx="title">Đúng căn, đúng giá,<br/>đúng nhu cầu</h2>
-          <div className="sz-who-cols">
-            <div data-fx=""><h3><Layers size={22}/>Dữ liệu tập trung</h3><p>Mã căn, diện tích, hướng, giá và trạng thái của nhiều dự án trong cùng một bảng hàng, dễ so sánh và xuất file.</p></div>
-            <div data-fx=""><h3><ShieldCheck size={22}/>Xác nhận trước giao dịch</h3><p>Giá và trạng thái căn là thông tin tham khảo; đội ngũ tư vấn sẽ xác nhận lại trước khi giữ chỗ hoặc đặt cọc.</p></div>
+
+    <Sheet className="sz-h6-sheet">
+      <section className="sz-wrap sz-h6-who">
+        <div data-fx="left">
+          <Eyebrow>Bảng hàng Alpha Hub</Eyebrow>
+          <h2 className="sz-h6-lead">Quỹ căn tập trung từ các dự án Vinhomes, Masterise và chủ đầu tư uy tín, minh bạch giá tham khảo và trạng thái từng căn.</h2>
+          <p className="sz-lead">Tra cứu mã căn, diện tích, hướng và giá trong cùng một bảng hàng. Mỗi căn có phiếu thông tin, mặt bằng và vị trí trên quỹ căn 360° của dự án.</p>
+          <button type="button" className="sz-h6-link" onClick={scrollToSearch}>Bắt đầu tìm căn phù hợp!</button>
+          <div className="sz-h6-avatars">
+            <span>{ranked.slice(0, 3).map(p => <Img key={p.id} src={p.image} alt=""/>)}<button type="button" onClick={scrollToSearch} aria-label="Tìm căn"><Plus size={18}/></button></span>
+            <p>Còn <b>{available.length}+</b> căn sẵn sàng tư vấn</p>
+          </div>
+        </div>
+        <div className="sz-h6-figure" data-fx="right">
+          <strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><small>căn trong bảng hàng</small>
+          <Link href={hero ? projectPath(hero.id, 'vr') : '/du-an'} className="sz-h6-photo sz-notch-tl"><Img src={ranked[1]?.image || hero?.image} alt=""/><span className="sz-h6-play" aria-label="Mở quỹ căn 360°"><Globe size={24}/></span></Link>
+        </div>
+      </section>
+
+      <section className="sz-h6-services">
+        <div className="sz-wrap">
+          <div className="sz-center" data-fx=""><Eyebrow>Quỹ căn theo dự án</Eyebrow><h2 className="sz-h2" data-fx="title">Bảng hàng từng dự án</h2></div>
+          <div className="sz-h6-stack">{ranked.slice(0, 6).map((p, i) => {const list = byProject.get(p.id) || [], free = list.filter(u => statusOf(u) === 'Còn hàng').length, from = minPrice(p.id);
+            return <button key={p.id} type="button" className={'sz-h6-card' + (i % 2 ? ' is-flip' : '')} style={{['--i' as string]: i}} onClick={() => onPickProject(p)}>
+              <span className="sz-h6-card-img"><Img src={p.image} alt={p.name}/></span>
+              <span className="sz-h6-card-text"><h3>{p.name}</h3><i/><p>{list.length} căn · {free} còn hàng{from ? ` · giá từ ${fmtNum(from)} tỷ` : ''}</p><small><MapPin size={13}/>{p.location}</small></span>
+              <span className="sz-h6-card-btn"><ArrowUpRight size={16}/></span>
+            </button>;})}</div>
+          <div className="sz-h6-cats" data-fx="">
+            <button type="button" onClick={() => onPickCategory('low')}><b>{low}</b> căn thấp tầng<ArrowUpRight size={16}/></button>
+            <button type="button" onClick={() => onPickCategory('high')}><b>{high}</b> căn cao tầng<ArrowUpRight size={16}/></button>
           </div>
         </div>
       </section>
-      <section className="sz-bento sz-wrap">
-        <button type="button" onClick={scrollToSearch} className="sz-bento-photo sz-notch-tl" data-fx="zoom"><Img src={slides[0]?.image} alt=""/><span className="sz-bento-caption"><Search size={14}/>Tìm căn phù hợp</span></button>
-        <div className="sz-stat" data-fx=""><small>Tổng quỹ căn</small><strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><span>căn trong bảng hàng</span></div>
-        <div className="sz-stat" data-fx=""><small>Còn hàng</small><strong><span className="fx-count">{available.length}</span><sup>+</sup></strong><span>căn sẵn sàng tư vấn</span></div>
-        <button type="button" className="sz-stat sz-stat-btn" data-fx="" onClick={() => onPickCategory('low')}><small>Thấp tầng</small><strong><span className="fx-count">{low}</span><sup>+</sup></strong><span>biệt thự, liền kề, shophouse →</span></button>
-        <button type="button" className="sz-stat sz-stat-btn" data-fx="" onClick={() => onPickCategory('high')}><small>Cao tầng</small><strong><span className="fx-count">{high}</span><sup>+</sup></strong><span>căn hộ chung cư →</span></button>
+
+      <section className="sz-wrap sz-section sz-h6-quality">
+        <div className="sz-center" data-fx=""><Eyebrow>Cách tìm căn</Eyebrow><h2 className="sz-h2" data-fx="title">Chọn căn rõ ràng<br/>trong bốn bước</h2></div>
+        <div className="sz-h6-steps">{steps.map((s, i) => <div key={s.title} className="sz-h6-step" data-fx="">
+          <span className="sz-h6-num">{String(i + 1).padStart(2, '0')}</span><h3>{s.title}</h3>
+          <span className="sz-h6-step-img"><Img src={s.image} alt=""/></span><p>{s.body}</p></div>)}</div>
       </section>
-      {quick.length > 0 && <section className="sz-section sz-services">
-        <div className="sz-wrap">
-          <div className="sz-center" data-fx=""><Eyebrow>Quỹ căn theo dự án</Eyebrow><h2 className="sz-h2" data-fx="title">Chọn nhanh bảng hàng<br/>của từng dự án</h2></div>
-          <div className="sz-service-grid">{quick.map((p, i) => <button key={p.id} type="button" onClick={() => onPickProject(p)} className={'sz-service sz-notch-tr' + (i > 2 ? ' is-wide' : '')} data-fx="zoom">
-            <div className="sz-service-text"><h3>{p.name}</h3><p>{byProject.get(p.id)} căn · {units.filter(u => u.projectId === p.id && statusOf(u) === 'Còn hàng').length} còn hàng</p></div><Img src={p.image} alt={p.name}/><span className="sz-notch-btn"><ArrowUpRight size={16}/></span></button>)}</div>
-          <p className="sz-services-note" data-fx="">Hoặc dùng bộ lọc chi tiết bên dưới. <a href="#tim-quy-can">Tìm căn phù hợp</a></p>
-        </div>
-      </section>}
+      <p className="sz-h6-strip" data-fx="">Giá và trạng thái căn là thông tin tham khảo. <button type="button" onClick={scrollToSearch}>Tìm căn ngay</button></p>
     </Sheet>
   </div>;
 }
 
-/** Closing blocks after the inventory list: developer marquee and consultation form. */
-export function SpaciazInventoryOutro({projects}: {projects: Project[]}) {
-  const developers = Array.from(new Set(projects.map(p => p.developer).filter(Boolean)));
-  const photo = projects[2]?.image || projects[0]?.image;
-  return <div className="sz sz-inventory-outro">
-    <section className="sz-partners">
-      <p>Bảng hàng từ các chủ đầu tư uy tín</p>
-      <div className="sz-partners-track">{[0, 1].map(copy => <span key={copy} aria-hidden={copy > 0 || undefined}>{[...developers, ...projects.map(p => p.name)].map((name, i) => <b key={i}>{name}</b>)}</span>)}</div>
+/** Closing of /quy-hang: dark featured-units list, Q&A cards and the quick enquiry block. */
+export function SpaciazInventoryOutro({projects, units, statusOf, onOpenUnit, contact}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; onOpenUnit: (u: Unit) => void; contact: PublicContact}) {
+  const {ranked, available} = useInventoryStats(projects, units, statusOf);
+  const picks = useMemo(() => {const seen = new Set<string>(); return [...available].filter(u => u.price > 0).sort((a, b) => b.price - a.price).filter(u => !seen.has(u.projectId) && !!seen.add(u.projectId)).slice(0, 5);}, [available]);
+  const [active, setActive] = useState(0);
+  const projectOf = (u?: Unit) => projects.find(p => p.id === u?.projectId);
+  const quotes = [
+    {title: '“Giá tham khảo”', body: 'Giá hiển thị là giá tham khảo tại thời điểm cập nhật. Chính sách và giá chính thức được xác nhận khi tư vấn.', who: 'Bảng hàng', role: 'Cập nhật liên tục'},
+    {title: '“Giữ chỗ nhanh”', body: 'Chọn căn, để lại thông tin và đội ngũ sẽ hỗ trợ giữ chỗ, đặt lịch tham quan dự án trong thời gian sớm nhất.', who: 'Đội ngũ tư vấn', role: contact.phone},
+    {title: '“So sánh dễ dàng”', body: 'Lưu căn yêu thích, so sánh tối đa ba căn và xuất bảng hàng để cân nhắc cùng gia đình.', who: 'Công cụ Alpha Hub', role: 'Miễn phí'},
+  ];
+  const photo = ranked[2]?.image || ranked[0]?.image;
+  return <div className="sz sz-inv6-outro">
+    {picks.length > 0 && <section className="sz-h6-explore">
+      <div className="sz-h6-explore-photo">{picks.map((u, i) => <Img key={u.id} className={i === active ? 'is-on' : ''} src={projectOf(u)?.image} alt=""/>)}</div>
+      <div className="sz-h6-explore-list">
+        <Eyebrow light>Căn nổi bật</Eyebrow>
+        <h2 className="sz-h2">Khám phá những căn<br/>đang được quan tâm</h2>
+        <ul>{picks.map((u, i) => <li key={u.id}><button type="button" className={i === active ? 'is-on' : ''} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => onOpenUnit(u)}>
+          <small><MapPin size={14}/>{projectOf(u)?.name}</small><strong>{u.code} · {fmtNum(u.price)} tỷ</strong><span>{u.type || 'Sản phẩm'}{u.area ? ` · ${fmtNum(u.area)} m²` : ''}</span></button></li>)}</ul>
+      </div>
+    </section>}
+
+    <section className="sz-h6-quotes sz-wrap">
+      <div className="sz-center" data-fx=""><Eyebrow>Lưu ý khi chọn căn</Eyebrow><h2 className="sz-h2">Điều bạn nên biết</h2></div>
+      <div className="sz-h6-quote-grid">{quotes.map(q => <figure key={q.title} className="sz-h6-quote" data-fx="zoom"><h3>{q.title}</h3><p>{q.body}</p><figcaption><span><ShieldCheck size={18}/></span><b>{q.who}</b><small>{q.role}</small></figcaption></figure>)}</div>
     </section>
-    <section className="sz-enquiry">
-      <div className="sz-enquiry-bg"><Img src={photo} alt=""/></div>
-      <div className="sz-enquiry-card sz-wrap" data-fx="zoom">
-        <div className="sz-center"><Eyebrow>Tư vấn quỹ căn</Eyebrow><h2 className="sz-h3">Chưa tìm được căn ưng ý?<br/>Để chúng tôi gửi quỹ căn phù hợp</h2></div>
-        <LeadForm projects={projects} note="Form tư vấn trang Quỹ căn" compact/>
+
+    <section className="sz-h6-enquiry">
+      <div className="sz-wrap">
+        <div className="sz-h6-enquiry-top">
+          <div data-fx="left"><Eyebrow>Tư vấn nhanh</Eyebrow><h2 className="sz-h2">Chưa tìm được<br/>căn ưng ý?</h2>
+            <a className="sz-h6-phone" href={`tel:${contact.phone}`}><span><Phone size={18}/></span><div><small>Hotline / Zalo</small><b>{contact.phone}</b></div></a></div>
+          <div data-fx="right"><p className="sz-lead-strong">Để lại thông tin, chúng tôi sẽ gửi danh sách căn phù hợp với nhu cầu và ngân sách của bạn.</p><LeadForm projects={projects} note="Form tư vấn trang Quỹ căn" compact/></div>
+        </div>
+        <div className="sz-h6-enquiry-photo sz-notch-tr" data-fx="zoom"><Img src={photo} alt=""/></div>
       </div>
     </section>
   </div>;

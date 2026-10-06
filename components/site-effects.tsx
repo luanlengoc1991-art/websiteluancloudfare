@@ -83,7 +83,7 @@ export default function SiteEffects() {
 
     // Header state and hero parallax share one rAF per scroll frame.
     let ticking = false;
-    const photo = () => document.querySelector<HTMLElement>('.site-atmosphere-photo');
+    const photos = () => document.querySelectorAll<HTMLElement>('.site-atmosphere-photo,.sz-h6-hero-img');
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
@@ -91,8 +91,7 @@ export default function SiteEffects() {
         ticking = false;
         const y = window.scrollY;
         root.classList.toggle('is-scrolled', y > 24);
-        const p = photo();
-        if (p && y < 900) p.style.setProperty('--parallax', `${Math.round(y * .28)}px`);
+        if (y < 900) photos().forEach(p => p.style.setProperty('--parallax', `${Math.round(y * .28)}px`));
       });
     };
     onScroll();

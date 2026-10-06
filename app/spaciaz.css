@@ -751,3 +751,87 @@ button.sz-bento-photo{padding:0}
   .sz-site.inventory-market-site .catalog-inventory-results{width:calc(100% - 32px)!important}
 }
 @media(prefers-reduced-motion:reduce){.sz-u-hero-list button.is-on .sz-u-progress{animation:none;width:100%}}
+
+/* ══ Quỹ căn: one dark emerald band for search + results + 3D slider ══ */
+.sz-site.inventory-market-site{--qc-bg:linear-gradient(180deg,#053d2e 0%,#04342a 45%,#032a21 100%);--qc-glass:linear-gradient(160deg,#ffffff14,#ffffff06);--qc-line:#ffffff24;--qc-text:#d9efe6;--qc-muted:#9fc4b6}
+.sz-site.inventory-market-site .sz-u-hero~.inventory-hero{background:var(--qc-bg)!important;color:#fff;margin-top:-56px;box-shadow:0 -1px 0 #ffffff14}
+.sz-site.inventory-market-site .public-content-layout,.sz-site.inventory-market-site .public-content-main{background:#032a21}
+.sz-site.inventory-market-site .public-content-layout{width:100%!important;max-width:none!important;padding-block:0 90px!important;background:linear-gradient(180deg,#032a21,#02261d)}
+.sz-site.inventory-market-site .catalog-inventory-results{color:#fff}
+/* Tabs */
+.sz-site.inventory-market-site .inventory-hero .category-tabs [role=tablist]{background:#ffffff0d!important;border:1px solid var(--qc-line);border-radius:999px;padding:5px;gap:4px}
+.sz-site.inventory-market-site .inventory-hero .category-tabs [role=tab]{color:var(--qc-text)!important;border:0!important;border-radius:999px!important;padding:8px 20px!important;min-height:44px}
+.sz-site.inventory-market-site .inventory-hero .category-tabs [role=tab][data-state=active]{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))!important;color:var(--sz-deep)!important}
+.sz-site.inventory-market-site .category-tabs [role=tab] span{background:#ffffff1f!important;color:inherit!important}
+/* Search panel = glass card */
+.sz-site.inventory-market-site .inventory-hero .filter-panel{background:var(--qc-glass)!important;border:1px solid var(--qc-line)!important;border-radius:var(--sz-r-lg)!important;backdrop-filter:blur(14px);color:#fff;box-shadow:0 40px 80px -50px #000!important}
+.sz-site.inventory-market-site .filter-panel :is(h2,h3,label>span,.field>span,.range-group h3){color:#fff!important}
+.sz-site.inventory-market-site .filter-panel :is(.range-labels,.range-labels span,.range-inputs label>span){color:var(--qc-muted)!important}
+.sz-site.inventory-market-site .filter-panel .filter-head h2 svg{color:var(--sz-mint)}
+.sz-site.inventory-market-site .filter-panel :is(.searchbox,[data-slot=select-trigger],input[type=number]){background:#ffffff10!important;border:1px solid var(--qc-line)!important;color:#fff!important;border-radius:999px!important;box-shadow:none!important}
+.sz-site.inventory-market-site .filter-panel .searchbox{border-color:#8ef0c480!important}
+.sz-site.inventory-market-site .filter-panel :is(.searchbox input,input[type=number]){color:#fff!important;background:transparent}
+.sz-site.inventory-market-site .filter-panel :is(.searchbox input,input)::placeholder{color:var(--qc-muted)!important}
+.sz-site.inventory-market-site .filter-panel .searchbox svg,.sz-site.inventory-market-site .filter-panel [data-slot=select-trigger] svg{color:var(--sz-mint)!important;opacity:1}
+.sz-site.inventory-market-site .filter-panel [data-slot=select-value]{color:#fff!important}
+.sz-site.inventory-market-site .filter-panel :is(.searchbox,[data-slot=select-trigger],input):focus-within,.sz-site.inventory-market-site .filter-panel :is([data-slot=select-trigger],input):focus{border-color:var(--sz-mint)!important}
+.sz-site.inventory-market-site .filter-panel :is(.filter-ranges,.filter-actions,.filter-selects){border-color:var(--qc-line)!important}
+.sz-site.inventory-market-site .filter-panel [data-slot=slider-track]{background:#ffffff26!important}
+.sz-site.inventory-market-site .filter-panel [data-slot=slider-range]{background:linear-gradient(90deg,var(--sz-mint-2),var(--sz-mint))!important}
+.sz-site.inventory-market-site .filter-panel [data-slot=slider-thumb]{background:var(--sz-mint)!important;border-color:var(--sz-deep)!important}
+.sz-site.inventory-market-site .filter-actions .gold{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))!important;color:var(--sz-deep)!important;box-shadow:0 14px 30px -14px #8ef0c480!important}
+.sz-site.inventory-market-site .filter-actions .translucent{background:transparent!important;color:#fff!important;border:1px solid var(--qc-line)!important}
+/* Results heading */
+.sz-site.inventory-market-site .results-heading{align-items:flex-end}
+.sz-site.inventory-market-site .results-heading .eyebrow{color:#e9fff5!important;background:#ffffff12!important;border-color:#8ef0c470!important}
+.sz-site.inventory-market-site .results-heading h2{color:#fff!important}
+.sz-site.inventory-market-site .results-heading .result-count{background:#ffffff1f!important;color:var(--sz-mint)!important}
+.sz-site.inventory-market-site .results-tools .button{background:#ffffff10!important;color:#fff!important;border:1px solid var(--qc-line)!important}
+.sz-site.inventory-market-site .results-tools .button.chosen{background:var(--sz-mint)!important;color:var(--sz-deep)!important}
+.sz-site.inventory-market-site .results-tools [data-slot=select-trigger]{background:#ffffff10!important;color:#fff!important;border-color:var(--qc-line)!important}
+.sz-site.inventory-market-site .view-toggle{background:#ffffff10!important;border-color:var(--qc-line)!important}
+.sz-site.inventory-market-site .view-toggle button{color:var(--qc-text)!important}
+.sz-site.inventory-market-site .view-toggle button.selected{background:var(--sz-mint)!important;color:var(--sz-deep)!important}
+/* Project chips: two centred rows */
+.sz-site.inventory-market-site .inventory-project-counts{display:flex!important;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1180px;margin:34px auto 14px!important}
+.sz-site.inventory-market-site .inventory-project-counts button{display:inline-flex!important;align-items:center;gap:8px;padding:8px 8px 8px 16px!important;min-height:0;border-radius:999px!important;background:#ffffff0d!important;color:var(--qc-text)!important;border:1px solid var(--qc-line)!important;font-size:13px!important;line-height:1.3!important;white-space:nowrap!important;box-shadow:none!important;transition:all .3s}
+.sz-site.inventory-market-site .inventory-project-counts button:hover{border-color:#8ef0c4a6!important;color:#fff!important;transform:translateY(-2px)}
+.sz-site.inventory-market-site .inventory-project-counts button strong{padding:3px 10px;border-radius:999px;background:#ffffff1a!important;color:var(--sz-mint)!important;font-size:12px}
+.sz-site.inventory-market-site .inventory-project-counts button.selected{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2))!important;color:var(--sz-deep)!important;border-color:transparent!important}
+.sz-site.inventory-market-site .inventory-project-counts button.selected strong{background:#02261d!important;color:#fff!important}
+.sz-site.inventory-market-site .sample-note{justify-content:center;color:var(--qc-muted)!important;gap:14px}
+.sz-site.inventory-market-site .sample-note .count-note{color:var(--sz-mint)!important}
+.sz-site.inventory-market-site .catalog-inventory-results .table-wrap{background:#fff;border-radius:var(--sz-r);color:var(--sz-ink)}
+.sz-site.inventory-market-site .catalog-inventory-results .empty{background:#ffffff0d!important;color:#fff!important;border-color:var(--qc-line)!important}
+.sz-site.inventory-market-site :is(.page-arrow,[data-slot=pagination-link]){color:#fff!important}
+
+/* 3D coverflow */
+.sz-u3d{--u3d-gap:min(330px,52vw);position:relative;margin-top:16px;outline:none}
+.sz-u3d-stage{position:relative;height:740px;perspective:1800px;transform-style:preserve-3d;overflow:hidden;margin-inline:calc(50% - 50vw);padding-top:20px}
+.sz-u3d-card{position:absolute!important;left:50%;top:20px;width:min(440px,78vw);height:680px;flex:none;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s,filter .6s,box-shadow .6s;filter:brightness(var(--dim));cursor:pointer;transform-origin:50% 50%}
+.sz-u3d-card:hover{filter:brightness(calc(var(--dim) + .12))}
+.sz-u3d-card.is-active{cursor:default;filter:none;box-shadow:0 0 0 2px var(--sz-mint),0 50px 90px -40px #000,0 0 80px -10px #8ef0c459}
+.sz-u3d-card.is-active .sz-u-code{color:var(--sz-mint);text-shadow:0 0 30px #8ef0c459}
+.sz-u3d-card:not(.is-active) .sz-u-card-tools,.sz-u3d-card:not(.is-active) .sz-u-open{opacity:0;pointer-events:none}
+.sz-u3d-card:not(.is-active) .sz-u-card-photo{pointer-events:none}
+.sz-u3d-card .sz-u-card-tools,.sz-u3d-card .sz-u-open{transition:opacity .4s}
+.sz-u3d .sz-u-nav{justify-content:center;max-width:620px;margin:10px auto 0;padding:0;color:#fff}
+.sz-u3d .sz-u-nav>span{color:var(--qc-muted)}.sz-u3d .sz-u-nav>span b{color:#fff}
+.sz-u3d .sz-u-bar{background:#ffffff24}
+.sz-u3d .sz-u-nav button{background:#ffffff10;border-color:var(--qc-line);color:#fff}
+.sz-u3d .sz-u-nav button:hover{background:var(--sz-mint);color:var(--sz-deep)}
+@media(max-width:700px){
+  .sz-u3d{--u3d-gap:62vw}
+  .sz-u3d-stage{height:640px}
+  .sz-u3d-card{height:590px}
+  .sz-site.inventory-market-site .inventory-project-counts{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;margin-inline:-16px!important;padding-inline:16px}
+}
+@media(prefers-reduced-motion:reduce){.sz-u3d-card{transition:none}}
+/* Results sit on the same dark band, full-bleed. */
+.sz-site.inventory-market-site .catalog-inventory-results{position:relative;padding-top:56px!important;padding-bottom:90px!important;box-shadow:0 0 0 100vmax #032a21;clip-path:inset(0 -100vmax);background:#032a21}
+.sz-site.inventory-market-site .catalog-inventory-results+*{position:relative}
+/* Project chips: 8 per row → two centred rows of compact cards */
+.sz-site.inventory-market-site .inventory-project-counts{max-width:var(--sz-wrap)}
+.sz-site.inventory-market-site .inventory-project-counts button{flex:0 0 calc((100% - 70px) / 8);flex-direction:column;justify-content:center;gap:6px!important;padding:12px 8px!important;border-radius:18px!important;white-space:normal!important;text-align:center!important;font-size:12.5px!important;font-weight:600}
+@media(max-width:1100px){.sz-site.inventory-market-site .inventory-project-counts button{flex-basis:calc((100% - 40px) / 5)}}
+@media(max-width:700px){.sz-site.inventory-market-site .inventory-project-counts button{flex:0 0 132px}}

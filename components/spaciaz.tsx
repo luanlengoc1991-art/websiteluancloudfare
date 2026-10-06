@@ -556,30 +556,38 @@ export function SpaciazInventoryIntro({projects, units, statusOf, onOpenUnit}: I
 
 type SliderProps = {items: Unit[]; projects: Project[]; statusOf: (u: Unit) => string; favorites: Set<string>; compare: string[]; onFavorite: (id: string) => unknown; onCompare: (id: string) => void; onOpenUnit: (u: Unit) => void};
 
-/** "Quỹ căn toàn quốc" as a running slider of large unit cards. */
+/** "Quỹ căn toàn quốc" as a 3D coverflow: the active unit sits in front, neighbours turn away. */
 export function SpaciazUnitSlider({items, projects, statusOf, favorites, compare, onFavorite, onCompare, onOpenUnit}: SliderProps) {
-  const track = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0), [paused, setPaused] = useState(false);
+  const [active, setActive] = useState(0), [paused, setPaused] = useState(false);
+  const touch = useRef<number | null>(null);
+  const n = items.length;
   const projectOf = (u: Unit) => projects.find(p => p.id === u.projectId);
-  const step = () => {const el = track.current, card = el?.querySelector<HTMLElement>('.sz-u-card'); return card ? card.offsetWidth + 24 : 400;};
-  const go = (dir: number) => {const el = track.current; if (!el) return; const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-    if (dir > 0 && end) el.scrollTo({left: 0, behavior: 'smooth'}); else el.scrollBy({left: dir * step(), behavior: 'smooth'});};
-  useEffect(() => {if (paused || items.length < 2) return; const t = setInterval(() => go(1), 4200); return () => clearInterval(t);}, [paused, items.length]);
-  useEffect(() => {track.current?.scrollTo({left: 0}); setIndex(0);}, [items]);
-  if (!items.length) return null;
-  return <div className="sz sz-u-slider" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
-    <div className="sz-u-track" ref={track} onScroll={e => setIndex(Math.round(e.currentTarget.scrollLeft / step()))}>
-      {items.map(u => {const p = projectOf(u), status = statusOf(u), free = status === 'Còn hàng';
-        return <article key={u.id} className="sz-u-card">
-          <button type="button" className="sz-u-card-photo" onClick={() => onOpenUnit(u)} aria-label={`Xem căn ${u.code}`}><Img src={u.posterUrl || p?.image} alt=""/></button>
+  const go = (to: number) => setActive(((to % n) + n) % n);
+  useEffect(() => {setActive(0);}, [items]);
+  useEffect(() => {if (paused || n < 2) return; const t = setTimeout(() => go(active + 1), 4200); return () => clearTimeout(t);}, [active, paused, n]);
+  if (!n) return null;
+  const range = Math.min(4, Math.floor((n - 1) / 2));
+  const slots: {u: Unit; i: number; off: number}[] = [];
+  for (let off = -range; off <= range; off++) {const i = ((active + off) % n + n) % n; slots.push({u: items[i], i, off});}
+  if (n === 2) slots.splice(0, slots.length, {u: items[active], i: active, off: 0}, {u: items[(active + 1) % 2], i: (active + 1) % 2, off: 1});
+  return <div className="sz sz-u3d" tabIndex={0} aria-roledescription="carousel" aria-label="Quỹ căn"
+    onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
+    onKeyDown={e => {if (e.key === 'ArrowLeft') go(active - 1); if (e.key === 'ArrowRight') go(active + 1);}}
+    onTouchStart={e => {touch.current = e.touches[0].clientX;}} onTouchEnd={e => {if (touch.current === null) return; const dx = e.changedTouches[0].clientX - touch.current; touch.current = null; if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));}}>
+    <div className="sz-u3d-stage">
+      {slots.map(({u, i, off}) => {const p = projectOf(u), status = statusOf(u), free = status === 'Còn hàng', on = off === 0, a = Math.abs(off);
+        return <article key={u.id + ':' + off} className={'sz-u-card sz-u3d-card' + (on ? ' is-active' : '')} aria-hidden={!on || undefined}
+          style={{transform: `translateX(calc(-50% + ${off} * var(--u3d-gap))) translateZ(${-a * 170}px) rotateY(${off * -24}deg) scale(${on ? 1 : 1 - a * .06})`, zIndex: 20 - a, opacity: a > 3 ? 0 : 1, ['--dim' as string]: on ? 1 : Math.max(.35, .75 - a * .12)}}
+          onClick={() => {if (!on) go(i);}}>
+          <button type="button" className="sz-u-card-photo" tabIndex={on ? 0 : -1} onClick={() => on && onOpenUnit(u)} aria-label={`Xem căn ${u.code}`}><Img src={u.posterUrl || p?.image} alt=""/></button>
           <span className={'sz-u-status' + (free ? ' is-free' : '')}>{status}</span>
           <div className="sz-u-card-tools">
-            <button type="button" aria-label={`Yêu thích ${u.code}`} aria-pressed={favorites.has(u.id)} className={favorites.has(u.id) ? 'is-on' : ''} onClick={() => onFavorite(u.id)}><Heart size={17} fill={favorites.has(u.id) ? 'currentColor' : 'none'}/></button>
-            <button type="button" aria-label={`So sánh ${u.code}`} aria-pressed={compare.includes(u.id)} className={compare.includes(u.id) ? 'is-on' : ''} onClick={() => onCompare(u.id)}><Layers size={16}/></button>
+            <button type="button" tabIndex={on ? 0 : -1} aria-label={`Yêu thích ${u.code}`} aria-pressed={favorites.has(u.id)} className={favorites.has(u.id) ? 'is-on' : ''} onClick={e => {e.stopPropagation(); onFavorite(u.id);}}><Heart size={17} fill={favorites.has(u.id) ? 'currentColor' : 'none'}/></button>
+            <button type="button" tabIndex={on ? 0 : -1} aria-label={`So sánh ${u.code}`} aria-pressed={compare.includes(u.id)} className={compare.includes(u.id) ? 'is-on' : ''} onClick={e => {e.stopPropagation(); onCompare(u.id);}}><Layers size={16}/></button>
           </div>
           <div className="sz-u-card-body">
             <small><MapPin size={13}/>{p?.name}</small>
-            <button type="button" className="sz-u-code" onClick={() => onOpenUnit(u)}>{u.code}</button>
+            <button type="button" className="sz-u-code" tabIndex={on ? 0 : -1} onClick={() => on && onOpenUnit(u)}>{u.code}</button>
             <div className="sz-u-price"><span>Giá tham khảo</span><b>{u.price ? <>{fmtNum(u.price)} <sub>tỷ</sub></> : 'Liên hệ'}</b></div>
             <dl>
               <div><dt>Diện tích</dt><dd>{u.area ? `${fmtNum(u.area)} m²` : '—'}</dd></div>
@@ -587,15 +595,15 @@ export function SpaciazUnitSlider({items, projects, statusOf, favorites, compare
               <div><dt>Phân khu</dt><dd>{u.zone || '—'}</dd></div>
               <div><dt>Hướng</dt><dd>{u.direction || '—'}</dd></div>
             </dl>
-            <button type="button" className="sz-u-open" onClick={() => onOpenUnit(u)}><span>Xem chi tiết căn</span><i><ArrowUpRight size={16}/></i></button>
+            <button type="button" className="sz-u-open" tabIndex={on ? 0 : -1} onClick={e => {e.stopPropagation(); if (on) onOpenUnit(u); else go(i);}}><span>Xem chi tiết căn</span><i><ArrowUpRight size={16}/></i></button>
           </div>
         </article>;})}
     </div>
     <div className="sz-u-nav">
-      <span><b>{String(Math.min(index + 1, items.length)).padStart(2, '0')}</b> / {String(items.length).padStart(2, '0')}</span>
-      <div className="sz-u-bar"><i style={{width: `${Math.min(100, (index + 1) / items.length * 100)}%`}}/></div>
-      <button type="button" aria-label="Căn trước" onClick={() => go(-1)}><ChevronLeft size={20}/></button>
-      <button type="button" aria-label="Căn tiếp" onClick={() => go(1)}><ChevronRight size={20}/></button>
+      <button type="button" aria-label="Căn trước" onClick={() => go(active - 1)}><ChevronLeft size={20}/></button>
+      <span><b>{String(active + 1).padStart(2, '0')}</b> / {String(n).padStart(2, '0')}</span>
+      <div className="sz-u-bar"><i style={{width: `${(active + 1) / n * 100}%`}}/></div>
+      <button type="button" aria-label="Căn tiếp" onClick={() => go(active + 1)}><ChevronRight size={20}/></button>
     </div>
   </div>;
 }

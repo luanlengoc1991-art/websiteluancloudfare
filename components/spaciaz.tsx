@@ -514,117 +514,105 @@ export function SpaciazFooter({brand, contact, logo, address}: {brand: string; c
   </footer>;
 }
 
-/* ═══════════════════════════ Quỹ căn (Spaciaz home-6) ═══════════════════════════ */
-type InventoryProps = {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; onPickProject: (p: Project) => void; onPickCategory: (category: 'low' | 'high') => void; onOpenUnit: (u: Unit) => void};
+/* ═══════════════════════════ Quỹ căn ═══════════════════════════ */
+type InventoryProps = {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; onOpenUnit: (u: Unit) => void};
 const fmtNum = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
 const scrollToSearch = () => document.getElementById('tim-quy-can')?.scrollIntoView({behavior: 'smooth', block: 'start'});
 
-function useInventoryStats(projects: Project[], units: Unit[], statusOf: (u: Unit) => string) {
-  return useMemo(() => {
-    const byProject = new Map<string, Unit[]>();
-    for (const u of units) byProject.set(u.projectId, [...(byProject.get(u.projectId) || []), u]);
-    const ranked = projects.filter(p => byProject.get(p.id)?.length).sort((a, b) => (byProject.get(b.id)!.length) - (byProject.get(a.id)!.length));
-    const available = units.filter(u => statusOf(u) === 'Còn hàng');
-    return {byProject, ranked, available};
-  }, [projects, units, statusOf]);
+/** Opening of /quy-hang: dark split with a large photo and an auto-running list of featured units. */
+export function SpaciazInventoryIntro({projects, units, statusOf, onOpenUnit}: InventoryProps) {
+  const picks = useMemo(() => {
+    const seen = new Set<string>();
+    return units.filter(u => statusOf(u) === 'Còn hàng' && u.price > 0).sort((a, b) => b.price - a.price)
+      .filter(u => !seen.has(u.projectId) && !!seen.add(u.projectId)).slice(0, 6);
+  }, [units, statusOf]);
+  const [active, setActive] = useState(0), [paused, setPaused] = useState(false);
+  useEffect(() => {if (paused || picks.length < 2) return; const t = setTimeout(() => setActive(i => (i + 1) % picks.length), 5000); return () => clearTimeout(t);}, [active, paused, picks.length]);
+  const projectOf = (u?: Unit) => projects.find(p => p.id === u?.projectId);
+  const current = picks[active];
+  if (!picks.length) return null;
+  return <section className="sz sz-u-hero" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div className="sz-u-hero-photo">
+      {picks.map((u, i) => <Img key={u.id} className={i === active ? 'is-on' : ''} src={projectOf(u)?.image} alt=""/>)}
+      {current && <div className="sz-u-hero-tag" key={current.id}>
+        <small><MapPin size={14}/>{projectOf(current)?.name}</small>
+        <strong>{current.code}</strong>
+        <dl><div><dt>Giá tham khảo</dt><dd>{fmtNum(current.price)} <sub>tỷ</sub></dd></div><div><dt>Diện tích</dt><dd>{current.area ? `${fmtNum(current.area)} m²` : '—'}</dd></div><div><dt>Loại hình</dt><dd>{current.type || '—'}</dd></div></dl>
+      </div>}
+    </div>
+    <div className="sz-u-hero-list">
+      <Eyebrow light>Căn nổi bật</Eyebrow>
+      <h1>Khám phá những căn<br/>đang được quan tâm</h1>
+      <ul>{picks.map((u, i) => <li key={u.id}><button type="button" className={i === active ? 'is-on' : ''} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => onOpenUnit(u)}>
+        <small><MapPin size={14}/>{projectOf(u)?.name}</small>
+        <strong>{u.code}<em>{fmtNum(u.price)} tỷ</em></strong>
+        <span>{u.type || 'Sản phẩm'}{u.area ? ` · ${fmtNum(u.area)} m²` : ''}{u.direction && u.direction !== 'Chưa cập nhật' ? ` · ${u.direction}` : ''}</span>
+        <i className="sz-u-progress" key={i === active ? `on-${active}` : 'off'} style={{animationPlayState: paused ? 'paused' : 'running'}}/>
+      </button></li>)}</ul>
+      <button type="button" className="sz-btn is-mint" onClick={scrollToSearch}><span>Tìm căn phù hợp</span><i aria-hidden="true"><ArrowUpRight size={16}/></i></button>
+    </div>
+  </section>;
 }
 
-/** Opening of /quy-hang modelled on Spaciaz home-6: photo hero with giant running text,
- *  "who we are" with a big figure, sticky stacked project cards and four numbered steps. */
-export function SpaciazInventoryIntro({projects, units, statusOf, onPickProject, onPickCategory}: InventoryProps) {
-  const {byProject, ranked, available} = useInventoryStats(projects, units, statusOf);
-  const hero = ranked[0] || projects[0];
-  const low = units.filter(u => u.category === 'low').length, high = units.filter(u => u.category === 'high').length;
-  const minPrice = (id: string) => {const v = (byProject.get(id) || []).map(u => u.price).filter(x => x > 0); return v.length ? Math.min(...v) : 0;};
-  const steps = [
-    {title: 'Lọc đúng nhu cầu', body: 'Chọn dự án, phân khu, loại hình, hướng, diện tích và khoảng giá trong một bộ lọc.', image: ranked[1]?.image},
-    {title: 'Xem chi tiết căn', body: 'Mở phiếu căn, mặt bằng, vị trí và bảng tính khoản vay cho từng mã căn.', image: ranked[2]?.image},
-    {title: 'So sánh & lưu căn', body: 'Lưu căn yêu thích, so sánh tối đa ba căn và xuất bảng hàng khi cần.', image: ranked[3]?.image},
-    {title: 'Xác nhận cùng tư vấn', body: 'Giá và trạng thái là tham khảo; đội ngũ tư vấn xác nhận trước khi giữ chỗ.', image: ranked[4]?.image},
-  ];
-  return <div className="sz sz-inv6">
-    <section className="sz-h6-hero">
-      <Img className="sz-h6-hero-img" src={hero?.image} alt=""/>
-      <div className="sz-wrap sz-h6-hero-copy">
-        <p data-fx="left">Bảng hàng {units.length} căn từ {ranked.length} dự án, cập nhật giá và trạng thái để bạn chọn đúng căn, đúng ngân sách.</p>
-        <div data-fx="left"><button type="button" className="sz-btn is-white" onClick={scrollToSearch}><span>Tìm căn ngay</span><i aria-hidden="true"><ArrowUpRight size={16}/></i></button></div>
-      </div>
-      <div className="sz-h6-giant" aria-hidden="true"><div>{[0, 1].map(k => <span key={k}>Quỹ căn Alpha Hub · Thấp tầng · Cao tầng · </span>)}</div></div>
-    </section>
+type SliderProps = {items: Unit[]; projects: Project[]; statusOf: (u: Unit) => string; favorites: Set<string>; compare: string[]; onFavorite: (id: string) => unknown; onCompare: (id: string) => void; onOpenUnit: (u: Unit) => void};
 
-    <Sheet className="sz-h6-sheet">
-      <section className="sz-wrap sz-h6-who">
-        <div data-fx="left">
-          <Eyebrow>Bảng hàng Alpha Hub</Eyebrow>
-          <h2 className="sz-h6-lead">Quỹ căn tập trung từ các dự án Vinhomes, Masterise và chủ đầu tư uy tín, minh bạch giá tham khảo và trạng thái từng căn.</h2>
-          <p className="sz-lead">Tra cứu mã căn, diện tích, hướng và giá trong cùng một bảng hàng. Mỗi căn có phiếu thông tin, mặt bằng và vị trí trên quỹ căn 360° của dự án.</p>
-          <button type="button" className="sz-h6-link" onClick={scrollToSearch}>Bắt đầu tìm căn phù hợp!</button>
-          <div className="sz-h6-avatars">
-            <span>{ranked.slice(0, 3).map(p => <Img key={p.id} src={p.image} alt=""/>)}<button type="button" onClick={scrollToSearch} aria-label="Tìm căn"><Plus size={18}/></button></span>
-            <p>Còn <b>{available.length}+</b> căn sẵn sàng tư vấn</p>
+/** "Quỹ căn toàn quốc" as a running slider of large unit cards. */
+export function SpaciazUnitSlider({items, projects, statusOf, favorites, compare, onFavorite, onCompare, onOpenUnit}: SliderProps) {
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0), [paused, setPaused] = useState(false);
+  const projectOf = (u: Unit) => projects.find(p => p.id === u.projectId);
+  const step = () => {const el = track.current, card = el?.querySelector<HTMLElement>('.sz-u-card'); return card ? card.offsetWidth + 24 : 400;};
+  const go = (dir: number) => {const el = track.current; if (!el) return; const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+    if (dir > 0 && end) el.scrollTo({left: 0, behavior: 'smooth'}); else el.scrollBy({left: dir * step(), behavior: 'smooth'});};
+  useEffect(() => {if (paused || items.length < 2) return; const t = setInterval(() => go(1), 4200); return () => clearInterval(t);}, [paused, items.length]);
+  useEffect(() => {track.current?.scrollTo({left: 0}); setIndex(0);}, [items]);
+  if (!items.length) return null;
+  return <div className="sz sz-u-slider" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
+    <div className="sz-u-track" ref={track} onScroll={e => setIndex(Math.round(e.currentTarget.scrollLeft / step()))}>
+      {items.map(u => {const p = projectOf(u), status = statusOf(u), free = status === 'Còn hàng';
+        return <article key={u.id} className="sz-u-card">
+          <button type="button" className="sz-u-card-photo" onClick={() => onOpenUnit(u)} aria-label={`Xem căn ${u.code}`}><Img src={u.posterUrl || p?.image} alt=""/></button>
+          <span className={'sz-u-status' + (free ? ' is-free' : '')}>{status}</span>
+          <div className="sz-u-card-tools">
+            <button type="button" aria-label={`Yêu thích ${u.code}`} aria-pressed={favorites.has(u.id)} className={favorites.has(u.id) ? 'is-on' : ''} onClick={() => onFavorite(u.id)}><Heart size={17} fill={favorites.has(u.id) ? 'currentColor' : 'none'}/></button>
+            <button type="button" aria-label={`So sánh ${u.code}`} aria-pressed={compare.includes(u.id)} className={compare.includes(u.id) ? 'is-on' : ''} onClick={() => onCompare(u.id)}><Layers size={16}/></button>
           </div>
-        </div>
-        <div className="sz-h6-figure" data-fx="right">
-          <strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><small>căn trong bảng hàng</small>
-          <Link href={hero ? projectPath(hero.id, 'vr') : '/du-an'} className="sz-h6-photo sz-notch-tl"><Img src={ranked[1]?.image || hero?.image} alt=""/><span className="sz-h6-play" aria-label="Mở quỹ căn 360°"><Globe size={24}/></span></Link>
-        </div>
-      </section>
-
-      <section className="sz-h6-services">
-        <div className="sz-wrap">
-          <div className="sz-center" data-fx=""><Eyebrow>Quỹ căn theo dự án</Eyebrow><h2 className="sz-h2" data-fx="title">Bảng hàng từng dự án</h2></div>
-          <div className="sz-h6-stack">{ranked.slice(0, 6).map((p, i) => {const list = byProject.get(p.id) || [], free = list.filter(u => statusOf(u) === 'Còn hàng').length, from = minPrice(p.id);
-            return <button key={p.id} type="button" className={'sz-h6-card' + (i % 2 ? ' is-flip' : '')} style={{['--i' as string]: i}} onClick={() => onPickProject(p)}>
-              <span className="sz-h6-card-img"><Img src={p.image} alt={p.name}/></span>
-              <span className="sz-h6-card-text"><h3>{p.name}</h3><i/><p>{list.length} căn · {free} còn hàng{from ? ` · giá từ ${fmtNum(from)} tỷ` : ''}</p><small><MapPin size={13}/>{p.location}</small></span>
-              <span className="sz-h6-card-btn"><ArrowUpRight size={16}/></span>
-            </button>;})}</div>
-          <div className="sz-h6-cats" data-fx="">
-            <button type="button" onClick={() => onPickCategory('low')}><b>{low}</b> căn thấp tầng<ArrowUpRight size={16}/></button>
-            <button type="button" onClick={() => onPickCategory('high')}><b>{high}</b> căn cao tầng<ArrowUpRight size={16}/></button>
+          <div className="sz-u-card-body">
+            <small><MapPin size={13}/>{p?.name}</small>
+            <button type="button" className="sz-u-code" onClick={() => onOpenUnit(u)}>{u.code}</button>
+            <div className="sz-u-price"><span>Giá tham khảo</span><b>{u.price ? <>{fmtNum(u.price)} <sub>tỷ</sub></> : 'Liên hệ'}</b></div>
+            <dl>
+              <div><dt>Diện tích</dt><dd>{u.area ? `${fmtNum(u.area)} m²` : '—'}</dd></div>
+              <div><dt>Loại hình</dt><dd>{u.type || '—'}</dd></div>
+              <div><dt>Phân khu</dt><dd>{u.zone || '—'}</dd></div>
+              <div><dt>Hướng</dt><dd>{u.direction || '—'}</dd></div>
+            </dl>
+            <button type="button" className="sz-u-open" onClick={() => onOpenUnit(u)}><span>Xem chi tiết căn</span><i><ArrowUpRight size={16}/></i></button>
           </div>
-        </div>
-      </section>
-
-      <section className="sz-wrap sz-section sz-h6-quality">
-        <div className="sz-center" data-fx=""><Eyebrow>Cách tìm căn</Eyebrow><h2 className="sz-h2" data-fx="title">Chọn căn rõ ràng<br/>trong bốn bước</h2></div>
-        <div className="sz-h6-steps">{steps.map((s, i) => <div key={s.title} className="sz-h6-step" data-fx="">
-          <span className="sz-h6-num">{String(i + 1).padStart(2, '0')}</span><h3>{s.title}</h3>
-          <span className="sz-h6-step-img"><Img src={s.image} alt=""/></span><p>{s.body}</p></div>)}</div>
-      </section>
-      <p className="sz-h6-strip" data-fx="">Giá và trạng thái căn là thông tin tham khảo. <button type="button" onClick={scrollToSearch}>Tìm căn ngay</button></p>
-    </Sheet>
+        </article>;})}
+    </div>
+    <div className="sz-u-nav">
+      <span><b>{String(Math.min(index + 1, items.length)).padStart(2, '0')}</b> / {String(items.length).padStart(2, '0')}</span>
+      <div className="sz-u-bar"><i style={{width: `${Math.min(100, (index + 1) / items.length * 100)}%`}}/></div>
+      <button type="button" aria-label="Căn trước" onClick={() => go(-1)}><ChevronLeft size={20}/></button>
+      <button type="button" aria-label="Căn tiếp" onClick={() => go(1)}><ChevronRight size={20}/></button>
+    </div>
   </div>;
 }
 
-/** Closing of /quy-hang: dark featured-units list, Q&A cards and the quick enquiry block. */
-export function SpaciazInventoryOutro({projects, units, statusOf, onOpenUnit, contact}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; onOpenUnit: (u: Unit) => void; contact: PublicContact}) {
-  const {ranked, available} = useInventoryStats(projects, units, statusOf);
-  const picks = useMemo(() => {const seen = new Set<string>(); return [...available].filter(u => u.price > 0).sort((a, b) => b.price - a.price).filter(u => !seen.has(u.projectId) && !!seen.add(u.projectId)).slice(0, 5);}, [available]);
-  const [active, setActive] = useState(0);
-  const projectOf = (u?: Unit) => projects.find(p => p.id === u?.projectId);
+/** Closing of /quy-hang: note cards and the quick-enquiry block. */
+export function SpaciazInventoryOutro({projects, contact}: {projects: Project[]; contact: PublicContact}) {
   const quotes = [
     {title: '“Giá tham khảo”', body: 'Giá hiển thị là giá tham khảo tại thời điểm cập nhật. Chính sách và giá chính thức được xác nhận khi tư vấn.', who: 'Bảng hàng', role: 'Cập nhật liên tục'},
     {title: '“Giữ chỗ nhanh”', body: 'Chọn căn, để lại thông tin và đội ngũ sẽ hỗ trợ giữ chỗ, đặt lịch tham quan dự án trong thời gian sớm nhất.', who: 'Đội ngũ tư vấn', role: contact.phone},
     {title: '“So sánh dễ dàng”', body: 'Lưu căn yêu thích, so sánh tối đa ba căn và xuất bảng hàng để cân nhắc cùng gia đình.', who: 'Công cụ Alpha Hub', role: 'Miễn phí'},
   ];
-  const photo = ranked[2]?.image || ranked[0]?.image;
+  const photo = projects[2]?.image || projects[0]?.image;
   return <div className="sz sz-inv6-outro">
-    {picks.length > 0 && <section className="sz-h6-explore">
-      <div className="sz-h6-explore-photo">{picks.map((u, i) => <Img key={u.id} className={i === active ? 'is-on' : ''} src={projectOf(u)?.image} alt=""/>)}</div>
-      <div className="sz-h6-explore-list">
-        <Eyebrow light>Căn nổi bật</Eyebrow>
-        <h2 className="sz-h2">Khám phá những căn<br/>đang được quan tâm</h2>
-        <ul>{picks.map((u, i) => <li key={u.id}><button type="button" className={i === active ? 'is-on' : ''} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => onOpenUnit(u)}>
-          <small><MapPin size={14}/>{projectOf(u)?.name}</small><strong>{u.code} · {fmtNum(u.price)} tỷ</strong><span>{u.type || 'Sản phẩm'}{u.area ? ` · ${fmtNum(u.area)} m²` : ''}</span></button></li>)}</ul>
-      </div>
-    </section>}
-
     <section className="sz-h6-quotes sz-wrap">
       <div className="sz-center" data-fx=""><Eyebrow>Lưu ý khi chọn căn</Eyebrow><h2 className="sz-h2">Điều bạn nên biết</h2></div>
       <div className="sz-h6-quote-grid">{quotes.map(q => <figure key={q.title} className="sz-h6-quote" data-fx="zoom"><h3>{q.title}</h3><p>{q.body}</p><figcaption><span><ShieldCheck size={18}/></span><b>{q.who}</b><small>{q.role}</small></figcaption></figure>)}</div>
     </section>
-
     <section className="sz-h6-enquiry">
       <div className="sz-wrap">
         <div className="sz-h6-enquiry-top">

@@ -16,7 +16,7 @@ export default function BackgroundSettings({backgrounds = {}, appearances = {}, 
   useEffect(() => {latestChange.current = onChange;}, [onChange]);
   const value = backgrounds[page] || '';
   const preview = value || backgrounds.default || defaultBackgroundImage;
-  const images = files.filter(file => file.kind !== 'document');
+  const images = files.filter(file => !['document', 'archived'].includes(file.kind));
   const appearance = {...defaultBackgroundAppearance, ...appearances.default, ...appearances[page]};
   const layers = backgroundLayers(appearance);
   const changeAppearance = (key: keyof BackgroundAppearance, value: number | string) => onAppearanceChange(page, {...appearances[page], [key]: value});

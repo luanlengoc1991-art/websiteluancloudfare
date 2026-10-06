@@ -5,7 +5,7 @@ export type Unit={drawing?:import('./green-paradise').UnitDrawing;tower?:string;
 export type Customer={id:string;name:string;phone:string;email:string;note:string;stage:string;};
 export type Article={id:string;title:string;category:string;body:string;date:string;image:string;};
 export type Asset={id:string;projectId:string;kind:string;name:string;url:string;};
-export type Settings={brand:string;phone:string;email:string;address:string;holdHours:number;notifications:boolean;profileName:string;backgrounds?:SiteBackgrounds;backgroundAppearance?:BackgroundAppearances;};
+export type Settings={brand:string;phone:string;email:string;address:string;holdHours:number;notifications:boolean;profileName:string;logo?:string;alphahubImage?:string;backgrounds?:SiteBackgrounds;backgroundAppearance?:BackgroundAppearances;};
 export type Reservation={id:string;unit_id:string;customer_id:string;note:string;status:string;expires_at:number;created_at:number;};
 const rows=[
 ['ha-long','Vinhomes Global Gate Hạ Long','Tuần Châu, Quảng Ninh','Quảng Ninh','1789714544076_14d8d57f','low',20.95,107.03],

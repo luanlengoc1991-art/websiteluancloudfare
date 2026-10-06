@@ -50,6 +50,12 @@
 - (06/10/2026) Tab "Quỹ căn 360°" ưu tiên ảnh mặt bằng (file kind='plan') làm cảnh đầu và dùng chung pin lớp 'plan' với tab Mặt bằng; phối cảnh và ảnh 360° vẫn chọn ở thanh cảnh. Chưa có ảnh mặt bằng thì hiện phối cảnh với pin lớp 'map' như cũ. Pin chỉ hiện mã căn; bấm pin mở thẻ thông tin (mã căn, loại hình, DT đất, DT XD, giá chưa VAT+KBPT, trạng thái, nút Xem chi tiết).
 - Ảnh nền mặt bằng là file `kind='plan'` của dự án, tải ở Quản trị → Thư viện. Bật cho Green Paradise và cho mọi dự án khi người xem có quyền sửa; dự án khác chưa có pin giữ cách hiển thị cũ.
 
+## Quản lý ảnh trong admin (06/10/2026)
+
+- Mọi ảnh hiển thị đều đổi được trong admin, giữ nguyên giao diện: ảnh dự án/bài viết (ImageField), ảnh mặt bằng căn và phiếu căn (ImageField trong form căn), nền từng trang, logo và ảnh nền AlphaHub (Cấu hình → "Logo & ảnh trang AlphaHub", lưu `settings.logo`/`settings.alphahubImage`; trống = mặc định `/alpha-hub-logo.png` và ảnh trong `lib/alphahub-content.ts`, truyền qua `usePublicContact()`).
+- Thư viện: lọc theo dự án/loại, đổi tên, chuyển dự án, đổi "Hiển thị ở" (gallery/plan/panorama/model/amenity) bằng `/api/action` `action:'file'`. "Gỡ khỏi website" đặt kind='archived' — không xóa R2/D1, URL cũ vẫn chạy, khôi phục bằng cách đổi lại loại.
+- Favicon (`app/layout.tsx`) và logo trang `/tai-khoan` vẫn là file tĩnh.
+
 ## Ảnh, video và dung lượng repository
 
 - Repository chỉ giữ code và asset thật sự cần cho giao diện/build, như logo, icon, font và ảnh mẫu nhỏ. Ảnh/video dung lượng lớn, media gốc và file người dùng tải lên lưu ở object storage; không đưa vào GitHub hoặc checkout Codex nếu công việc không cần đến chúng.

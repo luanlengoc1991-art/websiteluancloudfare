@@ -16,10 +16,11 @@ const normalize = (value: string) => value.toLocaleLowerCase('vi').normalize('NF
 function Background() {
   const [failed, setFailed] = useState(false);
   const image = useRef<HTMLImageElement>(null);
+  const custom = usePublicContact().alphahubImage;
   useEffect(() => {
     if (image.current?.complete && image.current.naturalWidth === 0) setFailed(true);
   }, []);
-  return <img ref={image} src={failed ? '/images/green-paradise.webp' : alphaHubContent.backgroundImage} alt="" fetchPriority="high" onError={() => setFailed(true)}/>;
+  return <img ref={image} src={failed ? '/images/green-paradise.webp' : custom || alphaHubContent.backgroundImage} alt="" fetchPriority="high" onError={() => setFailed(true)}/>;
 }
 
 export default function AlphaHubLanding({projects, units, articles}: Props) {

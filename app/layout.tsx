@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import SiteAtmosphere from "@/components/site-atmosphere";
+import SiteEffects from "@/components/site-effects";
 import "./globals.css";
 import "./admin.css";
 import "./admin-projects.css";
@@ -14,6 +15,8 @@ import "./site-shell.css";
 import "./content-sidebar.css";
 import "./typography.css";
 import "./atmosphere.css";
+import "./be-vietnam-pro.css";
+import "./skin.css";
 
 const playfairDisplay = localFont({
   src: [
@@ -56,8 +59,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${playfairDisplay.variable} ${mulish.variable}`}>
-      <body className="antialiased"><SiteAtmosphere/>{children}</body>
+    <html lang="vi" data-skin="emerald" className={`${playfairDisplay.variable} ${mulish.variable}`}>
+      <body className="antialiased"><SiteAtmosphere/><SiteEffects/>{children}</body>
     </html>
   );
 }

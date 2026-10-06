@@ -50,6 +50,12 @@
 - (06/10/2026) Tab "Quỹ căn 360°" ưu tiên ảnh mặt bằng (file kind='plan') làm cảnh đầu và dùng chung pin lớp 'plan' với tab Mặt bằng; phối cảnh và ảnh 360° vẫn chọn ở thanh cảnh. Chưa có ảnh mặt bằng thì hiện phối cảnh với pin lớp 'map' như cũ. Pin chỉ hiện mã căn; bấm pin mở thẻ thông tin (mã căn, loại hình, DT đất, DT XD, giá chưa VAT+KBPT, trạng thái, nút Xem chi tiết).
 - Ảnh nền mặt bằng là file `kind='plan'` của dự án, tải ở Quản trị → Thư viện. Bật cho Green Paradise và cho mọi dự án khi người xem có quyền sửa; dự án khác chưa có pin giữ cách hiển thị cũ.
 
+## Giao diện Emerald / Spaciaz (06/10/2026)
+
+- Theo yêu cầu mới nhất của chủ dự án, trang công khai được phối lại theo phong cách theme Spaciaz (demo2.wpopal.com/spaciaz): tông chính xanh lục bảo, nội dung trên nền gradient trắng → mint → xanh trời nhạt, tiêu đề lớn đậm, eyebrow dạng pill, header pill nổi (trắng khi cuộn), hero ảnh có khung bo góc, thẻ trắng-mint nâng nhẹ + ảnh zoom khi hover, dải tên dự án chạy ngang trước footer, footer xanh đậm. Quy tắc này thay cho ghi chú "các trang còn lại CHỈ thay nền" ở trên.
+- Code: `app/skin.css` (nạp cuối, mọi rule nằm dưới `html[data-skin=emerald]`; bỏ thuộc tính `data-skin` trong `app/layout.tsx` là về giao diện cũ), font Be Vietnam Pro tự host (`app/be-vietnam-pro.css`, OFL), hiệu ứng ở `components/site-effects.tsx` (reveal khi cuộn, đếm số, nút hút chuột, header đổi trạng thái, parallax ảnh hero; tắt với prefers-reduced-motion), dải chữ `.fx-marquee` trong `components/hub.tsx`.
+- Ảnh hero = ảnh nền cấu hình trong admin (Cấu hình → nền từng trang); chiều cao hero mỗi trang đặt bằng `--hero-h` qua `:has()`. AlphaHub giữ thiết kế nền tối đã duyệt (chỉ dùng chung font/header/hiệu ứng); trang dự án 360°, quản trị, trình chỉnh sửa giữ nền emerald toàn màn hình.
+
 ## Quản lý ảnh trong admin (06/10/2026)
 
 - Mọi ảnh hiển thị đều đổi được trong admin, giữ nguyên giao diện: ảnh dự án/bài viết (ImageField), ảnh mặt bằng căn và phiếu căn (ImageField trong form căn), nền từng trang, logo và ảnh nền AlphaHub (Cấu hình → "Logo & ảnh trang AlphaHub", lưu `settings.logo`/`settings.alphahubImage`; trống = mặc định `/alpha-hub-logo.png` và ảnh trong `lib/alphahub-content.ts`, truyền qua `usePublicContact()`).

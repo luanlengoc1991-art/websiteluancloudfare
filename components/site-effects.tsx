@@ -44,6 +44,14 @@ export default function SiteEffects() {
           io.observe(el);
         });
       }
+      // Layout components mark their own elements with data-fx.
+      document.querySelectorAll(`${scope} [data-fx]`).forEach(el => {
+        if (seen.has(el)) return;
+        seen.add(el);
+        const siblings = el.parentElement ? Array.from(el.parentElement.children).filter(c => c.hasAttribute('data-fx')) : [];
+        (el as HTMLElement).style.setProperty('--fx-i', String(Math.max(0, siblings.indexOf(el)) % 6));
+        io.observe(el);
+      });
       document.querySelectorAll(`${scope} ${counters}`).forEach(el => {
         if (seen.has(el)) return;
         seen.add(el);

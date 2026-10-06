@@ -56,6 +56,13 @@
 - Code: `app/skin.css` (nạp cuối, mọi rule nằm dưới `html[data-skin=emerald]`; bỏ thuộc tính `data-skin` trong `app/layout.tsx` là về giao diện cũ), font Be Vietnam Pro tự host (`app/be-vietnam-pro.css`, OFL), hiệu ứng ở `components/site-effects.tsx` (reveal khi cuộn, đếm số, nút hút chuột, header đổi trạng thái, parallax ảnh hero; tắt với prefers-reduced-motion), dải chữ `.fx-marquee` trong `components/hub.tsx`.
 - Ảnh hero = ảnh nền cấu hình trong admin (Cấu hình → nền từng trang); chiều cao hero mỗi trang đặt bằng `--hero-h` qua `:has()`. AlphaHub giữ thiết kế nền tối đã duyệt (chỉ dùng chung font/header/hiệu ứng); trang dự án 360°, quản trị, trình chỉnh sửa giữ nền emerald toàn màn hình.
 
+## Layout Spaciaz (06/10/2026, thay layout cũ)
+
+- Chủ dự án yêu cầu dựng lại LAYOUT trang công khai giống theme Spaciaz (demo2.wpopal.com/spaciaz), chỉ thay nội dung bằng dữ liệu Alpha Hub. Component: `components/spaciaz.tsx` (SpaciazHome, SpaciazProjects, SpaciazAbout, SpaciazBlog, SpaciazContact, SpaciazFooter, Banner, Sheet, Eyebrow, ArrowButton); CSS: `app/spaciaz.css` (nạp sau skin.css). Lục bảo thay lime/đen của Spaciaz; nền mềm = gradient trắng → mint → xanh trời.
+- Route: `/` = Trang chủ mới (section `trang-chu`), `/lien-he` = Liên hệ (form gửi `/api/leads`). Menu công khai: Trang chủ, AlphaHub, Giới thiệu, Dự án, Quỹ căn, Tin tức, Hướng dẫn, Liên hệ. Header pill trắng có hotline + nút "Nhận tư vấn"; footer = CTA lớn + thẻ trắng.
+- Quỹ căn, Hướng dẫn, Yêu thích, Đăng nhập giữ chức năng cũ, chỉ thêm Banner Spaciaz và tấm trắng bo góc. AlphaHub, workspace 360°/mặt bằng, admin, editor giữ nguyên.
+- Ảnh banner/hero = ảnh nền admin từng trang (Cấu hình → nền; có thêm khóa `trang-chu`, `lien-he`). Nội dung lấy từ Giới thiệu (admin), `lib/alphahub-content.ts`, dự án, quỹ căn, bài viết. Các component cũ ProjectDirectory/AboutLanding/NewsMagazine không còn được render.
+
 ## Quản lý ảnh trong admin (06/10/2026)
 
 - Mọi ảnh hiển thị đều đổi được trong admin, giữ nguyên giao diện: ảnh dự án/bài viết (ImageField), ảnh mặt bằng căn và phiếu căn (ImageField trong form căn), nền từng trang, logo và ảnh nền AlphaHub (Cấu hình → "Logo & ảnh trang AlphaHub", lưu `settings.logo`/`settings.alphahubImage`; trống = mặc định `/alpha-hub-logo.png` và ảnh trong `lib/alphahub-content.ts`, truyền qua `usePublicContact()`).

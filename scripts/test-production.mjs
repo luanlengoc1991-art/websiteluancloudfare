@@ -389,7 +389,10 @@ try {
   // The public page renders its data in the browser from /api/state.
   const page = await fetch(origin + '/du-an');
   assert.equal(page.status, 200);
-  assert.match(await page.text(), /Danh sách dự án/);
+  assert.match(await page.text(), /Danh mục dự án/);
+  // Spaciaz home and contact pages render server-side as well.
+  assert.match(await fetch(origin + '/').then(r => r.text()), /Không gian kết nối/);
+  assert.match(await fetch(origin + '/lien-he').then(r => r.text()), /Để lại lời nhắn/);
 
   // D1 and R2 keep the data after the Worker restarts.
   await stop();

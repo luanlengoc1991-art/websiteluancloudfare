@@ -1,11 +1,13 @@
 /** Decorative backgrounds only; AlphaHub and project experiences keep their own photos. */
 export const backgroundPages = [
   ['default', 'Nền chung'],
+  ['trang-chu', 'Trang chủ'],
   ['du-an', 'Dự án'],
   ['quy-hang', 'Quỹ căn'],
   ['tin-tuc', 'Tin tức'],
   ['gioi-thieu', 'Giới thiệu'],
   ['huong-dan', 'Hướng dẫn'],
+  ['lien-he', 'Liên hệ'],
   ['yeu-thich', 'Yêu thích'],
   ['auth', 'Đăng nhập / Đăng ký'],
   ['tai-khoan', 'Tài khoản'],
@@ -36,7 +38,7 @@ export function sanitizeBackgrounds(value: unknown): SiteBackgrounds {
 }
 
 function backgroundPage(pathname: string): BackgroundPage | undefined {
-  const segment = pathname.split('/')[1] || 'quy-hang';
+  const segment = pathname.split('/')[1] || 'trang-chu';
   const key = ['dang-nhap', 'dang-ky', 'auth'].includes(segment) ? 'auth' : segment === 'vinh-tien-editor' ? 'editor' : segment;
   return backgroundPages.find(([id]) => id === key)?.[0];
 }

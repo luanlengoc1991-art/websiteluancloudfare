@@ -510,7 +510,7 @@ export function SpaciazProjectDetail({project, projects, units, assets, contact,
           <span className="sz-unit-top"><strong>{u.code}</strong><em className={statusOf(u) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(u)}</em></span>
           <span className="sz-unit-type">{u.type || 'Sản phẩm'}{u.zone ? ` · ${u.zone}` : ''}</span>
           <span className="sz-unit-specs"><span><small>Diện tích</small>{u.area ? `${num(u.area)} m²` : '—'}</span><span><small>Hướng</small>{u.direction || '—'}</span></span>
-          <span className="sz-unit-price"><span>{u.price ? <>{num(u.price)} <small>tỷ</small></> : 'Liên hệ'}</span><i><ArrowUpRight size={16}/></i></span>
+          <span className="sz-unit-price">{u.price ? <>{num(u.price)} <small>tỷ</small></> : 'Liên hệ'}<i><ArrowUpRight size={16}/></i></span>
         </button>)}</div>
       </section>}
 

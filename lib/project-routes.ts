@@ -3,7 +3,7 @@ export const projectSlugs:Record<string,string>={'ha-long':'vinhomes-global-gate
 export const projectTabs:Record<string,string>={overview:'tong-quan',vr:'quy-can-360',location:'vi-tri',zones:'phan-khu',model:'nha-mau',amenity:'tien-ich',plan:'mat-bang',inventory:'bang-hang',gallery:'thu-vien',document:'tai-lieu'};
 export function projectPath(id:string,tab?:string){
   const base=`/du-an/${encodeURIComponent(projectSlugs[id]||id)}`;
-  if(tab===undefined)return base;
+  if(id==='green-paradise'&&tab===undefined)return base;
   return `${base}/${projectTabs[tab||'vr']||projectTabs.vr}`;
 }
 export function resolveProject(projects:Project[],slug:string){return projects.find(p=>p.id===slug||projectSlugs[p.id]===slug);}

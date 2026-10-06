@@ -263,6 +263,68 @@ function ProjectsHero({projects, units}: {projects: Project[]; units: Unit[]}) {
   </section>;
 }
 
+/** /du-an: projects on a rotating 3D ring (cylinder) that turns opposite to the inventory coverflow. */
+function ProjectRing({projects, units, regions, favorites, onFavorite, onList}: {projects: Project[]; units: Unit[]; regions: string[]; favorites: Set<string>; onFavorite: (id: string) => void; onList: (patch: Partial<typeof blank>) => void}) {
+  const [group, setGroup] = useState('all');
+  const list = useMemo(() => projects.filter(p => group === 'all' || (group === 'low' || group === 'high' ? p.category === group : p.region === group)), [projects, group]);
+  const [step, setStep] = useState(0);
+  const touch = useRef<number | null>(null);
+  const n = list.length;
+  const active = n ? ((step % n) + n) % n : 0;
+  useEffect(() => {setStep(0);}, [group]);
+  // Turns the other way from /quy-hang: the ring rotates to the right every 3.8 s.
+  useEffect(() => {if (n < 2) return; const t = setTimeout(() => setStep(s => s - 1), 3800); return () => clearTimeout(t);}, [step, n]);
+  const count = (id: string) => units.filter(u => u.projectId === id).length;
+  const free = (id: string) => units.filter(u => u.projectId === id && u.status === 'Còn hàng').length;
+  const angle = 360 / Math.max(n, 7);
+  const turnTo = (i: number) => {let d = i - active; if (d > n / 2) d -= n; if (d < -n / 2) d += n; setStep(s => s + d);};
+  const chips: [string, string, number][] = [['all', 'Tất cả', projects.length], ['low', 'Thấp tầng', projects.filter(p => p.category === 'low').length], ['high', 'Cao tầng', projects.filter(p => p.category === 'high').length], ...regions.map(r => [r, r, projects.filter(p => p.region === r).length] as [string, string, number])];
+  const current = list[active];
+  return <section className="sz-ring-band">
+    <div className="sz-wrap sz-ring-head">
+      <div><Eyebrow light>Danh mục dự án</Eyebrow><h2 className="sz-h2">Không gian sống chọn lọc,<br/>giá trị bền vững</h2></div>
+      <dl className="sz-ring-stats">
+        <div><dt>Dự án</dt><dd><span className="fx-count">{projects.length}</span><sup>+</sup></dd></div>
+        <div><dt>Quỹ căn</dt><dd><span className="fx-count">{units.length}</span><sup>+</sup></dd></div>
+        <div><dt>Khu vực</dt><dd><span className="fx-count">{regions.length}</span><sup>+</sup></dd></div>
+      </dl>
+    </div>
+    <div className="sz-wrap sz-ring-chips">{chips.map(([id, label, c]) => <button key={id} type="button" className={group === id ? 'is-on' : ''} onClick={() => setGroup(id)}>{label}<b>{c}</b></button>)}</div>
+    {n > 0 && <div className="sz-ring" style={{['--ring-r' as string]: `calc(var(--ring-w) / 2 / ${Math.tan(Math.PI / Math.max(n, 7)).toFixed(4)} + 40px)`}}
+      tabIndex={0} aria-roledescription="carousel" aria-label="Dự án"
+      onKeyDown={e => {if (e.key === 'ArrowLeft') setStep(s => s - 1); if (e.key === 'ArrowRight') setStep(s => s + 1);}}
+      onTouchStart={e => {touch.current = e.touches[0].clientX;}} onTouchEnd={e => {if (touch.current === null) return; const dx = e.changedTouches[0].clientX - touch.current; touch.current = null; if (Math.abs(dx) > 40) setStep(s => s + (dx < 0 ? 1 : -1));}}>
+      <div className="sz-ring-spin" style={{transform: `translateZ(calc(var(--ring-r) * -1)) rotateY(${-step * angle}deg)`}}>
+        {list.map((p, i) => {const on = i === active; let d = Math.abs(i - active); d = Math.min(d, n - d);
+          return <article key={p.id} className={'sz-ring-card' + (on ? ' is-active' : '')} aria-hidden={!on || undefined}
+            style={{transform: `rotateY(${i * angle}deg) translateZ(var(--ring-r))`, opacity: d > 3 ? 0 : 1, ['--dim' as string]: on ? 1 : Math.max(.3, .7 - d * .14)}}
+            onClick={() => {if (!on) turnTo(i);}}>
+            <Img src={p.image} alt=""/>
+            <span className="sz-status">{p.status}</span>
+            <button type="button" tabIndex={on ? 0 : -1} className={'sz-heart' + (favorites.has(p.id) ? ' is-on' : '')} aria-label={`Yêu thích ${p.name}`} aria-pressed={favorites.has(p.id)} onClick={e => {e.stopPropagation(); onFavorite(p.id);}}><Heart size={17} fill={favorites.has(p.id) ? 'currentColor' : 'none'}/></button>
+            <div className="sz-ring-body">
+              <small><MapPin size={14}/>{p.location}</small>
+              <h3>{p.name}</h3>
+              <dl><div><dt>Chủ đầu tư</dt><dd>{p.developer}</dd></div><div><dt>Loại hình</dt><dd>{p.category === 'high' ? 'Cao tầng' : 'Thấp tầng'}</dd></div><div><dt>Quỹ căn</dt><dd>{count(p.id)} căn · {free(p.id)} còn</dd></div></dl>
+              <div className="sz-ring-actions">
+                <Link href={projectPath(p.id)} tabIndex={on ? 0 : -1} className="sz-u-open" onClick={e => {if (!on) {e.preventDefault(); turnTo(i);}}}><span>Khám phá dự án</span><i><ArrowUpRight size={16}/></i></Link>
+                <Link href={projectPath(p.id, 'inventory')} tabIndex={on ? 0 : -1} className="sz-ring-ghost" onClick={e => {if (!on) {e.preventDefault(); turnTo(i);}}}>Bảng hàng</Link>
+              </div>
+            </div>
+          </article>;})}
+      </div>
+    </div>}
+    {n > 0 && <div className="sz-u-nav sz-ring-nav">
+      <button type="button" aria-label="Dự án trước" onClick={() => setStep(s => s - 1)}><ChevronLeft size={20}/></button>
+      <span><b>{String(active + 1).padStart(2, '0')}</b> / {String(n).padStart(2, '0')}</span>
+      <p>{current?.name}</p>
+      <button type="button" aria-label="Dự án tiếp" onClick={() => setStep(s => s + 1)}><ChevronRight size={20}/></button>
+    </div>}
+    <p className="sz-ring-note">Xem toàn bộ {projects.length} dự án và bộ lọc chi tiết bên dưới. <button type="button" onClick={() => onList(group === 'all' ? {} : group === 'low' || group === 'high' ? {type: group} : {region: group})}>Danh sách dự án</button></p>
+  </section>;
+}
+
+
 const budgets: [string, string, number, number][] = [['lt10', 'Dưới 10 tỷ', 0, 10], ['10-20', '10 – 20 tỷ', 10, 20], ['20-50', '20 – 50 tỷ', 20, 50], ['gt50', 'Trên 50 tỷ', 50, Infinity]];
 const PER_PAGE = 9;
 const blank = {status: '', type: '', region: '', budget: '', query: ''};
@@ -298,34 +360,8 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
   const showcase = [...projects].sort((a, b) => Number(b.hot) - Number(a.hot)).slice(0, 6);
   return <div className="sz sz-projects-page">
     <ProjectsHero projects={projects} units={units}/>
-    <Sheet className="sz-home-sheet">
-      <section className="sz-section sz-who sz-wrap">
-        <div data-fx="left"><Eyebrow>Danh mục dự án</Eyebrow></div>
-        <div>
-          <h2 className="sz-h2" data-fx="title">Không gian sống chọn lọc,<br/>giá trị bền vững</h2>
-          <div className="sz-who-cols">
-            <div data-fx=""><h3><Building2 size={22}/>Thông tin minh bạch</h3><p>Vị trí, chủ đầu tư, loại hình và trạng thái mở bán của từng dự án được cập nhật trên một nền tảng.</p></div>
-            <div data-fx=""><h3><Globe size={22}/>Trải nghiệm trực quan</h3><p>Mở quỹ căn 360°, mặt bằng ghim mã căn và bảng hàng của từng dự án chỉ với một lần chạm.</p></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="sz-bento sz-wrap">
-        <Link href={showcase[0] ? projectPath(showcase[0].id) : '#'} className="sz-bento-photo sz-notch-tl" data-fx="zoom"><Img src={showcase[0]?.image} alt={showcase[0]?.name}/><span className="sz-bento-caption"><MapPin size={14}/>{showcase[0]?.name}</span></Link>
-        <div className="sz-stat" data-fx=""><small>Dự án</small><strong><span className="fx-count">{projects.length}</span><sup>+</sup></strong><span>dự án trên hệ thống</span></div>
-        <div className="sz-stat" data-fx=""><small>Quỹ căn</small><strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><span>căn trong bảng hàng</span></div>
-        <div className="sz-stat" data-fx=""><small>Khu vực</small><strong><span className="fx-count">{regions.length}</span><sup>+</sup></strong><span>tỉnh, thành phố</span></div>
-        <Link href={showcase[1] ? projectPath(showcase[1].id) : '#'} className="sz-bento-small" data-fx="zoom"><Img src={showcase[1]?.image} alt={showcase[1]?.name}/></Link>
-      </section>
-
-      <section className="sz-section sz-services">
-        <div className="sz-wrap">
-          <div className="sz-center" data-fx=""><Eyebrow>Tìm theo nhu cầu</Eyebrow><h2 className="sz-h2" data-fx="title">Chọn nhanh dự án<br/>theo loại hình & khu vực</h2></div>
-          <div className="sz-service-grid">{groups.map((g, i) => <button key={g.title} type="button" onClick={g.on} className={'sz-service sz-notch-tr' + (i > 2 ? ' is-wide' : '')} data-fx="zoom">
-            <div className="sz-service-text"><h3>{g.title}</h3><p>{g.body}</p></div><Img src={g.image} alt={g.title}/><span className="sz-notch-btn"><ArrowUpRight size={16}/></span></button>)}</div>
-          <p className="sz-services-note" data-fx="">Xem toàn bộ {projects.length} dự án bên dưới. <a href="#tat-ca-du-an">Danh sách dự án</a></p>
-        </div>
-      </section>
+    <Sheet className="sz-home-sheet sz-ring-sheet">
+      <ProjectRing projects={projects} units={units} regions={regions} favorites={favorites} onFavorite={onFavorite} onList={pick}/>
 
       <Showcase projects={showcase} units={units}/>
 

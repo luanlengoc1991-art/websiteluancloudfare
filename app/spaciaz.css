@@ -856,3 +856,61 @@ button.sz-bento-photo{padding:0}
 .sz-site.inventory-market-site::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 45% at 50% 35%,#8ef0c412,transparent 70%),var(--qc-flow);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite;pointer-events:none}
 .sz-site.inventory-market-site .sz-u-hero{z-index:1}
 .sz-site.inventory-market-site .sz-inv6-outro{position:relative;background:#fff;padding-top:1px;border-radius:56px 56px 0 0;margin-top:-1px}
+
+/* ══ /du-an: dark moving band + 3D project ring ══ */
+.sz-ring-sheet{background:transparent!important;padding-top:0!important;margin-top:-64px!important;border-radius:0!important}
+.sz-ring-band{position:relative;isolation:isolate;overflow:hidden;border-radius:56px 56px 0 0;padding:110px 0 100px;color:#fff;--ring-w:min(540px,80vw)}
+.sz-ring-band::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 55% 40% at 50% 58%,#8ef0c41f,transparent 70%),linear-gradient(90deg,#02261d 0%,#04473a 18%,#0a6b52 34%,#03352a 50%,#0d5e4a 66%,#05402f 82%,#02261d 100%);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite reverse}
+.sz-ring-band::after{content:"";position:absolute;left:50%;top:58%;z-index:-1;width:1100px;height:520px;margin:-260px 0 0 -550px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c42e,transparent);filter:blur(20px);animation:qc-glow 8s ease-in-out infinite reverse;pointer-events:none}
+.sz-ring-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px}
+.sz-ring-head .sz-h2{color:#fff;margin-top:16px}
+.sz-ring-stats{display:flex;gap:46px;margin:0}
+.sz-ring-stats>div{padding-left:22px;border-left:1px solid #ffffff2e}
+.sz-ring-stats dt{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a9cfc0}
+.sz-ring-stats dd{margin:6px 0 0;font-size:clamp(46px,4.4vw,66px);font-weight:700;letter-spacing:-.05em;line-height:1;display:flex}
+.sz-ring-stats sup{font-size:.4em;color:var(--sz-mint);line-height:1}
+.sz-ring-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:46px}
+.sz-ring-chips button{display:inline-flex;align-items:center;gap:10px;height:46px;padding:0 8px 0 20px;border-radius:999px;border:1px solid #ffffff2e;background:#ffffff0d;color:#d9efe6;font:600 14px var(--font-sans,"Be Vietnam Pro",sans-serif);cursor:pointer;transition:all .3s}
+.sz-ring-chips button b{min-width:30px;height:30px;padding:0 9px;border-radius:999px;display:grid;place-items:center;background:#ffffff1a;color:var(--sz-mint);font-size:12px}
+.sz-ring-chips button:hover{border-color:#8ef0c4a6;color:#fff;transform:translateY(-2px)}
+.sz-ring-chips button.is-on{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2));color:var(--sz-deep);border-color:transparent}
+.sz-ring-chips button.is-on b{background:#02261d;color:#fff}
+.sz-ring{position:relative;height:820px;perspective:1700px;perspective-origin:50% 40%;margin-top:30px;outline:none}
+.sz-ring-spin{position:absolute;left:50%;top:40px;width:var(--ring-w);height:720px;margin-left:calc(var(--ring-w) / -2);transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.sz-ring-card{position:absolute;inset:0;border-radius:var(--sz-r-lg);overflow:hidden;background:var(--sz-deep);backface-visibility:hidden;cursor:pointer;filter:brightness(var(--dim));transition:opacity .8s,filter .8s,box-shadow .8s;isolation:isolate}
+.sz-ring-card>img,.sz-ring-card>.sz-img-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.6s cubic-bezier(.2,.8,.2,1)}
+.sz-ring-card::after{content:"";position:absolute;inset:30% 0 0;z-index:-1;background:linear-gradient(180deg,transparent,#021a14c7 35%,#021a14f7)}
+.sz-ring-card.is-active{cursor:default;filter:none;box-shadow:0 0 0 2px var(--sz-mint),0 60px 100px -50px #000,0 0 90px -10px #8ef0c459}
+.sz-ring-card.is-active>img{transform:scale(1.06)}
+.sz-ring-card .sz-status{top:24px;left:24px}
+.sz-ring-card .sz-heart{top:20px;right:20px;width:44px;height:44px}
+.sz-ring-body{position:absolute;left:32px;right:32px;bottom:32px}
+.sz-ring-body>small{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--sz-mint)}
+.sz-ring-body h3{margin:10px 0 18px;font-size:clamp(34px,3.2vw,48px);font-weight:700;letter-spacing:-.045em;line-height:1.02;color:#fff}
+.sz-ring-card.is-active .sz-ring-body h3{text-shadow:0 0 30px #8ef0c440}
+.sz-ring-body dl{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;margin:0 0 22px;padding-top:16px;border-top:1px solid #ffffff33}
+.sz-ring-body dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#a9cfc0}
+.sz-ring-body dd{margin:4px 0 0;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sz-ring-actions{display:flex;gap:10px}
+.sz-ring-actions .sz-u-open{flex:1;text-decoration:none}
+.sz-ring-ghost{display:inline-flex;align-items:center;height:56px;padding:0 22px;border-radius:999px;border:1px solid #ffffff4d;color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:background .3s}
+.sz-ring-ghost:hover{background:#ffffff1a}
+.sz-ring-card:not(.is-active) :is(.sz-ring-actions,.sz-heart){opacity:0;pointer-events:none}
+.sz-ring-nav{justify-content:center;max-width:720px;margin:0 auto;color:#fff}
+.sz-ring-nav>span{color:#9fc4b6}.sz-ring-nav>span b{color:#fff}
+.sz-ring-nav>p{flex:1;margin:0;text-align:center;font-weight:700;font-size:16px;color:var(--sz-mint)}
+.sz-ring-nav button{background:#ffffff10;border-color:#ffffff24;color:#fff}
+.sz-ring-nav button:hover{background:var(--sz-mint);color:var(--sz-deep)}
+.sz-ring-note{text-align:center;margin:28px 0 0;color:#a9cfc0}
+.sz-ring-note button{border:0;background:none;color:#fff;font:700 15px var(--font-sans,"Be Vietnam Pro",sans-serif);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+@media(max-width:1100px){.sz-ring-head{flex-direction:column;align-items:flex-start}}
+@media(max-width:700px){
+  .sz-ring-band{border-radius:32px 32px 0 0;padding:70px 0 70px}
+  .sz-ring{height:660px}.sz-ring-spin{height:600px}
+  .sz-ring-stats{gap:20px}.sz-ring-stats>div{padding-left:14px}
+  .sz-ring-chips{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding:0 16px;margin-inline:-16px;scrollbar-width:none}
+  .sz-ring-chips button{flex:none}
+  .sz-ring-body{left:20px;right:20px;bottom:20px}
+  .sz-ring-body dl{grid-template-columns:1fr 1fr}
+  .sz-ring-nav>p{display:none}
+}

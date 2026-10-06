@@ -306,6 +306,22 @@ try {
   assert.equal((await readState('')).files.find(file => file.id === backgroundId).kind, 'background', 'Decorative backgrounds stay out of project galleries');
 
 
+  {
+    // Library "Thay ảnh" keeps the URL and swaps the bytes; "Xóa ảnh" deletes the file for good.
+    const png1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP1sAAAAASUVORK5CYII=', 'base64');
+    const jpg = Buffer.from([255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1]);
+    const send = (extra, bytes, type, name) => {const f = new FormData(); for (const [k, v] of Object.entries(extra)) f.set(k, v); f.set('file', new Blob([bytes], {type}), name); return fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: cookie, Origin: origin}, body: f});};
+    const first = await (await send({projectId: grantedProject.id, kind: 'plan'}, png1, 'image/png', 'plan-v1.png')).json();
+    const swapped = await send({replaceId: first.id}, jpg, 'image/jpeg', 'plan-v2.jpg');
+    assert.equal(swapped.status, 200);
+    assert.equal((await swapped.json()).url, first.url, 'Replacing keeps the same URL');
+    const served = await fetch(origin + first.url);
+    assert.equal(served.headers.get('content-type'), 'image/jpeg');
+    assert.equal((await readState('')).files.find(f => f.id === first.id).kind, 'plan');
+    assert.equal((await send({replaceId: first.id}, Buffer.from('%PDF-1.4 x'), 'application/pdf', 'x.pdf')).status, 400, 'Images cannot be swapped for PDFs');
+    assert.equal((await post('/api/action', {action: 'deleteFile', id: first.id})).status, 200);
+    assert.equal((await fetch(origin + first.url)).status, 404, 'Deleted files are gone');
+  }
   const mediaVerified = await verifyMediaAssistant({origin,adminCookie,memberCookie,post,readState,project:grantedProject});
 
   form.set('projectId', 'missing-project');
@@ -381,7 +397,7 @@ try {
   snapshot = await readState();
   assert.equal(snapshot.records.find((r) => r.id === customer.id).data.name, customer.name);
   assert.ok(snapshot.files.some(file => file.id === fileId));
-  for(const url of [mediaVerified.originalUrl,mediaVerified.projectUrl,mediaVerified.articleUrl])assert.equal((await fetch(origin+url)).status,200,'Images persist across Worker restart');
+  for(const url of [mediaVerified.projectUrl,mediaVerified.articleUrl])assert.equal((await fetch(origin+url)).status,200,'Images persist across Worker restart');
   assert.equal(snapshot.records.find(r=>r.id===mediaVerified.projectId).data.image,mediaVerified.projectUrl);
   assert.equal(snapshot.records.find(r=>r.id===mediaVerified.articleId).data.image,mediaVerified.articleUrl);
   assert.equal(snapshot.records.find(row => row.kind === 'about').data.headline, about.headline);

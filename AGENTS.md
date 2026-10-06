@@ -31,7 +31,7 @@
 ## Cập nhật ảnh và chat ngày 04/10/2026
 
 - Chỉ deploy đúng Worker/tài khoản hiện có khi đã có quyền truy cập; không dùng tài khoản preview thay thế. `npm run deploy` dựng Worker, chạy migration D1 rồi deploy với `--keep-vars`; giữ biến runtime và secret đang cấu hình trên Cloudflare.
-- Ảnh admin/chat lưu nguyên bản vào R2 và metadata/tham chiếu D1; không xóa ảnh cũ khi thay ảnh. Luồng upload dùng `lib/media-storage.ts`; vị trí và cập nhật dùng `lib/media-actions.ts`. Chat và MCP chỉ sửa ảnh công khai, không đọc dữ liệu khách hàng hay sửa quyền tài khoản.
+- Ảnh admin/chat lưu nguyên bản vào R2 và metadata/tham chiếu D1; khi thay ảnh, ảnh cũ mặc định bị xóa hẳn (xem mục "Thay ảnh = xóa ảnh cũ"). Luồng upload dùng `lib/media-storage.ts`; vị trí và cập nhật dùng `lib/media-actions.ts`. Chat và MCP chỉ sửa ảnh công khai, không đọc dữ liệu khách hàng hay sửa quyền tài khoản.
 - Mục AI sửa website hỗ trợ ChatGPT/Claude và Áp dụng trực tiếp. Connector ngoài cần OAuth bằng tài khoản admin allowlist; không tin identity header từ ChatGPT/Claude. Chạy migration 0003 trước khi sử dụng. Xem README-media.md để triển khai/kết nối và biết giới hạn truyền file của từng client. Không khẳng định đã nối ứng dụng hoặc đã deploy chỉ vì code đã được push.
 
 ## Quy tắc quản trị lâu dài ngày 04/10/2026
@@ -53,7 +53,8 @@
 ## Quản lý ảnh trong admin (06/10/2026)
 
 - Mọi ảnh hiển thị đều đổi được trong admin, giữ nguyên giao diện: ảnh dự án/bài viết (ImageField), ảnh mặt bằng căn và phiếu căn (ImageField trong form căn), nền từng trang, logo và ảnh nền AlphaHub (Cấu hình → "Logo & ảnh trang AlphaHub", lưu `settings.logo`/`settings.alphahubImage`; trống = mặc định `/alpha-hub-logo.png` và ảnh trong `lib/alphahub-content.ts`, truyền qua `usePublicContact()`).
-- Thư viện: lọc theo dự án/loại, đổi tên, chuyển dự án, đổi "Hiển thị ở" (gallery/plan/panorama/model/amenity) bằng `/api/action` `action:'file'`. "Gỡ khỏi website" đặt kind='archived' — không xóa R2/D1, URL cũ vẫn chạy, khôi phục bằng cách đổi lại loại.
+- Thư viện: lọc theo dự án/loại, đổi tên, chuyển dự án, đổi "Hiển thị ở" (gallery/plan/panorama/model/amenity) bằng `/api/action` `action:'file'`.
+- **Thay ảnh = xóa ảnh cũ (chủ dự án yêu cầu 06/10/2026, để nhẹ dung lượng).** (1) Lưu bản ghi project/article/unit/settings → `purgeUnusedFiles` xóa D1+R2 các file `/api/files/<id>` cũ không còn bản ghi nào dùng (bỏ qua ảnh tab dự án gallery/plan/panorama/model/amenity/document). (2) Thư viện "Thay ảnh" → `/api/upload` với `replaceId`: giữ nguyên id/URL (pin, liên kết không hỏng), đổi object R2 và xóa object cũ. (3) "Xóa ảnh" → `action:'deleteFile'`, từ chối nếu ảnh còn được bản ghi dùng. Chat/MCP đổi ảnh cũng xóa ảnh cũ. ImageField tải vào `site-library`/`image`, không lẫn vào thư viện dự án. `/api/files` trả ETag + `no-cache` để ảnh thay thế hiện ngay. Khi tự đưa ảnh lên bằng wrangler: thay ảnh cùng vị trí thì xóa file cũ (D1 + R2).
 - Favicon (`app/layout.tsx`) và logo trang `/tai-khoan` vẫn là file tĩnh.
 
 ## Ảnh, video và dung lượng repository

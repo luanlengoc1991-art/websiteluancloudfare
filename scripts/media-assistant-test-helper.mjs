@@ -51,10 +51,10 @@ export async function verifyMediaAssistant({origin,adminCookie,memberCookie,post
  const safeTargets=await call('list_image_targets',{query:newProject.name});assert.ok(JSON.parse(safeTargets.content[0].text).targets.some(t=>t.id===`project:${newProject.id}:cover`));
  const rejected=await call('publish_chat_image',{target_id:`project:${newProject.id}:cover`,command:'Thay ảnh',file:{file_id:'fake',download_url:'https://127.0.0.1/private'}});assert.equal(rejected.isError,true);
  const applied=await call('publish_image_base64',{target_id:`article:${article.id}:cover`,command:'Thay ảnh bài viết',name:'from-claude.png',mime_type:'image/png',base64:png.toString('base64')});assert.equal(applied.isError,undefined);const external=JSON.parse(applied.content[0].text);
- assert.equal((await readState('')).records.find(r=>r.id===article.id).data.image,external.url);assert.equal((await fetch(origin+external.url)).status,200);
+ assert.equal((await readState('')).records.find(r=>r.id===article.id).data.image,external.url);assert.equal((await fetch(origin+external.url)).status,200);assert.equal((await fetch(origin+original.url)).status,404,'Replaced images no longer used anywhere are deleted');
  const gallery=await call('publish_image_base64',{target_id:`project:${newProject.id}:gallery`,command:'Thêm ảnh thư viện dự án',name:'gallery-original.png',mime_type:'image/png',base64:png.toString('base64')});assert.equal(gallery.isError,undefined);assert.equal((await readState('')).files.filter(f=>f.name==='gallery-original.png'&&f.projectId===newProject.id).length,1,'Gallery uploads must not duplicate metadata');
- const background=await call('use_library_image',{target_id:'background:tin-tuc',file_id:original.id,command:'Thay nền tin tức'});assert.equal(background.isError,undefined);
- assert.equal((await fetch(origin+'/api/backgrounds').then(r=>r.json())).backgrounds['tin-tuc'],original.url);
+ const background=await call('use_library_image',{target_id:'background:tin-tuc',file_id:external.url.split('/').pop(),command:'Thay nền tin tức'});assert.equal(background.isError,undefined);
+ assert.equal((await fetch(origin+'/api/backgrounds').then(r=>r.json())).backgrounds['tin-tuc'],external.url);
  const beforeRefresh=await fetch(origin+'/api/admin/media-chat',{headers:{Cookie:adminCookie}}).then(r=>r.json());const stableId=beforeRefresh.connections.find(c=>c.name==='Disposable AI client').id;
  const refreshParams=new URLSearchParams({grant_type:'refresh_token',client_id:client.client_id,resource:origin+'/api/mcp',refresh_token:tokens.refresh_token});
  const refresh=()=>fetch(origin+'/api/ai/oauth/token',{method:'POST',body:refreshParams});

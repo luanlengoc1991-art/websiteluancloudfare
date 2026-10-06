@@ -1,6 +1,6 @@
 # Ảnh quản trị, chat và Cloudflare
 
-Ảnh tải từ quản trị được lưu nguyên bản vào R2 `alpha-assets`, binding `MEDIA`. D1 `alpha-hub`, binding `DB`, giữ ID, tên, MIME và vị trí dùng ảnh. URL `/api/files/<id>` là URL lâu dài của ứng dụng; không lưu link đính kèm tạm của ChatGPT/Claude làm ảnh website. Ảnh mới nhận UUID mới. Thay ảnh không xóa ảnh cũ; có thể tìm lại và dùng lại trong Thư viện.
+Ảnh tải từ quản trị được lưu nguyên bản vào R2 `alpha-assets`, binding `MEDIA`. D1 `alpha-hub`, binding `DB`, giữ ID, tên, MIME và vị trí dùng ảnh. URL `/api/files/<id>` là URL lâu dài của ứng dụng; không lưu link đính kèm tạm của ChatGPT/Claude làm ảnh website. Ảnh mới nhận UUID mới. Thay ảnh thì ảnh cũ không còn được dùng sẽ tự xóa khỏi R2/D1 để nhẹ dung lượng; nút "Thay ảnh" trong Thư viện giữ nguyên URL.
 
 ## Triển khai lần đầu sau bản sửa
 
@@ -12,7 +12,7 @@ npm run deploy
 
 `npm run deploy` tự dựng Worker, áp dụng migration D1 cần thiết rồi deploy; giữ nguyên các biến runtime/secret hiện có bằng `--keep-vars`. Migration `0003_media_assistant.sql` thêm lịch sử đổi ảnh và thông tin OAuth cho kết nối AI. Phải chạy migration trước khi mở mục chat ảnh. Không đổi tên database, bucket hoặc binding; không dùng `wrangler deploy --temporary` thay website thật.
 
-Sau triển khai, thử bằng một dự án thử: đổi ảnh trong Quản trị → Dự án, bấm Lưu thông tin, mở trang công khai trong cửa sổ chưa đăng nhập, rồi kiểm tra ảnh cũ trong Thư viện. Có thể quay lại ảnh cũ bằng danh sách ảnh đã lưu. Các lần đổi ảnh/nền tiếp theo chỉ cập nhật R2/D1, không cần triển khai lại code. Trang công khai đang mở nhận dữ liệu mới khi mở lại, đổi tab hoặc trong chu kỳ cập nhật 60 giây.
+Sau triển khai, thử bằng một dự án thử: đổi ảnh trong Quản trị → Dự án, bấm Lưu thông tin, mở trang công khai trong cửa sổ chưa đăng nhập, ảnh cũ không còn dùng sẽ bị xóa khỏi Thư viện. Các lần đổi ảnh/nền tiếp theo chỉ cập nhật R2/D1, không cần triển khai lại code. Trang công khai đang mở nhận dữ liệu mới khi mở lại, đổi tab hoặc trong chu kỳ cập nhật 60 giây.
 
 ## Chat trong quản trị
 
@@ -48,7 +48,7 @@ node scripts/test-media-ai.mjs
 npm test
 ```
 
-`npm test` dựng Worker thật và dùng D1/R2 local tạm, kiểm tra upload, thay ảnh, giữ ảnh cũ, public API, dữ liệu sau khởi động lại, phân quyền, OAuth PKCE/CSRF/audience/replay/refresh/revoke và MCP. `test-media-ai.mjs` kiểm tra hợp đồng request/response hai provider bằng API mô phỏng, không gọi API trả phí. Đây không phải bằng chứng đã deploy hay đã thử bằng tài khoản ChatGPT/Claude thực.
+`npm test` dựng Worker thật và dùng D1/R2 local tạm, kiểm tra upload, thay ảnh, xóa ảnh cũ không còn dùng, public API, dữ liệu sau khởi động lại, phân quyền, OAuth PKCE/CSRF/audience/replay/refresh/revoke và MCP. `test-media-ai.mjs` kiểm tra hợp đồng request/response hai provider bằng API mô phỏng, không gọi API trả phí. Đây không phải bằng chứng đã deploy hay đã thử bằng tài khoản ChatGPT/Claude thực.
 
 Tài liệu chính thức tham chiếu:
 - https://developers.openai.com/api/docs/guides/developer-mode

@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {bucket, database, readAll} from '@/db/store';
 import {seedProjects, seedArticles, seedUnits, defaultSettings} from '@/lib/catalog';
 import {backgroundPages} from '@/lib/site-backgrounds';
-import {mediaLimit, MediaError, storeMedia} from '@/lib/media-storage';
+import {mediaLimit, MediaError, storeMedia, purgeUnusedFiles} from '@/lib/media-storage';
 import type {MediaTarget} from '@/lib/media-targets';
 
 type Row = {kind: string; id: string; payload: string; updated: number};
@@ -18,7 +18,7 @@ export async function mediaTargets(): Promise<MediaTarget[]> {
   const backgrounds = settings ? JSON.parse(settings.payload).backgrounds || {} : {};
   const targets: MediaTarget[] = [];
   for (const p of merged('project')) {
-    targets.push({id: `project:${p.id}:cover`, label: `Ảnh đại diện · ${p.name}`, url: String(p.image || ''), scope: p.id, kind: 'gallery', recordKind: 'project', recordId: p.id, field: 'image'});
+    targets.push({id: `project:${p.id}:cover`, label: `Ảnh đại diện · ${p.name}`, url: String(p.image || ''), scope: 'site-library', kind: 'image', recordKind: 'project', recordId: p.id, field: 'image'});
     for (const [kind, label] of [['gallery','Thư viện'],['plan','Mặt bằng'],['panorama','Ảnh 360°'],['model','Nhà mẫu'],['amenity','Tiện ích']]) targets.push({id: `project:${p.id}:${kind}`, label: `${label} · ${p.name}`, url: '', scope: p.id, kind});
   }
   for (const a of merged('article')) targets.push({id: `article:${a.id}:cover`, label: `Ảnh bài viết · ${a.title}`, url: String(a.image || ''), scope: 'site-library', kind: 'image', recordKind: 'article', recordId: a.id, field: 'image'});
@@ -63,6 +63,7 @@ export async function applyMedia(target: MediaTarget, fileId: string, actor: str
     : db.prepare("INSERT INTO records(owner,kind,id,payload,updated) VALUES('admin',?,?,json_set(?,?,?),?) ON CONFLICT(owner,kind,id) DO NOTHING").bind(target.recordKind,target.recordId!,JSON.stringify(fallback),path,url,now);
   const result = await db.batch([log,mutation]);
   if (!result[1].meta.changes) throw new MediaError('Nội dung vừa được sửa ở nơi khác. Ảnh vẫn nằm trong Thư viện; hãy gửi lại lệnh.',409);
+  await purgeUnusedFiles([previousUrl]);
   return {ok:true,operationId,targetId:target.id,label:target.label,url,previousUrl,fileId};
 }
 export async function uploadForTarget(file: File, target: MediaTarget, actor: string, source: string, command: string) {

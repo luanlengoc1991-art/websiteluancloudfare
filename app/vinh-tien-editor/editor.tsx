@@ -772,6 +772,7 @@ export default function Home() {
   const [canEdit,setCanEdit]=useState(false);
   const [embedded,setEmbedded]=useState(false);
   useEffect(()=>{setEmbedded(new URLSearchParams(window.location.search).get("embed")==="1");},[]);
+  useEffect(()=>{if(!embedded)return;let last=0;const send=()=>{const h=document.querySelector(".studio-app")?.scrollHeight||document.body.scrollHeight;if(Math.abs(h-last)>2){last=h;window.parent.postMessage({type:"vinh-tien-height",h},window.location.origin);}};const ro=new ResizeObserver(send);const el=document.querySelector(".studio-app");if(el)ro.observe(el);send();const t=setInterval(send,1500);return()=>{ro.disconnect();clearInterval(t);};},[embedded]);
   const editVersion=useRef(0),savedVersion=useRef(0);
   const markEdited=()=>{editVersion.current+=1;};
   const requestedCode=useRef("");

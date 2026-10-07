@@ -547,3 +547,6 @@ button { color:inherit; }
 .studio-app.is-embed .export-button span{color:#8ef0c4}
 .studio-app.is-embed .export-button:hover{background:#065a45}
 .studio-app.is-embed .poster{border-radius:24px;box-shadow:0 40px 80px -40px #02261da6}
+.studio-app.is-embed{min-height:0!important}
+.studio-app.is-embed.is-viewer .studio-layout{padding:26px 26px 30px}
+.studio-app.is-embed .editor-panel{max-height:none;position:static}

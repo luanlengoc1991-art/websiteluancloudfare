@@ -701,3 +701,78 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
     </section>
   </div>;
 }
+
+/* ═══════════════════════════ Mặt bằng căn (standalone) ═══════════════════════════ */
+/** /mat-bang-can: the unit poster as a full page. Visitors see finished posters only, with a code strip,
+ *  a sticky info card and related finished units; administrators get the full studio editor. */
+const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname : src;} catch {return src;}};
+export function SpaciazUnitPlan({projects, units, statusOf, contact}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; contact: PublicContact}) {
+  const project = projects.find(p => p.id === 'green-paradise');
+  const done = useMemo(() => units.filter(u => u.projectId === 'green-paradise' && u.drawing?.main?.src), [units]);
+  const frame = useRef<HTMLIFrameElement>(null), top = useRef<HTMLDivElement>(null);
+  const [admin, setAdmin] = useState<boolean | null>(null), [height, setHeight] = useState(1600), [q, setQ] = useState('');
+  const [code, setCode] = useState('');
+  const [initial, setInitial] = useState<string | null>(null);
+  useEffect(() => {setInitial(new URLSearchParams(window.location.search).get('code') || '');}, []);
+  useEffect(() => {if (!code && done.length && initial !== null) setCode(done.find(u => u.code === initial)?.code || done[0].code);}, [done, code, initial]);
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.source !== frame.current?.contentWindow) return;
+      if (e.data?.type === 'vinh-tien-mode') setAdmin(!!e.data.canEdit);
+      if (e.data?.type === 'vinh-tien-height' && e.data.h > 300) setHeight(Math.ceil(e.data.h));
+      if (e.data?.type === 'vinh-tien-selected' && e.data.code) setCode(e.data.code);
+    };
+    window.addEventListener('message', on); return () => window.removeEventListener('message', on);
+  }, []);
+  useEffect(() => {if (code && initial !== null) window.history.replaceState(null, '', '/mat-bang-can?code=' + encodeURIComponent(code));}, [code]);
+  const pick = (c: string, scroll = false) => {
+    setCode(c); frame.current?.contentWindow?.postMessage({type: 'vinh-tien-select', code: c}, window.location.origin);
+    if (scroll) top.current?.scrollIntoView({behavior: 'smooth', block: 'start'});
+  };
+  const unit = done.find(u => u.code === code) || done[0];
+  const strip = done.filter(u => u.code.toLowerCase().includes(q.trim().toLowerCase()));
+  const related = unit ? [...done.filter(u => u.id !== unit.id && u.type === unit.type), ...done.filter(u => u.id !== unit.id && u.type !== unit.type)].slice(0, 8) : [];
+  const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
+  const src = initial === null ? '' : '/vinh-tien-editor?embed=1&code=' + encodeURIComponent(initial || done[0]?.code || '');
+  return <div className="sz sz-up">
+    <Banner title="Mặt bằng căn" crumb={project?.name} aside={`Bảng thông tin từng mã căn ${project?.name || ''}: vị trí trên tổng mặt bằng, phối cảnh, diện tích và giá bán.`}/>
+    <Sheet>
+      <div className="sz-up-wrap" ref={top}>
+        {admin !== true && <div className="sz-up-bar">
+          <div className="sz-up-bar-head"><Eyebrow>{project?.name || 'Mặt bằng căn'}</Eyebrow><strong>{done.length} mã căn</strong>
+            <label className="sz-up-search"><Search size={16}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…" aria-label="Tìm mã căn"/></label></div>
+          <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>
+        </div>}
+        <div className={'sz-up-main' + (admin ? ' is-admin' : '')}>
+          <div className="sz-up-poster">{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
+            {src && <iframe ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</div>
+          {admin !== true && unit && <aside className="sz-up-info" key={unit.id}>
+            <small><MapPin size={14}/>{unit.zone} · {project?.name}</small>
+            <strong className="sz-up-code">{unit.code}</strong>
+            <div className="sz-up-price"><span>Giá bán<br/><em>Chưa gồm VAT + KPBT</em></span><b>{unit.price ? <>{fmt(unit.price)} <sub>tỷ</sub></> : 'Liên hệ'}</b></div>
+            <dl>
+              <div><dt>Diện tích đất</dt><dd>{unit.area ? fmt(unit.area) + ' m²' : '—'}</dd></div>
+              <div><dt>Diện tích xây dựng</dt><dd>{unit.builtArea ? fmt(unit.builtArea) + ' m²' : '—'}</dd></div>
+              <div><dt>Loại hình</dt><dd>{unit.type || '—'}</dd></div>
+              <div><dt>Tiêu chuẩn BG</dt><dd>{unit.group || '—'}</dd></div>
+              <div><dt>Hướng</dt><dd>{unit.direction || '—'}</dd></div>
+              <div><dt>Trạng thái</dt><dd className={statusOf(unit) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(unit)}</dd></div>
+            </dl>
+            <ArrowButton href={`${projectPath('green-paradise', 'vr')}?product=${encodeURIComponent(unit.code)}`}>Xem trên quỹ căn 360°</ArrowButton>
+            <div className="sz-up-actions"><Link href="/lien-he" className="sz-up-ghost">Nhận tư vấn</Link><a href={`tel:${contact.phone}`} className="sz-up-ghost"><Phone size={15}/>{contact.phone}</a></div>
+            <p className="sz-up-hint">Tải ảnh phiếu căn ở cuối bảng thông tin bên trái.</p>
+          </aside>}
+        </div>
+      </div>
+      {related.length > 0 && <section className="sz-up-related">
+        <div className="sz-news-head"><div><Eyebrow>Cùng dự án</Eyebrow><h2 className="sz-h2">Các căn liên quan</h2></div><p>{done.length} mã căn đã có bảng thông tin hoàn chỉnh</p></div>
+        <div className="sz-up-grid">{related.map(u => <button key={u.id} type="button" className="sz-up-card" onClick={() => pick(u.code, true)}>
+          <span className="sz-up-card-img"><Img src={viaProxy(u.drawing?.gallery[0] || u.drawing?.main.src || u.posterUrl)} alt=""/><em className={statusOf(u) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(u)}</em></span>
+          <span className="sz-up-card-body"><small>{u.type || 'Sản phẩm'} · {u.zone}</small><b>{u.code}</b>
+            <span className="sz-up-card-specs"><span>{u.area ? fmt(u.area) + ' m²' : '—'}</span><span>{u.builtArea ? fmt(u.builtArea) + ' m² XD' : ''}</span></span>
+            <span className="sz-up-card-price"><span>{u.price ? <>{fmt(u.price)} <sub>tỷ</sub></> : 'Liên hệ'}</span><i><ArrowUpRight size={16}/></i></span></span>
+        </button>)}</div>
+      </section>}
+    </Sheet>
+  </div>;
+}

@@ -1217,3 +1217,30 @@ button.sz-bento-photo{padding:0}
 .immersive-site :is(.scene-message,.workspace-panel) .button.dark{background:var(--sz-deep)!important;border-radius:999px!important}
 .immersive-site .plan-legend-item,.immersive-site .plan-edit-toggle,.immersive-site .plan-zoom button{box-shadow:0 10px 24px -14px #02261d73!important}
 .immersive-site .plan-edit-toggle.on{background:var(--sz-deep)!important;border-color:var(--sz-deep)!important}
+
+/* ══ Tab "Mặt Bằng Căn" (Vịnh Tiên poster studio) ══ */
+.immersive-site .workspace-panel.is-unitplan .workspace-panel-body{padding:0!important;overflow:hidden!important;display:flex}
+.unitplan{flex:1;display:grid;grid-template-columns:330px minmax(0,1fr);min-height:0;height:100%}
+.unitplan.is-admin{grid-template-columns:minmax(0,1fr)}
+.unitplan-list{display:flex;flex-direction:column;gap:14px;min-height:0;padding:24px 20px 20px 28px;border-right:1px solid var(--sz-line);background:linear-gradient(180deg,#fff,#f3fbf7)}
+.unitplan-list-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.unitplan-list-head strong{font-size:34px;font-weight:700;letter-spacing:-.05em;color:var(--sz-ink);line-height:1}
+.unitplan-list-head small{font-size:13px;color:var(--sz-muted);letter-spacing:0;margin-left:4px}
+.unitplan-search{display:flex;align-items:center;gap:10px;height:48px;padding:0 18px;border-radius:999px;background:#fff;border:1px solid var(--sz-line);color:var(--sz-muted)}
+.unitplan-search input{flex:1;min-width:0;border:0;outline:0;background:none;font:500 14px var(--font-sans,"Be Vietnam Pro",sans-serif);color:var(--sz-ink)}
+.unitplan-chips{display:flex;gap:8px}
+.unitplan-chips button{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--sz-line);background:#fff;font:600 12.5px var(--font-sans,"Be Vietnam Pro",sans-serif);color:var(--sz-ink);cursor:pointer}
+.unitplan-chips button.is-on{background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2));border-color:transparent;color:var(--sz-deep)}
+.unitplan-codes{flex:1;min-height:0;overflow:auto;display:grid;align-content:start;gap:8px;padding-right:6px;scrollbar-width:thin}
+.unitplan-codes button{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-radius:18px;border:1px solid var(--sz-line);background:#fff;text-align:left;cursor:pointer;font-family:inherit;transition:transform .3s var(--sz-ease),border-color .3s,box-shadow .3s}
+.unitplan-codes button:hover{transform:translateX(4px);border-color:var(--sz-mint-2)}
+.unitplan-codes button.is-on{background:var(--sz-deep);border-color:var(--sz-deep);box-shadow:0 16px 30px -18px #02261d99}
+.unitplan-codes b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em;color:var(--sz-ink)}
+.unitplan-codes small{display:block;margin-top:2px;font-size:12px;color:var(--sz-muted)}
+.unitplan-codes em{font-style:normal;font-weight:700;font-size:15px;color:var(--sz-em-2);white-space:nowrap}
+.unitplan-codes button.is-on b{color:var(--sz-mint)}.unitplan-codes button.is-on small{color:#b7dccd}.unitplan-codes button.is-on em{color:#fff}
+.unitplan-note{margin:0;font-size:12px;color:var(--sz-muted)}
+.unitplan-stage{position:relative;min-height:0}
+.unitplan-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#f3fbf7}
+.unitplan-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--sz-muted);font-weight:600;z-index:1;pointer-events:none}
+@media(max-width:900px){.unitplan{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.unitplan-list{border-right:0;border-bottom:1px solid var(--sz-line);padding:14px}.unitplan-codes{display:flex;overflow-x:auto;max-height:none}.unitplan-codes button{flex:0 0 200px}.unitplan-note,.unitplan-chips{display:none}}

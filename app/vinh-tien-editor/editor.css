@@ -526,3 +526,24 @@ button { color:inherit; }
 .studio-app.is-viewer .workspace{max-width:1120px;margin:0 auto;width:100%}
 .studio-app.is-viewer .image-frame,.studio-app.is-viewer .draggable-marker{cursor:default;pointer-events:none}
 .studio-app.is-viewer .frame-action,.studio-app.is-viewer .zoom-controls,.studio-app.is-viewer .drag-tip,.studio-app.is-viewer .marker-scale-controls,.studio-app.is-viewer .draggable-marker small,.studio-app.is-viewer .poster-lock-notice{display:none!important}
+
+/* Embedded in the project's "Mặt Bằng Căn" tab: Spaciaz chrome. The poster artwork itself is unchanged. */
+.studio-app.is-embed{background:linear-gradient(170deg,#ffffff 0%,#f1fbf6 50%,#e6f4fb 100%)!important;font-family:'Be Vietnam Pro',var(--font-body),sans-serif;min-height:100vh}
+.studio-app.is-embed .studio-header{display:none}
+.studio-app.is-embed .studio-layout{width:100%;max-width:100%;padding:22px 22px 40px;gap:22px}
+.studio-app.is-embed.is-viewer .studio-layout{padding:22px 26px 40px}
+.studio-app.is-embed .editor-panel{border:0;border-radius:28px;box-shadow:0 30px 70px -40px #02261d73;max-height:calc(100vh - 44px);top:22px}
+.studio-app.is-embed .unit-manager{background:linear-gradient(140deg,#02261d,#065a45);border-radius:22px}
+.studio-app.is-embed .unit-manager-head strong{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;letter-spacing:-.03em;color:#fff}
+.studio-app.is-embed .unit-manager-head>b{color:#8ef0c4}
+.studio-app.is-embed :is(.editor-panel input,.editor-panel select){border-radius:999px}
+.studio-app.is-embed .workspace-heading h2{font-family:'Be Vietnam Pro',sans-serif;font-size:30px;font-weight:700;letter-spacing:-.045em;color:#0a1f19}
+.studio-app.is-embed .workspace-heading-actions button,.studio-app.is-embed .workspace-heading-actions a{border-radius:999px!important}
+.studio-app.is-embed .export-panel{border:0;border-radius:24px;box-shadow:0 20px 50px -34px #02261d66}
+.studio-app.is-embed .export-mode-tabs{border-radius:999px;background:#eef6f2}
+.studio-app.is-embed .export-mode-tabs button{border-radius:999px}
+.studio-app.is-embed .export-mode-tabs button.is-active{background:linear-gradient(120deg,#8ef0c4,#5fe0a8);color:#02261d}
+.studio-app.is-embed .export-button{border-radius:999px;background:#02261d;height:56px;font-size:14px;box-shadow:0 18px 34px -18px #02261d99}
+.studio-app.is-embed .export-button span{color:#8ef0c4}
+.studio-app.is-embed .export-button:hover{background:#065a45}
+.studio-app.is-embed .poster{border-radius:24px;box-shadow:0 40px 80px -40px #02261da6}

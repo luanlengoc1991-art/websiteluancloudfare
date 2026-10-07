@@ -1,6 +1,6 @@
 import type {Project} from './catalog';
 export const projectSlugs:Record<string,string>={'ha-long':'vinhomes-global-gate-ha-long','ocean-park':'vinhomes-ocean-park-2-3','green-paradise':'vinhomes-green-paradise','parkland':'the-parkland-imperia-ocean-city','royal-island':'vinhomes-royal-island','grand-coast':'masteri-grand-coast','lumiere':'lumiere-hanoi-seasons-garden','golden-city':'vinhomes-golden-city','hai-van':'vinhomes-hai-van-bay','global-gate':'vinhomes-global-gate','wonder-city':'vinhomes-wonder-city','magnolia':'the-magnolia-private-residences','trang-cat':'happy-home-trang-cat','saigon-park':'vinhomes-sai-gon-park'};
-export const projectTabs:Record<string,string>={overview:'tong-quan',vr:'quy-can-360',location:'vi-tri',zones:'phan-khu',model:'nha-mau',amenity:'tien-ich',plan:'mat-bang',inventory:'bang-hang',gallery:'thu-vien',document:'tai-lieu'};
+export const projectTabs:Record<string,string>={overview:'tong-quan',vr:'quy-can-360',location:'vi-tri',zones:'phan-khu',model:'nha-mau',amenity:'tien-ich',plan:'mat-bang',unitplan:'mat-bang-can',inventory:'bang-hang',gallery:'thu-vien',document:'tai-lieu'};
 export function projectPath(id:string,tab?:string){
   const base=`/du-an/${encodeURIComponent(projectSlugs[id]||id)}`;
   if(id==='green-paradise'&&tab===undefined)return base;

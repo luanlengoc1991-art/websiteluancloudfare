@@ -770,6 +770,8 @@ function PricingQuote({ unit, customer, quoteDate, plan, vinClub, birthday, noBa
 
 export default function Home() {
   const [canEdit,setCanEdit]=useState(false);
+  const [embedded,setEmbedded]=useState(false);
+  useEffect(()=>{setEmbedded(new URLSearchParams(window.location.search).get("embed")==="1");},[]);
   const editVersion=useRef(0),savedVersion=useRef(0);
   const markEdited=()=>{editVersion.current+=1;};
   const requestedCode=useRef("");
@@ -796,6 +798,7 @@ export default function Home() {
   const [exportMessage, setExportMessage] = useState("");
   const [pendingMobileImage, setPendingMobileImage] = useState<PendingMobileImage | null>(null);
   const [stateReady, setStateReady] = useState(false);
+  useEffect(()=>{if(stateReady)window.parent.postMessage({type:"vinh-tien-mode",canEdit},window.location.origin);},[stateReady,canEdit]);
   const [saveStatus, setSaveStatus] = useState<"loading" | "saving" | "saved" | "error">("loading");
   const [sheetStatus, setSheetStatus] = useState<"syncing" | "synced" | "error">("syncing");
   const [lastSheetSync, setLastSheetSync] = useState("");
@@ -1554,7 +1557,7 @@ export default function Home() {
   };
 
   return (
-    <main className={`studio-app ${canEdit?"is-editor":"is-viewer"}`} onChangeCapture={canEdit?markEdited:undefined} onPointerUpCapture={canEdit?markEdited:undefined} onClickCapture={canEdit?markEdited:undefined}>
+    <main className={`studio-app ${canEdit?"is-editor":"is-viewer"}${embedded?" is-embed":""}`} onChangeCapture={canEdit?markEdited:undefined} onPointerUpCapture={canEdit?markEdited:undefined} onClickCapture={canEdit?markEdited:undefined}>
       <header className="studio-header">
         <div className="studio-brand">
           <span className="va-mark"><b>VA</b></span>

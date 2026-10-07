@@ -1122,7 +1122,7 @@ button.sz-bento-photo{padding:0}
 .wsz-head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:16px 30px;margin-bottom:34px}
 .wsz-head .wsz-eyebrow{grid-column:1/-1}
 .wsz-head h3{margin:0;max-width:720px;font-size:clamp(26px,2.4vw,36px);font-weight:700;line-height:1.15;color:var(--sz-ink)}
-.wsz-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:26px}
+.wsz-cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:26px}
 .wsz-col{display:grid;justify-items:start;gap:12px;padding:0;border:0;background:none;text-align:left;font:inherit;color:var(--sz-ink);cursor:pointer}
 .wsz-col small{width:100%;padding-bottom:14px;border-bottom:1px solid var(--sz-line);font-size:12px;font-weight:700}
 .wsz-col>svg{margin-top:20px;color:var(--sz-ink);transition:color .3s,transform .4s var(--sz-ease)}

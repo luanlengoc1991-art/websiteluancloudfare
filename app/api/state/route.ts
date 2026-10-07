@@ -18,7 +18,7 @@ export async function GET(){try{
   return Response.json({user:null,member:signedIn?{email:signedIn.email,canEdit:signedIn.canEdit}:null,records,reservations:[],files:files.map(f=>({id:f.id,projectId:f.project_id,kind:f.kind,name:f.name,url:`/api/files/${f.id}`}))},{headers:{'Cache-Control':'no-store'}});
  }
  const [records,holds,files]=await Promise.all([
-  readAll<Record>('SELECT kind,id,payload FROM records WHERE owner=? ORDER BY id ASC',user.userId),
+  readAll<Record>("SELECT kind,id,payload FROM records WHERE owner=? AND kind<>'vinh-tien' ORDER BY id ASC",user.userId),
   database().prepare('SELECT * FROM reservations WHERE owner=? ORDER BY created_at DESC LIMIT 500').bind(user.userId).all(),
   readAll<StoredFile>('SELECT id,project_id,kind,name FROM files WHERE owner=? ORDER BY id ASC',user.userId)
  ]);

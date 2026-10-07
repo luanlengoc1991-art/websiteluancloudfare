@@ -322,6 +322,24 @@ try {
     assert.equal((await post('/api/action', {action: 'deleteFile', id: first.id})).status, 200);
     assert.equal((await fetch(origin + first.url)).status, 404, 'Deleted files are gone');
   }
+  {
+    // Mặt bằng căn studio: state in D1, uploads in R2 (listed in the library), admin-only writes.
+    const studio = {version: 2, dataRevision: 'test', activeUnitId: 'u1', units: [{id: 'u1', state: {content: {unitCode: 'TEST-01'}}}]};
+    const put = (jar) => fetch(origin + '/api/vinh-tien/api/state', {method: 'PUT', headers: {'Content-Type': 'application/json', Origin: origin, ...(jar ? {Cookie: jar} : {})}, body: JSON.stringify(studio)});
+    assert.equal((await put('')).status, 401, 'Visitors cannot save the studio');
+    assert.equal((await put(cookie)).status, 200);
+    const saved = await fetch(origin + '/api/vinh-tien/api/state', {headers: {Cookie: cookie}}).then(r => r.json());
+    assert.equal(saved.state.units[0].state.content.unitCode, 'TEST-01');
+    assert.equal(saved.canEdit, true);
+    assert.equal((await fetch(origin + '/api/vinh-tien/api/state').then(r => r.json())).canEdit, false);
+    const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP1sAAAAASUVORK5CYII=';
+    const up = await fetch(origin + '/api/vinh-tien/api/assets', {method: 'POST', headers: {'Content-Type': 'application/json', Origin: origin, Cookie: cookie}, body: JSON.stringify({dataUrl: 'data:image/png;base64,' + png, name: 'studio.png'})});
+    assert.equal(up.status, 200);
+    const asset = await up.json();
+    assert.ok(asset.url.startsWith('/api/files/'), asset.url);
+    assert.equal((await fetch(origin + asset.url)).status, 200, 'Studio uploads are served from R2');
+    assert.ok((await readState()).files.some(f => f.id === asset.key), 'Studio uploads appear in the admin library');
+  }
   const mediaVerified = await verifyMediaAssistant({origin,adminCookie,memberCookie,post,readState,project:grantedProject});
 
   form.set('projectId', 'missing-project');

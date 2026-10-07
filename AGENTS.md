@@ -74,6 +74,12 @@
 - **Thay ảnh = xóa ảnh cũ (chủ dự án yêu cầu 06/10/2026, để nhẹ dung lượng).** (1) Lưu bản ghi project/article/unit/settings → `purgeUnusedFiles` xóa D1+R2 các file `/api/files/<id>` cũ không còn bản ghi nào dùng (bỏ qua ảnh tab dự án gallery/plan/panorama/model/amenity/document). (2) Thư viện "Thay ảnh" → `/api/upload` với `replaceId`: giữ nguyên id/URL (pin, liên kết không hỏng), đổi object R2 và xóa object cũ. (3) "Xóa ảnh" → `action:'deleteFile'`, từ chối nếu ảnh còn được bản ghi dùng. Chat/MCP đổi ảnh cũng xóa ảnh cũ. ImageField tải vào `site-library`/`image`, không lẫn vào thư viện dự án. `/api/files` trả ETag + `no-cache` để ảnh thay thế hiện ngay. Khi tự đưa ảnh lên bằng wrangler: thay ảnh cùng vị trí thì xóa file cũ (D1 + R2).
 - Favicon (`app/layout.tsx`) và logo trang `/tai-khoan` vẫn là file tĩnh.
 
+## Mặt bằng căn chạy hoàn toàn trên Cloudflare (08/10/2026)
+
+- `lib/vinh-tien-store.ts`: bản lưu trình chỉnh sửa phiếu = D1 records kind `vinh-tien` id `state` (lần đầu tự nhập từ app chatgpt.site cũ); bảng giá Google Sheets vẫn đọc qua app cũ nhưng giữ bản sao cuối trong D1 (id `sheet`) để dùng khi app cũ lỗi; ảnh tĩnh (perspectives, logo…) được sao vào R2 `vinh-tien/<path>` ở lần đầu yêu cầu rồi phục vụ từ R2.
+- Ảnh quản trị tải lên trong trình chỉnh sửa (`POST /api/vinh-tien/api/assets`) → `storeMedia` (R2 site-library, tự nén WebP, hiện trong Thư viện). Lưu bản chỉnh sửa xong, ảnh tải lên cũ không còn dùng tự bị xóa (`purgeUnusedFiles`). `mapGreenParadise` nhận cả URL `/api/files/<id>`.
+- Record `vinh-tien` không được trả trong /api/state của admin (nặng ~120 KB). npm test kiểm tra lưu D1, upload R2, chặn khách ghi.
+
 ## Bỏ trang AlphaHub (08/10/2026)
 
 - Theo yêu cầu chủ dự án: mục menu AlphaHub được thay bằng "Tổng quan" trỏ về trang chủ `/` (cùng vị trí, đầu menu); `/alphahub` chuyển hướng vĩnh viễn về `/`; chân trang đổi link tương ứng. Các ghi chú cũ về giao diện `/alphahub` ở trên chỉ còn giá trị lịch sử (component AlphaHubLanding vẫn còn trong code nhưng không được dùng).

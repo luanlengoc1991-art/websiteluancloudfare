@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 /** Proxied source images; large photos come back as resized WebP (w px wide) to keep the page light. */
-function sourceImage(src:string,w=2000){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
+function sourceImage(src:string,w=2000){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')||src.startsWith('/api/files/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
 
 type ContentState = {
   unitTitle: string;
@@ -1066,7 +1066,7 @@ export default function Home() {
       const asset = await uploadAsset(file);
       updateImage(key, { src: asset.url, x: 50, y: 50, zoom: 1 });
       setExportMessage(key === "map"
-        ? `Đã thay Ảnh số 2 bằng “${asset.name}” · giữ nguyên tệp gốc, không nén.`
+        ? `Đã thay Ảnh số 2 bằng “${asset.name}” · đã lưu vào Cloudflare.`
         : `Đã thay ảnh bằng “${asset.name}” và tự động lưu.`);
     } catch (error) {
       setExportMessage(error instanceof Error ? error.message : "Không thể tải ảnh. Vui lòng thử lại.");

@@ -10,6 +10,7 @@ import type {AboutContent} from '@/lib/site-content';
 import type {PublicContact} from '@/lib/public-contact';
 import {projectPath} from '@/lib/project-routes';
 import {alphaHubContent} from '@/lib/alphahub-content';
+import {sized} from '@/lib/img';
 
 const lines = (text: string) => text.split('\n').map((line, i, all) => <span key={i}>{line}{i < all.length - 1 && <br/>}</span>);
 const vnDate = (iso: string) => {const [y, m, d] = iso.split('-'); return y && m && d ? `${d}/${m}/${y}` : iso;};
@@ -21,9 +22,11 @@ const projectSummary = (p: Project) => placeholderNote.test(p.description) || !p
 const platform = alphaHubContent.topics.filter(t => t.group === 'platform');
 const benefits = alphaHubContent.topics.filter(t => t.group === 'benefits');
 
-function Img({src, alt = '', className}: {src?: string; alt?: string; className?: string}) {
+/** Slides keep only the current, previous and next photo in the page. */
+const near = (i: number, active: number, n: number) => {const d = ((i - active) % n + n) % n; return d === 0 || d === 1 || d === n - 1;};
+function Img({src, alt = '', className, w = 900, eager = false}: {src?: string; alt?: string; className?: string; w?: number; eager?: boolean}) {
   const [broken, setBroken] = useState(false);
-  return src && !broken ? <img className={className} src={src} alt={alt} loading="lazy" decoding="async" onError={() => setBroken(true)}/> : <span className={'sz-img-fallback ' + (className || '')}><Building2 size={32}/></span>;
+  return src && !broken ? <img className={className} src={sized(src, w)} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" onError={() => setBroken(true)}/> : <span className={'sz-img-fallback ' + (className || '')}><Building2 size={32}/></span>;
 }
 
 /** Pill label whose text ticks across, as on Spaciaz section labels. */
@@ -121,7 +124,7 @@ export function SpaciazHome({projects, units, articles, about, brand, contact, s
       </section>
 
       <section className="sz-bento sz-wrap">
-        <Link href={featured ? projectPath(featured.id) : '/du-an'} className="sz-bento-photo sz-notch-tl" data-fx="zoom"><Img src={featured?.image} alt={featured?.name}/><span className="sz-bento-caption"><MapPin size={14}/>{featured?.name}</span></Link>
+        <Link href={featured ? projectPath(featured.id) : '/du-an'} className="sz-bento-photo sz-notch-tl" data-fx="zoom"><Img w={1400} src={featured?.image} alt={featured?.name}/><span className="sz-bento-caption"><MapPin size={14}/>{featured?.name}</span></Link>
         <div className="sz-stat" data-fx=""><small>Dự án trên hệ thống</small><strong><span className="fx-count">{projects.length}</span><sup>+</sup></strong><span>dự án đang mở bán & sắp mở bán</span></div>
         <div className="sz-stat" data-fx=""><small>Quỹ căn</small><strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><span>căn trong bảng hàng</span></div>
         <div className="sz-stat" data-fx=""><small>Còn hàng</small><strong><span className="fx-count">{available}</span><sup>+</sup></strong><span>căn sẵn sàng tư vấn</span></div>
@@ -141,7 +144,7 @@ export function SpaciazHome({projects, units, articles, about, brand, contact, s
 
       <section className="sz-section sz-different sz-wrap">
         <div className="sz-different-photo sz-notch-tl" data-fx="left">
-          <Img src={projects[3]?.image || featured?.image} alt=""/>
+          <Img w={1200} src={projects[3]?.image || featured?.image} alt=""/>
           <div className="sz-rating"><strong><span className="fx-count">{units.length}</span>+</strong><span className="sz-stars">{[0, 1, 2, 3, 4].map(i => <Star key={i} size={14} fill="currentColor"/>)}</span><small>căn hộ & nhà phố đang cập nhật</small></div>
         </div>
         <div data-fx="right">
@@ -167,7 +170,7 @@ export function SpaciazHome({projects, units, articles, about, brand, contact, s
       </section>
 
       <section className="sz-enquiry">
-        <div className="sz-enquiry-bg"><Img src={projects[4]?.image || featured?.image} alt=""/></div>
+        <div className="sz-enquiry-bg"><Img w={1920} src={projects[4]?.image || featured?.image} alt=""/></div>
         <div className="sz-enquiry-card sz-wrap" data-fx="zoom">
           <div className="sz-center"><Eyebrow>Tư vấn nhanh</Eyebrow><h2 className="sz-h3">{lines(about.contactTitle)}</h2></div>
           <LeadForm projects={projects} note="Form tư vấn trang chủ" compact/>
@@ -208,7 +211,7 @@ function Showcase({projects, units}: {projects: Project[]; units: Unit[]}) {
       </div>
       <ArrowButton href={current ? projectPath(current.id) : '/du-an'}>Xem dự án</ArrowButton>
     </div></div>
-    <div className="sz-showcase-photos">{projects.map((p, i) => <Link key={p.id} href={projectPath(p.id)} data-index={i} ref={el => {refs.current[i] = el;}} className={i === active ? 'is-active' : ''} aria-label={p.name}><Img src={p.image} alt={p.name}/></Link>)}</div>
+    <div className="sz-showcase-photos">{projects.map((p, i) => <Link key={p.id} href={projectPath(p.id)} data-index={i} ref={el => {refs.current[i] = el;}} className={i === active ? 'is-active' : ''} aria-label={p.name}><Img w={1400} src={p.image} alt={p.name}/></Link>)}</div>
   </section>;
 }
 
@@ -220,7 +223,7 @@ function Quotes({faq, image}: {faq: AboutContent['faq']; image?: string}) {
   return <section className="sz-quotes">
     <div className="sz-rotor" aria-hidden="true">
       <svg viewBox="0 0 200 200"><defs><path id="sz-circle" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs><text><textPath href="#sz-circle">HỎI ĐÁP CÙNG ALPHA HUB · HỎI ĐÁP CÙNG ALPHA HUB · </textPath></text></svg>
-      <span><Img src={image} alt=""/><MessageCircle size={26}/></span>
+      <span><Img w={240} src={image} alt=""/><MessageCircle size={26}/></span>
     </div>
     <div className="sz-wrap sz-quote-body">
       <button type="button" aria-label="Câu trước" onClick={() => setIndex(i => (i - 1 + faq.length) % faq.length)}><ChevronLeft size={18}/></button>
@@ -239,7 +242,7 @@ function ProjectsHero({projects, units}: {projects: Project[]; units: Unit[]}) {
   const current = slides[index];
   const available = units.length;
   return <section className="sz-hero sz-phero">
-    <div className="sz-phero-slides" aria-hidden="true">{slides.map((p, i) => <div key={p.id} className={'sz-phero-slide' + (i === index ? ' is-on' : '')}><Img src={p.image} alt=""/></div>)}</div>
+    <div className="sz-phero-slides" aria-hidden="true">{slides.map((p, i) => <div key={p.id} className={'sz-phero-slide' + (i === index ? ' is-on' : '')}>{near(i, index, slides.length) && <Img w={1920} eager={i === index} src={p.image} alt=""/>}</div>)}</div>
     <div className="sz-wrap">
       <div className="sz-hero-copy">
         <h1 data-fx="title">Dự án nổi bật<br/>trên Alpha Hub</h1>
@@ -256,7 +259,7 @@ function ProjectsHero({projects, units}: {projects: Project[]; units: Unit[]}) {
         </div>
       </div>
       <div className="sz-hero-cards">{slides.slice(0, 3).map(p => <Link key={p.id} href={projectPath(p.id)} className="sz-glass sz-phero-card" data-fx="">
-        <span className="sz-phero-thumb"><Img src={p.image} alt=""/></span>
+        <span className="sz-phero-thumb"><Img w={240} src={p.image} alt=""/></span>
         <div><small>{p.developer} · {p.category === 'high' ? 'Cao tầng' : 'Thấp tầng'}</small><h3>{p.name}</h3><p><MapPin size={13}/> {p.location} · {units.filter(u => u.projectId === p.id).length} căn</p></div>
         <ArrowUpRight size={20}/></Link>)}</div>
     </div>
@@ -340,7 +343,7 @@ function ShowcaseScatter({projects, units}: {projects: Project[]; units: Unit[]}
     </div>
     <div className="sz-wrap">
       <div className="sz-feat-stage">
-        {projects.map((x, i) => <Img key={x.id} className={'sz-feat-photo' + (i === active ? ' is-on' : '')} src={x.image} alt={i === active ? x.name : ''}/>)}
+        {projects.map((x, i) => near(i, active, n) && <Img w={1920} key={x.id} className={'sz-feat-photo' + (i === active ? ' is-on' : '')} src={x.image} alt={i === active ? x.name : ''}/>)}
         <div className="sz-feat-info" key={p.id}>
           <span className="sz-status">{p.status}</span>
           <small><MapPin size={15}/>{p.location}</small>
@@ -349,7 +352,7 @@ function ShowcaseScatter({projects, units}: {projects: Project[]; units: Unit[]}
           <ArrowButton href={projectPath(p.id)} tone="white">Khám phá dự án</ArrowButton>
         </div>
         <div className="sz-feat-thumbs" ref={strip}>{projects.map((x, i) => <button key={x.id} type="button" className={i === active ? 'is-on' : ''} onClick={() => setActive(i)} aria-label={x.name}>
-          <Img src={x.image} alt=""/><span>{x.name}</span>{i === active && <i className="sz-feat-timer"/>}
+          <Img w={360} src={x.image} alt=""/><span>{x.name}</span>{i === active && <i className="sz-feat-timer"/>}
         </button>)}</div>
       </div>
     </div>
@@ -426,7 +429,7 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
       </section>}
 
       <section className="sz-enquiry">
-        <div className="sz-enquiry-bg"><Img src={showcase[2]?.image || showcase[0]?.image} alt=""/></div>
+        <div className="sz-enquiry-bg"><Img w={1920} src={showcase[2]?.image || showcase[0]?.image} alt=""/></div>
         <div className="sz-enquiry-card sz-wrap" data-fx="zoom">
           <div className="sz-center"><Eyebrow>Tư vấn dự án</Eyebrow><h2 className="sz-h3">Nhận bảng giá & lịch tham quan<br/>dự án bạn quan tâm</h2></div>
           <LeadForm projects={projects} note="Form tư vấn trang Dự án" compact/>
@@ -454,7 +457,7 @@ export function SpaciazAbout({about, brand, projects, units, contact}: {about: A
         <div data-fx="right"><p className="sz-lead-strong">{about.platformBody}</p><p className="sz-lead">{alphaHubContent.title}. {platform[0]?.body}</p><ArrowButton href="/lien-he">Liên hệ tư vấn</ArrowButton></div>
       </section>
       <section className="sz-about-visual sz-wrap" data-fx="zoom">
-        <div className="sz-about-photo sz-notch-tl"><Img src={featured?.image} alt={featured?.name}/></div>
+        <div className="sz-about-photo sz-notch-tl"><Img w={1600} src={featured?.image} alt={featured?.name}/></div>
         <div className="sz-about-stats">
           <div className="sz-stat is-solid"><Building2 size={30}/><strong><span className="fx-count">{projects.length}</span><sup>+</sup></strong><span>dự án trên hệ thống</span></div>
           <div className="sz-stat is-solid"><House size={30}/><strong><span className="fx-count">{units.length}</span><sup>+</sup></strong><span>căn trong quỹ căn</span></div>
@@ -465,7 +468,7 @@ export function SpaciazAbout({about, brand, projects, units, contact}: {about: A
         <div className="sz-wrap">
           <div data-fx=""><Eyebrow>Hành trình</Eyebrow><h2 className="sz-h2">{lines(about.journeyTitle)}</h2></div>
           <div className="sz-timeline">{steps.map(s => <Link key={s.year} href={s.href} className="sz-milestone" data-fx="">
-            <span className="sz-milestone-year">{s.year}</span><span className="sz-milestone-photo"><Img src={s.image} alt=""/></span><i/><h3>{s.title}</h3><p>{s.body}</p></Link>)}</div>
+            <span className="sz-milestone-year">{s.year}</span><span className="sz-milestone-photo"><Img w={420} src={s.image} alt=""/></span><i/><h3>{s.title}</h3><p>{s.body}</p></Link>)}</div>
           <Link href="/lien-he" className="sz-round-cta" data-fx="zoom">Nhận<br/>tư vấn</Link>
         </div>
       </section>
@@ -503,7 +506,7 @@ export function SpaciazBlog({articles, projects, routeId, canEdit, onCreate, onE
   const sidebar = <aside className="sz-blog-side">
     <div><h3>Tìm kiếm</h3><label className="sz-side-search"><input value={query} onChange={e => {setQuery(e.target.value); setLimit(6);}} placeholder="Tìm bài viết…" aria-label="Tìm bài viết"/><Search size={16}/></label></div>
     <div><h3>Chuyên mục</h3><ul className="sz-side-cats">{categories.map(c => <li key={c}><button type="button" onClick={() => {setCategory(c); setLimit(6);}} className={category === c ? 'is-on' : ''}>{c}<span>{stories.filter(s => s.category === c).length}</span></button></li>)}</ul></div>
-    <div><h3>Bài viết mới</h3><ul className="sz-side-recent">{recent.map(s => <li key={s.id}><Link href={s.href}><Img src={s.image} alt=""/><span>{s.title}</span></Link></li>)}</ul></div>
+    <div><h3>Bài viết mới</h3><ul className="sz-side-recent">{recent.map(s => <li key={s.id}><Link href={s.href}><Img w={160} src={s.image} alt=""/><span>{s.title}</span></Link></li>)}</ul></div>
     <div className="sz-side-cta"><h3>Cần tư vấn dự án?</h3><p>Để lại thông tin, đội ngũ Alpha Hub sẽ liên hệ trong thời gian sớm nhất.</p><ArrowButton href="/lien-he">Liên hệ ngay</ArrowButton></div>
   </aside>;
   if (routeId) return <div className="sz">
@@ -513,7 +516,7 @@ export function SpaciazBlog({articles, projects, routeId, canEdit, onCreate, onE
         <div className="sz-post-meta"><b>{opened.category}</b><i/><time>{vnDate(opened.date)}</time></div>
         <h1>{opened.title}</h1>
         {canEdit && <button type="button" className="sz-edit" onClick={() => onEdit(opened)}><Pencil size={15}/>Chỉnh sửa bài viết</button>}
-        <div className="sz-article-cover"><Img src={opened.image} alt={opened.title}/></div>
+        <div className="sz-article-cover"><Img w={1400} src={opened.image} alt={opened.title}/></div>
         <div className="sz-article-body">{opened.body.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}</div>
         <Link href="/tin-tuc" className="sz-back"><ChevronLeft size={16}/>Về trang tin tức</Link>
       </> : <><h1>Không tìm thấy bài viết</h1><p>Bài viết này không còn trên website.</p><ArrowButton href="/tin-tuc">Về trang tin tức</ArrowButton></>}</article>
@@ -527,7 +530,7 @@ export function SpaciazBlog({articles, projects, routeId, canEdit, onCreate, onE
         {canEdit && <button type="button" className="sz-edit" onClick={onCreate}><Plus size={15}/>Thêm bài viết</button>}</div>
       <div className="sz-blog">
         <div className="sz-blog-list">{list.slice(0, limit).map(s => <article key={s.id} className="sz-blog-item" data-fx="">
-          <Link href={s.href} className="sz-blog-photo"><Img src={s.image} alt={s.title}/></Link>
+          <Link href={s.href} className="sz-blog-photo"><Img w={1200} src={s.image} alt={s.title}/></Link>
           <div className="sz-post-meta"><b>{s.category}</b><i/><time>{s.date}</time></div>
           <h2><Link href={s.href}>{s.title}</Link></h2><p>{s.summary}</p>
           {canEdit && s.article && <button type="button" className="sz-edit" onClick={() => onEdit(s.article!)}><Pencil size={14}/>Chỉnh sửa</button>}
@@ -553,7 +556,7 @@ export function SpaciazContact({projects, contact, address}: {projects: Project[
       </section>
       <section className="sz-section sz-wrap sz-message">
         <div data-fx="left"><h2 className="sz-h2">Để lại lời nhắn</h2><p className="sz-lead">Chia sẻ dự án và nhu cầu của bạn — chúng tôi sẽ gửi thông tin quỹ căn, bảng giá và lịch tham quan phù hợp.</p><LeadForm projects={projects} note="Trang liên hệ"/></div>
-        <div className="sz-message-photo sz-notch-tl" data-fx="right"><Img src={projects[0]?.image} alt=""/><a href={contact.facebookHref} target="_blank" rel="noreferrer" className="sz-round-cta">Theo dõi<br/>Facebook</a></div>
+        <div className="sz-message-photo sz-notch-tl" data-fx="right"><Img w={1400} src={projects[0]?.image} alt=""/><a href={contact.facebookHref} target="_blank" rel="noreferrer" className="sz-round-cta">Theo dõi<br/>Facebook</a></div>
       </section>
     </Sheet>
   </div>;
@@ -600,7 +603,7 @@ export function SpaciazInventoryIntro({projects, units, statusOf, onOpenUnit}: I
   if (!picks.length) return null;
   return <section className="sz sz-u-hero" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
     <div className="sz-u-hero-photo">
-      {picks.map((u, i) => <Img key={u.id} className={i === active ? 'is-on' : ''} src={projectOf(u)?.image} alt=""/>)}
+      {picks.map((u, i) => near(i, active, picks.length) && <Img w={1600} key={u.id} className={i === active ? 'is-on' : ''} src={projectOf(u)?.image} alt=""/>)}
       {current && <div className="sz-u-hero-tag" key={current.id}>
         <small><MapPin size={14}/>{projectOf(current)?.name}</small>
         <strong>{current.code}</strong>
@@ -696,7 +699,7 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
             <a className="sz-h6-phone" href={`tel:${contact.phone}`}><span><Phone size={18}/></span><div><small>Hotline / Zalo</small><b>{contact.phone}</b></div></a></div>
           <div data-fx="right"><p className="sz-lead-strong">Để lại thông tin, chúng tôi sẽ gửi danh sách căn phù hợp với nhu cầu và ngân sách của bạn.</p><LeadForm projects={projects} note="Form tư vấn trang Quỹ căn" compact/></div>
         </div>
-        <div className="sz-h6-enquiry-photo sz-notch-tr" data-fx="zoom"><Img src={photo} alt=""/></div>
+        <div className="sz-h6-enquiry-photo sz-notch-tr" data-fx="zoom"><Img w={1600} src={photo} alt=""/></div>
       </div>
     </section>
   </div>;

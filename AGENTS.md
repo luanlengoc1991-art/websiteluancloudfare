@@ -85,6 +85,12 @@
 - Ảnh quản trị tải lên trong trình chỉnh sửa (`POST /api/vinh-tien/api/assets`) → `storeMedia` (R2 site-library, tự nén WebP, hiện trong Thư viện). Lưu bản chỉnh sửa xong, ảnh tải lên cũ không còn dùng tự bị xóa (`purgeUnusedFiles`). `mapGreenParadise` nhận cả URL `/api/files/<id>`.
 - Record `vinh-tien` không được trả trong /api/state của admin (nặng ~120 KB). npm test kiểm tra lưu D1, upload R2, chặn khách ghi.
 
+## Tối ưu tải trang (08/10/2026, giữ nguyên bố cục + hiệu ứng)
+
+- `/api/img?w=&src=` (lib/img.ts `sized()`): ảnh hiển thị dạng WebP đúng cỡ, cache edge (file tải lên 1 giờ, nguồn tĩnh 30 ngày). Dùng trong `Img` (spaciaz, mặc định 900 px, ảnh lớn 1200–1920), `Picture` (hub), ảnh nền banner (1920). Slide chỉ giữ ảnh hiện tại/trước/sau. Mặt bằng/bản đồ (plan-board) tải bản 2400 px trước, chỉ tải bản gốc khi người dùng phóng to.
+- Phiếu Mặt bằng căn: ảnh nhỏ 1000 px, ảnh map 2400 px; font Montserrat dùng WOFF2 tự host (public/fonts, OFL) thay 4 file TTF.
+- Không nạp news/projects/about/alphahub.css và AlphaHubLanding nữa; font Playfair/Mulish không preload. public/_headers: cache dài cho /fonts, /images.
+
 ## Bỏ trang AlphaHub (08/10/2026)
 
 - Theo yêu cầu chủ dự án: mục menu AlphaHub được thay bằng "Tổng quan" trỏ về trang chủ `/` (cùng vị trí, đầu menu); `/alphahub` chuyển hướng vĩnh viễn về `/`; chân trang đổi link tương ứng. Các ghi chú cũ về giao diện `/alphahub` ở trên chỉ còn giá trị lịch sử (component AlphaHubLanding vẫn còn trong code nhưng không được dùng).

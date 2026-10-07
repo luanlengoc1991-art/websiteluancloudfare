@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import {usePathname} from 'next/navigation';
+import {sized} from '@/lib/img';
 import {defaultBackgroundImage, resolveBackgroundImage, sanitizeBackgrounds, sanitizeBackgroundAppearances, resolveBackgroundAppearance, backgroundLayers, type SiteBackgrounds, type BackgroundAppearances} from '@/lib/site-backgrounds';
 
 const figures = '.unit-code,.price,.detail-price,.money,.unit-price-card strong,.punit-price-main strong,.pd-feature-count b,.pd-count-value b,.pd-band-count b,.project-unit-count strong,.al-green-count>strong,.al-platform-stats dd,.ap-metric strong,.admin-metrics strong,.stat-card>strong';
@@ -139,7 +140,7 @@ export default function SiteAtmosphere() {
   }, [pathname]);
 
   return <div className={`site-atmosphere${isAlphaHub ? ' is-alphahub' : ''}`} aria-hidden="true" style={usesSharedBackdrop ? {backgroundImage: layers.canvas} : undefined}>
-    {usesSharedBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={imageSrc} alt="" decoding="async" onError={() => setFailedImage(selectedImage)} style={{opacity: layers.imageOpacity}}/>}
+    {usesSharedBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={sized(imageSrc, 1920)} fetchPriority="high" alt="" decoding="async" onError={() => setFailedImage(selectedImage)} style={{opacity: layers.imageOpacity}}/>}
     <div className="site-atmosphere-base" style={usesSharedBackdrop ? {backgroundImage: layers.overlay} : undefined}/>
   </div>;
 }

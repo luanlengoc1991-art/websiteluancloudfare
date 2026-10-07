@@ -5,12 +5,12 @@ import SiteEffects from "@/components/site-effects";
 import "./globals.css";
 import "./admin.css";
 import "./admin-projects.css";
-import "./news.css";
-import "./projects.css";
+// news.css: legacy page styles, no longer rendered (08/10/2026)
+// projects.css: legacy page styles, no longer rendered (08/10/2026)
 import "./project-unit.css";
 import "./inventory-market.css";
-import "./about.css";
-import "./alphahub.css";
+// about.css: legacy page styles, no longer rendered (08/10/2026)
+// alphahub.css: legacy page styles, no longer rendered (08/10/2026)
 import "./site-shell.css";
 import "./content-sidebar.css";
 import "./typography.css";
@@ -27,6 +27,7 @@ const playfairDisplay = localFont({
   ],
   variable: "--font-playfair-display",
   display: "swap",
+  preload: false,
   adjustFontFallback: "Times New Roman",
   fallback: ["Georgia", "serif"],
 });
@@ -41,6 +42,7 @@ const mulish = localFont({
   ],
   variable: "--font-mulish",
   display: "swap",
+  preload: false,
   adjustFontFallback: "Arial",
   fallback: ["Arial", "Helvetica", "sans-serif"],
 });

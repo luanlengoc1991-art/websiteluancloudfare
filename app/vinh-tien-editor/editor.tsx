@@ -482,7 +482,7 @@ function DraggableImage({ slot, label, className = "", onMove, onUpload, onZoom,
     >
       <img
         ref={imageRef}
-        src={sourceImage(slot.src)}
+        src={sourceImage(slot.src, className.includes("gallery-frame") ? 1000 : preserveQuality ? 2400 : 2000)}
         alt=""
         draggable={false}
         decoding={preserveQuality ? "sync" : "async"}

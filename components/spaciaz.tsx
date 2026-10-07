@@ -324,26 +324,35 @@ function ProjectRing({projects, units, regions, favorites, onFavorite, onList}: 
   </section>;
 }
 
-/** /du-an featured projects: photos scattered left and right over a centred sticky title. */
-const scatterSpots = [
-  {col: '1 / 6', top: 0, h: 440}, {col: '8 / 13', top: 170, h: 360}, {col: '3 / 8', top: 30, h: 400},
-  {col: '9 / 13', top: 150, h: 430}, {col: '1 / 5', top: 20, h: 380}, {col: '6 / 11', top: 130, h: 420},
-];
+/** /du-an featured projects: one large photo with project thumbnails inside, sliding automatically. */
 function ShowcaseScatter({projects, units}: {projects: Project[]; units: Unit[]}) {
-  if (!projects.length) return null;
-  return <section className="sz-scatter">
-    <div className="sz-scatter-title">
-      <Eyebrow>Dự án tiêu biểu</Eyebrow>
-      <h2 className="sz-h2">Thiết kế ấn tượng,<br/>giá trị bền vững</h2>
-      <p>{projects.length} dự án nổi bật đang mở bán trên Alpha Hub</p>
+  const [active, setActive] = useState(0);
+  const strip = useRef<HTMLDivElement>(null);
+  const n = projects.length;
+  useEffect(() => {const el = strip.current, b = el?.children[active] as HTMLElement | undefined; if (el && b) el.scrollTo({left: b.offsetLeft - el.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth'});}, [active]);
+  useEffect(() => {if (n < 2) return; const t = setTimeout(() => setActive(i => (i + 1) % n), 5000); return () => clearTimeout(t);}, [active, n]);
+  if (!n) return null;
+  const p = projects[active % n];
+  return <section className="sz-feat">
+    <div className="sz-wrap sz-feat-head">
+      <div><Eyebrow>Dự án tiêu biểu</Eyebrow><h2 className="sz-h2">Thiết kế ấn tượng,<br/>giá trị bền vững</h2></div>
+      <p>{n} dự án nổi bật đang mở bán trên Alpha Hub. Ảnh tự chuyển, bấm ảnh nhỏ để xem dự án khác.</p>
     </div>
-    <div className="sz-wrap sz-scatter-grid">{projects.map((p, i) => {const spot = scatterSpots[i % scatterSpots.length];
-      return <Link key={p.id} href={projectPath(p.id)} className="sz-scatter-card" data-fx="zoom" style={{gridColumn: spot.col, marginTop: spot.top, height: spot.h}}>
-        <Img src={p.image} alt={p.name}/>
-        <span className="sz-status">{p.status}</span>
-        <span className="sz-scatter-text"><small><MapPin size={13}/>{p.location} · {units.filter(u => u.projectId === p.id).length} căn</small><strong>{p.name}</strong></span>
-        <span className="sz-notch-btn is-mint"><ArrowUpRight size={16}/></span>
-      </Link>;})}</div>
+    <div className="sz-wrap">
+      <div className="sz-feat-stage">
+        {projects.map((x, i) => <Img key={x.id} className={'sz-feat-photo' + (i === active ? ' is-on' : '')} src={x.image} alt={i === active ? x.name : ''}/>)}
+        <div className="sz-feat-info" key={p.id}>
+          <span className="sz-status">{p.status}</span>
+          <small><MapPin size={15}/>{p.location}</small>
+          <h3>{p.name}</h3>
+          <p>{p.developer} · {p.category === 'high' ? 'Cao tầng' : 'Thấp tầng'} · {units.filter(u => u.projectId === p.id).length} căn</p>
+          <ArrowButton href={projectPath(p.id)} tone="white">Khám phá dự án</ArrowButton>
+        </div>
+        <div className="sz-feat-thumbs" ref={strip}>{projects.map((x, i) => <button key={x.id} type="button" className={i === active ? 'is-on' : ''} onClick={() => setActive(i)} aria-label={x.name}>
+          <Img src={x.image} alt=""/><span>{x.name}</span>{i === active && <i className="sz-feat-timer"/>}
+        </button>)}</div>
+      </div>
+    </div>
   </section>;
 }
 
@@ -385,7 +394,7 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
     <Sheet className="sz-home-sheet sz-ring-sheet">
       <ProjectRing projects={projects} units={units} regions={regions} favorites={favorites} onFavorite={onFavorite} onList={pick}/>
 
-      <ShowcaseScatter projects={showcase} units={units}/>
+      <ShowcaseScatter projects={[...projects].sort((a, b) => Number(b.hot) - Number(a.hot))} units={units}/>
 
       <section className="sz-wrap sz-listing sz-section" id="tat-ca-du-an" ref={top}>
         <div className="sz-news-head sz-listing-head"><div data-fx="left"><Eyebrow>Tất cả dự án</Eyebrow><h2 className="sz-h2">Danh sách dự án</h2></div></div>

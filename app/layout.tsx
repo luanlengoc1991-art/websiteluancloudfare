@@ -18,6 +18,7 @@ import "./atmosphere.css";
 import "./be-vietnam-pro.css";
 import "./skin.css";
 import "./spaciaz.css";
+import "./admin-light.css";
 
 const playfairDisplay = localFont({
   src: [

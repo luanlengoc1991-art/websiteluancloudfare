@@ -85,6 +85,13 @@
 - Ảnh quản trị tải lên trong trình chỉnh sửa (`POST /api/vinh-tien/api/assets`) → `storeMedia` (R2 site-library, tự nén WebP, hiện trong Thư viện). Lưu bản chỉnh sửa xong, ảnh tải lên cũ không còn dùng tự bị xóa (`purgeUnusedFiles`). `mapGreenParadise` nhận cả URL `/api/files/<id>`.
 - Record `vinh-tien` không được trả trong /api/state của admin (nặng ~120 KB). npm test kiểm tra lưu D1, upload R2, chặn khách ghi.
 
+## Admin sáng + Nội dung trang (08/10/2026)
+
+- Giao diện admin theo màu trang ngoài: `app/admin-light.css` (nạp sau cùng) — nền trắng/mint/xanh trời, sidebar lục bảo đậm, thẻ trắng bo 24px, nút pill mint/đậm, font Be Vietnam Pro.
+- Mục mới "Nội dung trang" (`/admin/noi-dung`, `components/admin-copy.tsx`): sửa các tiêu đề/đoạn chữ cố định của trang ngoài (trang chủ, dự án, quỹ căn, mặt bằng căn, mô tả đầu trang, liên hệ, chân trang). Danh sách khóa + chữ mặc định ở `lib/site-copy.ts`; lưu D1 records kind `copy` id `main` (chỉ khóa đã khai báo); trang ngoài đọc qua `useCopy()` (`SiteCopyProvider` trong hub). Thêm chữ sửa được = thêm khóa vào copyGroups rồi dùng `t(key)`. Thành viên có quyền sửa nội dung cũng sửa được mục này.
+- Lỗi đã sửa: quy tắc `body>div{position:relative}` trong skin.css làm mọi hộp thoại/bảng trượt (form sửa dự án, căn, bài viết…) bị đẩy xuống cuối trang; nay chỉ áp cho `body>.site`. Bỏ ô "ảnh trang AlphaHub" ở Cấu hình; thêm ảnh nền riêng cho trang Mặt bằng căn.
+- Chạy admin ở máy: `.env.local` (đã gitignore) đặt ALPHA_ADMIN_EMAIL, ALPHA_ENABLE_PASSWORD_LOGIN=true, ALPHA_ADMIN_PASSWORD_HASH tạm.
+
 ## Tối ưu tải trang (08/10/2026, giữ nguyên bố cục + hiệu ứng)
 
 - `/api/img?w=&src=` (lib/img.ts `sized()`): ảnh hiển thị dạng WebP đúng cỡ, cache edge (file tải lên 1 giờ, nguồn tĩnh 30 ngày). Chất lượng WebP 84, tối đa 2560 px. Dùng trong `Img` (spaciaz, mặc định 1280 px, ảnh tràn màn hình 2560), `Picture` (hub), ảnh nền banner (1920). Slide chỉ giữ ảnh hiện tại/trước/sau. Mặt bằng/bản đồ (plan-board) tải bản 2560 px trước, chỉ tải bản gốc khi người dùng phóng to.

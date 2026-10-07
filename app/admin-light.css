@@ -1,0 +1,126 @@
+/* Admin in the public Spaciaz palette (08/10/2026): white/mint/sky workspace, deep emerald sidebar,
+ * mint pill accents, Be Vietnam Pro. Loaded last; overrides the dark glass admin. */
+.admin-projects-site{--a-ink:#0a1f19;--a-text:#4b5a55;--a-muted:#7b8a85;--a-line:#e2ece8;--a-soft:#f3f8f6;--a-mint:#8ef0c4;--a-mint2:#5fe0a8;--a-deep:#03261d;--a-em:#047857;
+  font-family:'Be Vietnam Pro',var(--font-mulish),Arial,sans-serif;color:var(--a-ink)}
+.admin-projects-site :is(h1,h2,h3){font-family:'Be Vietnam Pro',Arial,sans-serif!important;letter-spacing:-.035em}
+:root[data-skin=emerald]:has(.admin-projects-site) body{background:linear-gradient(170deg,#ffffff 0%,#f1fbf6 45%,#e6f4fb 100%)!important;background-attachment:fixed!important}
+:root[data-skin=emerald]:has(.admin-projects-site) .site-atmosphere{display:none}
+
+/* Sidebar: deep emerald, full height */
+.admin-projects-site .admin-sidebar{background:linear-gradient(170deg,#02261d,#04382b 60%,#065a45)!important;border-right:0!important;backdrop-filter:none!important;box-shadow:12px 0 40px -30px #02261d99}
+.admin-projects-site .admin-wordmark{color:#fff}
+.admin-projects-site .admin-wordmark>span{color:var(--a-mint)}
+.admin-projects-site .admin-nav-label{color:#8fbfae!important}
+.admin-projects-site .admin-sidebar nav a{color:#d6ece3!important;border-radius:999px!important;font-weight:500}
+.admin-projects-site .admin-sidebar nav a:hover{background:#ffffff14!important;color:#fff!important}
+.admin-projects-site .admin-sidebar nav a.active{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important;font-weight:700;box-shadow:0 10px 24px -14px #8ef0c4!important}
+.admin-projects-site .admin-side-bottom :is(a,button,div){color:#d6ece3}
+
+/* Top bar: white pill */
+.admin-projects-site .admin-topbar{background:#ffffffe6!important;border:0!important;border-bottom:1px solid var(--a-line)!important;color:var(--a-text)!important;backdrop-filter:blur(14px)!important}
+.admin-projects-site :is(.admin-crumb,.admin-user-name){color:var(--a-ink)!important}
+.admin-projects-site .admin-user-name small{color:var(--a-muted)!important}
+.admin-projects-site .admin-user-avatar{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;border:0!important;color:var(--a-deep)!important}
+.admin-projects-site .admin-top-actions>:is(button,a){background:#fff!important;border:1px solid var(--a-line)!important;color:var(--a-ink)!important}
+.admin-projects-site .admin-preview-link{color:var(--a-em)!important;font-weight:600}
+.admin-projects-site .admin-mobile-toggle{color:var(--a-ink)!important}
+
+/* Headings */
+.admin-projects-site .management-heading .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--a-mint2);border-radius:999px;background:#fff;color:var(--a-ink)!important}
+.admin-projects-site .management-heading .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:#059669}
+.admin-projects-site .management-heading h1{color:var(--a-ink)!important;font-weight:700!important;letter-spacing:-.05em!important}
+.admin-projects-site :is(.section-heading>h2,.section-space>.muted,.admin-page-controls,.muted,.small){color:var(--a-text)!important}
+
+/* Every card / panel: white, soft line */
+.admin-projects-site :is(.settings-card,.table-wrap,.stat-card,.upload-panel,.admin-asset,.transaction-list article,.admin-content-sync,.ap-metric,.ap-filter-panel,.ap-card,.empty,.loading,.admin-panel,.admin-copy-nav),
+.admin-projects-site .admin-overview :is(.admin-panel,.admin-metrics>a,.admin-welcome),
+.admin-projects-site .admin-members .admin-panel{background:#fff!important;border:1px solid var(--a-line)!important;border-radius:24px!important;color:var(--a-ink)!important;backdrop-filter:none!important;box-shadow:0 20px 40px -34px #02261d59!important}
+.admin-projects-site :is(.settings-card,.upload-panel,.admin-content-sync,.admin-panel) :is(h2,h3,strong){color:var(--a-ink)!important}
+.admin-projects-site :is(.settings-card,.upload-panel,.admin-content-sync,.admin-panel,.stat-card,.ap-metric,.ap-card) :is(p,small,span:not(.status):not(.dot)){color:var(--a-text)}
+.admin-projects-site .admin-content-sync{background:linear-gradient(120deg,#ffffff,#eefaf4 60%,#e6f4fb)!important}
+
+/* Overview */
+.admin-projects-site .admin-overview .admin-welcome{background:linear-gradient(120deg,#02261d,#065a45 60%,#0b7a5c)!important;color:#fff!important;border:0!important}
+.admin-projects-site .admin-welcome :is(h2,p,span){color:#fff!important}.admin-projects-site .admin-welcome span{color:var(--a-mint)!important}
+.admin-projects-site .admin-overview .admin-metrics>a>div{color:var(--a-em)!important}
+.admin-projects-site .admin-overview .admin-metrics strong,.admin-projects-site .stat-card>strong,.admin-projects-site .ap-metric strong{color:var(--a-ink)!important;font-weight:700!important;letter-spacing:-.04em}
+.admin-projects-site .admin-overview :is(.admin-metrics>a>span,.admin-metrics small,.admin-panel-title p,.admin-empty,.admin-empty-line,.admin-activity time){color:var(--a-text)!important}
+.admin-projects-site .admin-overview .admin-panel-title h2,.admin-projects-site .admin-overview .admin-empty h3{color:var(--a-ink)!important;font-weight:700!important}
+.admin-projects-site .admin-overview :is(.admin-panel-title>a,.admin-empty a){color:var(--a-em)!important;font-weight:600}
+.admin-projects-site .admin-overview .admin-quick a{background:var(--a-soft)!important;border:1px solid var(--a-line)!important;color:var(--a-ink)!important;border-radius:999px!important}
+.admin-projects-site .admin-overview .admin-quick a:hover{background:#e3f7ee!important;border-color:var(--a-mint2)!important}
+.admin-projects-site .admin-overview .admin-data-note{background:#f3fbf7!important;border-color:var(--a-line)!important;color:var(--a-text)!important}
+.admin-projects-site .admin-overview .admin-initial{background:var(--a-soft)!important;color:var(--a-em)!important;border-color:var(--a-line)!important}
+.admin-projects-site .admin-overview .admin-activity>div{border-color:var(--a-line)!important;color:var(--a-ink)!important}
+
+/* Stat cards, project cards */
+.admin-projects-site :is(.stat-card,.ap-metric) :is(span,small){color:var(--a-muted)!important}
+.admin-projects-site :is(.stat-card,.ap-metric) svg{color:var(--a-em)!important}
+.admin-projects-site .ap-card{overflow:hidden}
+.admin-projects-site .ap-card :is(h3,h3 a){color:var(--a-ink)!important}
+.admin-projects-site .ap-card :is(.ap-location,.ap-card-meta){color:var(--a-muted)!important}
+.admin-projects-site .ap-card-actions :is(a,button){color:var(--a-ink)!important;border-color:var(--a-line)!important;background:#fff!important}
+.admin-projects-site .ap-card-actions button:hover{background:var(--a-mint)!important}
+.admin-projects-site :is(.ap-intro p,.ap-results p,.ap-catalog-heading h2,.ap-kicker,.ap-public-link){color:var(--a-ink)!important}
+.admin-projects-site .ap-tabs button{color:var(--a-text)!important;border-radius:999px}
+.admin-projects-site .ap-tabs button[aria-pressed=true]{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important}
+.admin-projects-site :is(.ap-search,.ap-filters select){background:var(--a-soft)!important;border:1px solid var(--a-line)!important;color:var(--a-ink)!important;border-radius:999px!important}
+.admin-projects-site .ap-search input{color:var(--a-ink)!important}
+.admin-projects-site .ap-primary{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important;border:0!important}
+
+/* Tables */
+.admin-projects-site .table-wrap{overflow:hidden}
+.admin-projects-site thead tr{background:linear-gradient(120deg,#e9fbf2,#e6f4fb)!important}
+.admin-projects-site th{color:var(--a-ink)!important;font-weight:700!important;font-size:11.5px!important;text-transform:uppercase;letter-spacing:.06em}
+.admin-projects-site td{color:var(--a-ink)!important;border-color:var(--a-line)!important}
+.admin-projects-site tbody tr:hover{background:#f3fbf7!important}
+.admin-projects-site .money{color:var(--a-em)!important;font-weight:700}
+.admin-projects-site .text-link{color:var(--a-ink)!important;font-weight:700}
+
+/* Buttons & fields */
+.admin-projects-site .button{border-radius:999px!important;font-weight:600}
+.admin-projects-site .button.dark{background:var(--a-deep)!important;color:#fff!important;border:0!important}
+.admin-projects-site .button.dark:hover{background:#065a45!important}
+.admin-projects-site .button.subtle{background:#fff!important;border:1px solid var(--a-line)!important;color:var(--a-ink)!important}
+.admin-projects-site .button.subtle:hover{border-color:var(--a-mint2)!important;background:#f3fbf7!important}
+.admin-projects-site .button.gold{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important;border:0!important}
+.admin-projects-site .field>span{color:var(--a-ink)!important;font-weight:600}
+.admin-projects-site :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea,[data-slot=select-trigger],.searchbox){background:#fff!important;border:1px solid #d6e5df!important;color:var(--a-ink)!important;border-radius:14px!important}
+.admin-projects-site :is(input,textarea,select):focus{border-color:var(--a-mint2)!important;outline:3px solid #8ef0c440!important;outline-offset:0}
+.admin-projects-site .searchbox{border-radius:999px!important}
+.admin-projects-site .searchbox input{border:0!important}
+.admin-projects-site input[type=file]{padding:8px!important}
+.admin-projects-site .status.available{background:#d7f8e8!important;color:var(--a-em)!important}
+.admin-projects-site .status.held{background:#fde7d3!important;color:#9a3412!important}
+.admin-projects-site :focus-visible{outline:3px solid var(--a-mint2)!important}
+
+/* Dialogs & sheets opened from the admin */
+:root:has(.admin-projects-site) :is([role=dialog],[data-slot=sheet-content]){font-family:'Be Vietnam Pro',Arial,sans-serif}
+:root:has(.admin-projects-site) [role=dialog].editor-dialog,:root:has(.admin-projects-site) [role=dialog]{border-radius:28px}
+:root:has(.admin-projects-site) [role=dialog] :is(input:not([type=checkbox]):not([type=radio]),select,textarea,[data-slot=select-trigger]){border-radius:14px}
+:root:has(.admin-projects-site) [role=dialog] .button.dark{background:#03261d;border-radius:999px}
+
+/* Nội dung trang editor */
+.admin-copy{display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start}
+.admin-copy-nav{position:sticky;top:90px;display:grid;gap:6px;padding:16px!important}
+.admin-copy-nav button{display:grid;gap:2px;text-align:left;padding:12px 16px;border:0;border-radius:18px;background:transparent;font:600 14px 'Be Vietnam Pro',sans-serif;color:var(--a-ink);cursor:pointer}
+.admin-copy-nav button small{font-weight:500;font-size:11.5px;color:var(--a-muted)}
+.admin-copy-nav button:hover{background:var(--a-soft)}
+.admin-copy-nav button.is-on{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2));color:var(--a-deep)}
+.admin-copy-nav button.is-on small{color:var(--a-deep)}
+.admin-copy-search{display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;margin-bottom:8px;border-radius:999px;background:var(--a-soft);color:var(--a-muted)}
+.admin-copy-search input{flex:1;min-width:0;border:0!important;outline:0!important;background:transparent!important;padding:0!important}
+.admin-copy-body{display:grid;gap:18px}
+.admin-copy-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.admin-copy-head a{display:inline-flex;align-items:center;gap:6px;color:var(--a-em);font-weight:600;font-size:13px;text-decoration:none}
+.admin-copy-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-top:14px}
+.admin-copy-fields .field>span{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.admin-copy-reset{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--a-em);font-size:12px;font-weight:600;cursor:pointer}
+.admin-copy-fields textarea,.admin-copy-fields input{width:100%;padding:12px 14px!important}
+.admin-copy-actions{position:sticky;bottom:16px;display:flex;gap:10px;padding:12px;border-radius:999px;background:#ffffffe6;backdrop-filter:blur(10px);box-shadow:0 20px 40px -24px #02261d66;width:fit-content}
+@media(max-width:900px){.admin-copy{grid-template-columns:1fr}.admin-copy-nav{position:static}.admin-copy-fields{grid-template-columns:1fr}}
+.admin-projects-site.admin-projects-site .admin-overview .admin-welcome{background:linear-gradient(120deg,#02261d,#065a45 60%,#0b7a5c)!important;border:0!important}
+.admin-projects-site.admin-projects-site .admin-welcome :is(h2,p){color:#fff!important}
+.admin-projects-site.admin-projects-site .admin-welcome span{color:var(--a-mint)!important}
+.admin-projects-site.admin-projects-site .admin-welcome a{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important}
+.admin-projects-site .admin-welcome-mark{color:#8ef0c42e!important}

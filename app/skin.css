@@ -21,7 +21,7 @@
 [data-skin=emerald] .site-atmosphere-photo{transform:translate3d(0,var(--parallax,0px),0) scale(1.08);will-change:transform}
 [data-skin=emerald] .site-atmosphere-base{background:linear-gradient(180deg,#02261dcc 0%,#03352866 45%,#04473599 100%),radial-gradient(ellipse 70% 60% at 50% 0,#10b98133,transparent 70%)!important}
 [data-skin=emerald] .site-atmosphere.is-alphahub{inset:0;height:auto;position:fixed;border-radius:0;z-index:-1}
-[data-skin=emerald] body>.site,[data-skin=emerald] body>main,[data-skin=emerald] body>div:not(.site-atmosphere){position:relative;z-index:1}
+[data-skin=emerald] body>.site,[data-skin=emerald] body>main{position:relative;z-index:1}
 [data-skin=emerald] :is(.public-site,.public-site:is(.about-site,.project-directory-site,.news-site,.guide-site)){background:transparent;color:var(--ink)}
 
 /* ── Floating pill header (white on scroll) ── */

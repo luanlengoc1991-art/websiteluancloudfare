@@ -340,6 +340,12 @@ try {
     assert.equal((await fetch(origin + asset.url)).status, 200, 'Studio uploads are served from R2');
     assert.ok((await readState()).files.some(f => f.id === asset.key), 'Studio uploads appear in the admin library');
   }
+  {
+    // Nội dung trang: admin overrides public texts; unknown keys are refused.
+    assert.equal((await post('/api/action', {action: 'save', kind: 'copy', id: 'main', data: {'footer.title': 'Tiêu đề thử'}})).status, 200);
+    assert.equal((await readState('')).records.find(r => r.kind === 'copy' && r.id === 'main').data['footer.title'], 'Tiêu đề thử');
+    assert.equal((await post('/api/action', {action: 'save', kind: 'copy', id: 'main', data: {'khong.ton.tai': 'x'}})).status, 400);
+  }
   const mediaVerified = await verifyMediaAssistant({origin,adminCookie,memberCookie,post,readState,project:grantedProject});
 
   form.set('projectId', 'missing-project');

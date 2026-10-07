@@ -4,6 +4,7 @@ export const backgroundPages = [
   ['trang-chu', 'Trang chủ'],
   ['du-an', 'Dự án'],
   ['quy-hang', 'Quỹ căn'],
+  ['mat-bang-can', 'Mặt bằng căn'],
   ['tin-tuc', 'Tin tức'],
   ['gioi-thieu', 'Giới thiệu'],
   ['huong-dan', 'Hướng dẫn'],

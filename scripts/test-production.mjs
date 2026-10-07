@@ -353,16 +353,16 @@ try {
   assert.equal(publicState.records.some((r) => r.kind === 'customer'), false);
   assert.equal(publicState.files.some((f) => f.id === fileId), false);
 
-  for (const path of ['/alphahub', '/gioi-thieu', '/huong-dan', '/tin-tuc', '/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
+  for (const path of ['/', '/gioi-thieu', '/huong-dan', '/tin-tuc', '/du-an', '/quy-hang', '/du-an/masteri-grand-coast/quy-can-360', '/du-an/masteri-grand-coast/bang-hang', '/dang-nhap']) {
     const page = await fetch(origin + path);
     assert.equal(page.status, 200, path);
     assert.match(await page.text(), /Alpha/);
   }
-  const alphaHubPage = await fetch(origin + '/alphahub').then(response => response.text());
-  assert.match(alphaHubPage, /Nền tảng công nghệ hỗ trợ kinh doanh bất động sản/);
-  assert.match(alphaHubPage, /Câu hỏi thường gặp/);
-  assert.match(alphaHubPage, /AlphaHub \| Nền tảng công nghệ bất động sản/);
-  assert.equal(alphaHubPage.includes('Không tìm thấy trang'), false, 'AlphaHub must render its own route');
+  // AlphaHub was replaced by the home page, listed as 'Tổng quan' in the menu.
+  const oldAlphaHub = await fetch(origin + '/alphahub', {redirect: 'manual'});
+  assert.ok([307, 308].includes(oldAlphaHub.status), '/alphahub redirects');
+  assert.equal(new URL(oldAlphaHub.headers.get('location'), origin).pathname, '/');
+  assert.match(await fetch(origin + '/').then(r => r.text()), />Tổng quan</);
   for (const path of ['/admin', '/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an', '/admin/khach-hang', '/admin/bai-viet', '/admin/thanh-vien']) {
     const page = await fetch(origin + path, {headers: {Cookie: cookie}});
     assert.equal(page.status, 200, path);

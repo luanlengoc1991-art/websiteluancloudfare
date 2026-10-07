@@ -74,6 +74,10 @@
 - **Thay ảnh = xóa ảnh cũ (chủ dự án yêu cầu 06/10/2026, để nhẹ dung lượng).** (1) Lưu bản ghi project/article/unit/settings → `purgeUnusedFiles` xóa D1+R2 các file `/api/files/<id>` cũ không còn bản ghi nào dùng (bỏ qua ảnh tab dự án gallery/plan/panorama/model/amenity/document). (2) Thư viện "Thay ảnh" → `/api/upload` với `replaceId`: giữ nguyên id/URL (pin, liên kết không hỏng), đổi object R2 và xóa object cũ. (3) "Xóa ảnh" → `action:'deleteFile'`, từ chối nếu ảnh còn được bản ghi dùng. Chat/MCP đổi ảnh cũng xóa ảnh cũ. ImageField tải vào `site-library`/`image`, không lẫn vào thư viện dự án. `/api/files` trả ETag + `no-cache` để ảnh thay thế hiện ngay. Khi tự đưa ảnh lên bằng wrangler: thay ảnh cùng vị trí thì xóa file cũ (D1 + R2).
 - Favicon (`app/layout.tsx`) và logo trang `/tai-khoan` vẫn là file tĩnh.
 
+## Bỏ trang AlphaHub (08/10/2026)
+
+- Theo yêu cầu chủ dự án: mục menu AlphaHub được thay bằng "Tổng quan" trỏ về trang chủ `/` (cùng vị trí, đầu menu); `/alphahub` chuyển hướng vĩnh viễn về `/`; chân trang đổi link tương ứng. Các ghi chú cũ về giao diện `/alphahub` ở trên chỉ còn giá trị lịch sử (component AlphaHubLanding vẫn còn trong code nhưng không được dùng).
+
 ## Ảnh nhẹ tự động (08/10/2026)
 
 - Chủ dự án muốn web tối ưu, ảnh nhẹ nhất có thể. Mọi ảnh JPG/PNG/WEBP tải lên (admin, thay ảnh, chat/MCP) đi qua `compressImage` trong `lib/media-storage.ts`: chuyển WebP qua binding IMAGES, thu nhỏ theo loại — plan/panorama 6000 px (giữ chi tiết để zoom), background 2400 px q72, gallery/model/amenity/image 2000 px q75; ảnh < 60 KB hoặc kết quả không nhỏ hơn thì giữ nguyên; lỗi binding → giữ bản gốc. Tên file đổi đuôi .webp.

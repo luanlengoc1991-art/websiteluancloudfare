@@ -571,7 +571,7 @@ export function SpaciazFooter({brand, contact, logo, address}: {brand: string; c
     <div className="sz-footer-card">
       <div className="sz-footer-grid">
         <div className="sz-footer-brand"><Link href="/"><img src={logo} alt={brand}/></Link><p>Không gian kết nối dự án, quỹ căn và những cơ hội mới.</p></div>
-        <nav aria-label="Liên kết chân trang"><Link href="/gioi-thieu">Giới thiệu</Link><Link href="/du-an">Dự án</Link><Link href="/quy-hang">Quỹ căn</Link><Link href="/alphahub">AlphaHub</Link><Link href="/yeu-thich">Yêu thích</Link></nav>
+        <nav aria-label="Liên kết chân trang"><Link href="/gioi-thieu">Giới thiệu</Link><Link href="/du-an">Dự án</Link><Link href="/quy-hang">Quỹ căn</Link><Link href="/">Tổng quan</Link><Link href="/yeu-thich">Yêu thích</Link></nav>
         <nav aria-label="Hỗ trợ"><Link href="/tin-tuc">Tin tức</Link><Link href="/huong-dan">Hướng dẫn</Link><Link href="/lien-he">Liên hệ</Link><Link href="/dang-nhap">Đăng nhập</Link></nav>
         <div className="sz-footer-contact"><a href={`tel:${contact.phone}`}>{contact.phone}</a><a href={`mailto:${contact.email}`}>{contact.email}</a>{address && <p>{address}</p>}
           <div className="sz-socials"><a href={contact.zaloHref} target="_blank" rel="noreferrer">Zalo</a><i/><a href={contact.facebookHref} target="_blank" rel="noreferrer">Facebook</a></div></div>

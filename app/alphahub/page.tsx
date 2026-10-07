@@ -1,10 +1,4 @@
-import type {Metadata} from 'next';
-import Hub from '@/components/hub';
-import {alphaHubContent} from '@/lib/alphahub-content';
+import {permanentRedirect} from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'AlphaHub | Nền tảng công nghệ bất động sản',
-  description: alphaHubContent.introduction,
-};
-
-export default function AlphaHubPage() {return <Hub route={['alphahub']}/>;}
+/** AlphaHub was replaced by the home page ('Tổng quan') on 08/10/2026. */
+export default function AlphaHubPage() {permanentRedirect('/');}

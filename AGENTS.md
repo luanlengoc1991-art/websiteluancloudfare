@@ -87,8 +87,8 @@
 
 ## Tối ưu tải trang (08/10/2026, giữ nguyên bố cục + hiệu ứng)
 
-- `/api/img?w=&src=` (lib/img.ts `sized()`): ảnh hiển thị dạng WebP đúng cỡ, cache edge (file tải lên 1 giờ, nguồn tĩnh 30 ngày). Dùng trong `Img` (spaciaz, mặc định 900 px, ảnh lớn 1200–1920), `Picture` (hub), ảnh nền banner (1920). Slide chỉ giữ ảnh hiện tại/trước/sau. Mặt bằng/bản đồ (plan-board) tải bản 2400 px trước, chỉ tải bản gốc khi người dùng phóng to.
-- Phiếu Mặt bằng căn: ảnh nhỏ 1000 px, ảnh map 2400 px; font Montserrat dùng WOFF2 tự host (public/fonts, OFL) thay 4 file TTF.
+- `/api/img?w=&src=` (lib/img.ts `sized()`): ảnh hiển thị dạng WebP đúng cỡ, cache edge (file tải lên 1 giờ, nguồn tĩnh 30 ngày). Chất lượng WebP 84, tối đa 2560 px. Dùng trong `Img` (spaciaz, mặc định 1280 px, ảnh tràn màn hình 2560), `Picture` (hub), ảnh nền banner (1920). Slide chỉ giữ ảnh hiện tại/trước/sau. Mặt bằng/bản đồ (plan-board) tải bản 2560 px trước, chỉ tải bản gốc khi người dùng phóng to.
+- Phiếu Mặt bằng căn: ảnh nhỏ 1280 px, ảnh chính/map 2560 px; font Montserrat dùng WOFF2 tự host (public/fonts, OFL) thay 4 file TTF.
 - Không nạp news/projects/about/alphahub.css và AlphaHubLanding nữa; font Playfair/Mulish không preload. public/_headers: cache dài cho /fonts, /images.
 
 ## Bỏ trang AlphaHub (08/10/2026)
@@ -97,7 +97,7 @@
 
 ## Ảnh nhẹ tự động (08/10/2026)
 
-- Chủ dự án muốn web tối ưu, ảnh nhẹ nhất có thể. Mọi ảnh JPG/PNG/WEBP tải lên (admin, thay ảnh, chat/MCP) đi qua `compressImage` trong `lib/media-storage.ts`: chuyển WebP qua binding IMAGES, thu nhỏ theo loại — plan/panorama 6000 px (giữ chi tiết để zoom), background 2400 px q72, gallery/model/amenity/image 2000 px q75; ảnh < 60 KB hoặc kết quả không nhỏ hơn thì giữ nguyên; lỗi binding → giữ bản gốc. Tên file đổi đuôi .webp.
+- Chủ dự án muốn web tối ưu, ảnh nhẹ nhất có thể. Mọi ảnh JPG/PNG/WEBP tải lên (admin, thay ảnh, chat/MCP) đi qua `compressImage` trong `lib/media-storage.ts`: chuyển WebP qua binding IMAGES, thu nhỏ theo loại — plan/panorama 6000 px q82 (giữ chi tiết để zoom), background/gallery/model/amenity/image 2560 px q82 (khung màn hình 16:9 2560, chủ dự án yêu cầu giữ độ nét chuẩn 08/10); ảnh < 60 KB hoặc kết quả không nhỏ hơn thì giữ nguyên; lỗi binding → giữ bản gốc. Tên file đổi đuôi .webp.
 - Ảnh cũ trên R2 đã được nén lại tại chỗ (cùng object key, URL/pin không đổi): 10 MB → 4,9 MB. Khi tự đưa ảnh lên bằng wrangler cũng nén theo đúng quy tắc trên (sharp) trước khi put.
 - `/api/files`: ảnh cache public 5 phút + ETag; PDF vẫn private. Ảnh nguồn Vịnh Tiên qua `/api/vinh-tien` cache edge 7 ngày, ảnh phiếu dùng `?w=2000` WebP. Logo public/alpha-hub-logo.png 320 px (32 KB).
 

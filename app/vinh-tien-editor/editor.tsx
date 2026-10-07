@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 /** Proxied source images; large photos come back as resized WebP (w px wide) to keep the page light. */
-function sourceImage(src:string,w=2000){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')||src.startsWith('/api/files/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
+function sourceImage(src:string,w=2560){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')||src.startsWith('/api/files/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
 
 type ContentState = {
   unitTitle: string;
@@ -482,7 +482,7 @@ function DraggableImage({ slot, label, className = "", onMove, onUpload, onZoom,
     >
       <img
         ref={imageRef}
-        src={sourceImage(slot.src, className.includes("gallery-frame") ? 900 : preserveQuality ? 2000 : 1600)}
+        src={sourceImage(slot.src, className.includes("gallery-frame") ? 1280 : 2560)}
         alt=""
         draggable={false}
         decoding={preserveQuality ? "sync" : "async"}
@@ -1701,7 +1701,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectPerspective(item)}
                     >
-                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
+                      <img src={sourceImage(item.src,640)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1759,7 +1759,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectGalleryPerspective(item)}
                     >
-                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
+                      <img src={sourceImage(item.src,640)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1817,7 +1817,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectVillaPerspective(item)}
                     >
-                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
+                      <img src={sourceImage(item.src,640)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1875,7 +1875,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectAmenityPerspective(item)}
                     >
-                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
+                      <img src={sourceImage(item.src,640)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>

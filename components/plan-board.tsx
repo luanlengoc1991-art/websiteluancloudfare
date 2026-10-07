@@ -72,7 +72,7 @@ export default function PlanBoard({projectId,image,layer,chrome=layer,units,pins
   return <div className={'plan-board plan-'+chrome+(edit&&placing?' is-placing':'')}>
     <div className="plan-viewport" ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={upHandler} onPointerCancel={()=>{pan.current=null;drag.current=null;}}>
       <div className="plan-stage" style={{transform:`translate(${view.x}px,${view.y}px) scale(${view.s})`}}>
-        <img ref={img} src={sharp?image:sized(image,2400)} alt={layer==='map'?'Bản đồ dự án':'Mặt bằng dự án'} draggable={false} onLoad={()=>{if(!shown0.current){shown0.current=true;reset();}}}/>
+        <img ref={img} src={sharp?image:sized(image,2560)} alt={layer==='map'?'Bản đồ dự án':'Mặt bằng dự án'} draggable={false} onLoad={()=>{if(!shown0.current){shown0.current=true;reset();}}}/>
         {shown.map(p=>{const u=unitByCode.get(up(p.code));const active=sel===p.code||info===p.code;return (
           <button key={p.code} type="button" className={'plan-pin'+(active?' is-active':'')+(edit?' is-edit':'')} style={{left:`${p.x}%`,top:`${p.y}%`,transform:`translate(-50%,-100%) scale(${1/view.s})`,['--pin' as string]:colorOf(p)}}
             onPointerDown={e=>pinDown(p.code,e)} onClick={e=>{e.stopPropagation();if(!edit)setInfo(i=>i===p.code?null:p.code);}}

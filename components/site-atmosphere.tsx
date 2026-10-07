@@ -140,7 +140,7 @@ export default function SiteAtmosphere() {
   }, [pathname]);
 
   return <div className={`site-atmosphere${isAlphaHub ? ' is-alphahub' : ''}`} aria-hidden="true" style={usesSharedBackdrop ? {backgroundImage: layers.canvas} : undefined}>
-    {usesSharedBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={sized(imageSrc, 1920)} fetchPriority="high" alt="" decoding="async" onError={() => setFailedImage(selectedImage)} style={{opacity: layers.imageOpacity}}/>}
+    {usesSharedBackdrop && <img className="site-atmosphere-photo" key={imageSrc} src={sized(imageSrc, 2560)} fetchPriority="high" alt="" decoding="async" onError={() => setFailedImage(selectedImage)} style={{opacity: layers.imageOpacity}}/>}
     <div className="site-atmosphere-base" style={usesSharedBackdrop ? {backgroundImage: layers.overlay} : undefined}/>
   </div>;
 }

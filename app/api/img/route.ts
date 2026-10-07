@@ -7,7 +7,7 @@ type Ctx = {env: {IMAGES?: Images}; ctx: {waitUntil(p: Promise<unknown>): void}}
 /** Display-size WebP of a site image. Public images only; PDFs and unknown hosts are refused. */
 export async function GET(req: Request) {
   const url = new URL(req.url), src = url.searchParams.get('src') || '', w = Math.round(Number(url.searchParams.get('w')));
-  if (!canResize(src) || !(w >= 80 && w <= 2600)) return new Response('Bad request', {status: 400});
+  if (!canResize(src) || !(w >= 80 && w <= 2560)) return new Response('Bad request', {status: 400});
   const cache = (globalThis as unknown as {caches?: {default?: Cache}}).caches?.default;
   const key = new Request(url.toString(), {method: 'GET'});
   const hit = await cache?.match(key); if (hit) return hit;
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     }
     const cf = getCloudflareContext() as unknown as Ctx;
     if (!cf.env.IMAGES || !body) return fallback();
-    const out = await (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: w >= 1400 ? 62 : 70})).response().arrayBuffer();
+    const out = await (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: 84})).response().arrayBuffer();
     // Never serve something heavier than the original: already-light photos keep their own file.
     if (size && out.byteLength >= size * 0.9) {const res = Response.redirect(new URL(src, req.url).toString(), 302); const keep = new Response(null, {status: 302, headers: {Location: res.headers.get('Location')!, 'Cache-Control': 'public, max-age=86400'}}); if (cache) (getCloudflareContext() as unknown as Ctx).ctx.waitUntil(cache.put(key, keep.clone())); return keep;}
     // Uploaded files can be replaced under the same id, so they refresh hourly; static sources keep a month.

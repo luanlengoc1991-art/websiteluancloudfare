@@ -92,8 +92,8 @@ export async function replaceMedia(file: File, id: string, isAdmin: boolean) {
 /** Uploads are stored light: JPG/PNG/WEBP become WebP, scaled down per use (plans and 360° keep detail
  *  for zooming). Uses the Worker's Cloudflare Images binding; if it is missing or fails, the original is kept. */
 const compressRules: Record<string, {width: number; quality: number}> = {
-  plan: {width: 6000, quality: 78}, panorama: {width: 6000, quality: 80}, background: {width: 2400, quality: 72},
-  gallery: {width: 2000, quality: 75}, model: {width: 2000, quality: 75}, amenity: {width: 2000, quality: 75}, image: {width: 2000, quality: 75},
+  plan: {width: 6000, quality: 82}, panorama: {width: 6000, quality: 82}, background: {width: 2560, quality: 82},
+  gallery: {width: 2560, quality: 82}, model: {width: 2560, quality: 82}, amenity: {width: 2560, quality: 82}, image: {width: 2560, quality: 82},
 };
 type ImagesBinding = {input(stream: ReadableStream): {transform(o: object): {output(o: object): Promise<{response(): Response}>}}};
 export async function compressImage(bytes: Uint8Array, mime: string, kind: string): Promise<{bytes: Uint8Array; mime: string}> {

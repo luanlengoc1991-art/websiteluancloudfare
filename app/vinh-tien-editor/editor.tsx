@@ -932,7 +932,7 @@ export default function Home() {
         const response = await fetch("/api/vinh-tien/api/state", { cache: "no-store" });
         if (!response.ok) throw new Error("Không thể đọc bản lưu");
         const result = await response.json() as { state: SavedPortfolioState | SavedEditorState | null; canEdit?:boolean };
-        if(!cancelled)setCanEdit(result.canEdit===true);
+        if(!cancelled){const q=new URLSearchParams(window.location.search);setCanEdit(result.canEdit===true&&(q.get("embed")!=="1"||q.get("mode")==="edit"));}
         if (!cancelled && result.state) {
           if (isPortfolioState(result.state) && result.state.units.length) {
             restoredUnits = result.state.units;

@@ -705,8 +705,9 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
 /* ═══════════════════════════ Mặt bằng căn (standalone) ═══════════════════════════ */
 /** /mat-bang-can: the unit poster as a full page. Visitors see finished posters only, with a code strip,
  *  a sticky info card and related finished units; administrators get the full studio editor. */
-const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname : src;} catch {return src;}};
-export function SpaciazUnitPlan({projects, units, statusOf, contact}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; contact: PublicContact}) {
+const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname + '?w=640' : src;} catch {return src;}};
+export function SpaciazUnitPlan({projects, units, statusOf, contact, isAdmin = false}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; contact: PublicContact; isAdmin?: boolean}) {
+  const [editing, setEditing] = useState(false), [frameCode, setFrameCode] = useState('');
   const project = projects.find(p => p.id === 'green-paradise');
   const done = useMemo(() => units.filter(u => u.projectId === 'green-paradise' && u.drawing?.main?.src), [units]);
   const frame = useRef<HTMLIFrameElement>(null), top = useRef<HTMLDivElement>(null);
@@ -733,19 +734,20 @@ export function SpaciazUnitPlan({projects, units, statusOf, contact}: {projects:
   const strip = done.filter(u => u.code.toLowerCase().includes(q.trim().toLowerCase()));
   const related = unit ? [...done.filter(u => u.id !== unit.id && u.type === unit.type), ...done.filter(u => u.id !== unit.id && u.type !== unit.type)].slice(0, 8) : [];
   const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
-  const src = initial === null ? '' : '/vinh-tien-editor?embed=1&code=' + encodeURIComponent(initial || done[0]?.code || '');
+  const src = initial === null ? '' : '/vinh-tien-editor?embed=1' + (editing ? '&mode=edit' : '') + '&code=' + encodeURIComponent(frameCode || initial || done[0]?.code || '');
   return <div className="sz sz-up">
     <Banner title="Mặt bằng căn" crumb={project?.name} aside={`Bảng thông tin từng mã căn ${project?.name || ''}: vị trí trên tổng mặt bằng, phối cảnh, diện tích và giá bán.`}/>
     <Sheet>
       <div className="sz-up-wrap" ref={top}>
-        {admin !== true && <div className="sz-up-bar">
+        <div className="sz-up-bar">
           <div className="sz-up-bar-head"><Eyebrow>{project?.name || 'Mặt bằng căn'}</Eyebrow><strong>{done.length} mã căn</strong>
-            <label className="sz-up-search"><Search size={16}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…" aria-label="Tìm mã căn"/></label></div>
+            <label className="sz-up-search"><Search size={16}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…" aria-label="Tìm mã căn"/></label>
+            {isAdmin && <button type="button" className={'sz-up-admin' + (editing ? ' is-on' : '')} onClick={() => {setFrameCode(code); setEditing(!editing); setAdmin(null);}} title="Chỉ quản trị viên nhìn thấy nút này"><Pencil size={15}/>{editing ? 'Xem như khách' : 'Quản Trị Viên'}</button>}</div>
           <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>
-        </div>}
+        </div>
         <div className={'sz-up-main' + (admin ? ' is-admin' : '')}>
           <div className="sz-up-poster">{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
-            {src && <iframe ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</div>
+            {src && <iframe key={editing ? 'edit' : 'view'} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</div>
           {admin !== true && unit && <aside className="sz-up-info" key={unit.id}>
             <small><MapPin size={14}/>{unit.zone} · {project?.name}</small>
             <strong className="sz-up-code">{unit.code}</strong>

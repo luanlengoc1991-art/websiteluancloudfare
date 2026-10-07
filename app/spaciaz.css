@@ -1305,3 +1305,9 @@ button.sz-bento-photo{padding:0}
 @media(max-width:700px){.sz-up-wrap,.sz-up-related{width:calc(100% - 24px)}.sz-up-bar{top:84px;padding:14px;border-radius:22px}.sz-up-search{margin-left:0}.sz-up-grid{grid-template-columns:1fr}.sz-up-code{font-size:44px}.sz-up-poster{border-radius:20px}}
 .sz-site .desktop-nav a{white-space:nowrap}
 @media(max-width:1320px){.sz-site .desktop-nav a{padding:10px 8px!important;font-size:13.5px!important}.sz-site .header-actions .icon-button:nth-child(-n+3){display:none}}
+/* 08/10: the code strip stays in place; the info card follows the scroll. */
+.sz-up-bar{position:relative;top:auto}
+.sz-up-info{top:110px}
+.sz-up-admin{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-radius:999px;border:1px solid #fde68a;background:#fde68a;color:#422006;font:700 13.5px var(--font-sans,"Be Vietnam Pro",sans-serif);cursor:pointer;transition:transform .3s,background .3s}
+.sz-up-admin:hover{transform:translateY(-2px)}
+.sz-up-admin.is-on{background:#fff;border-color:#fff;color:var(--sz-deep)}

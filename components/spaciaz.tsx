@@ -324,6 +324,29 @@ function ProjectRing({projects, units, regions, favorites, onFavorite, onList}: 
   </section>;
 }
 
+/** /du-an featured projects: photos scattered left and right over a centred sticky title. */
+const scatterSpots = [
+  {col: '1 / 6', top: 0, h: 440}, {col: '8 / 13', top: 170, h: 360}, {col: '3 / 8', top: 30, h: 400},
+  {col: '9 / 13', top: 150, h: 430}, {col: '1 / 5', top: 20, h: 380}, {col: '6 / 11', top: 130, h: 420},
+];
+function ShowcaseScatter({projects, units}: {projects: Project[]; units: Unit[]}) {
+  if (!projects.length) return null;
+  return <section className="sz-scatter">
+    <div className="sz-scatter-title">
+      <Eyebrow>Dự án tiêu biểu</Eyebrow>
+      <h2 className="sz-h2">Thiết kế ấn tượng,<br/>giá trị bền vững</h2>
+      <p>{projects.length} dự án nổi bật đang mở bán trên Alpha Hub</p>
+    </div>
+    <div className="sz-wrap sz-scatter-grid">{projects.map((p, i) => {const spot = scatterSpots[i % scatterSpots.length];
+      return <Link key={p.id} href={projectPath(p.id)} className="sz-scatter-card" data-fx="zoom" style={{gridColumn: spot.col, marginTop: spot.top, height: spot.h}}>
+        <Img src={p.image} alt={p.name}/>
+        <span className="sz-status">{p.status}</span>
+        <span className="sz-scatter-text"><small><MapPin size={13}/>{p.location} · {units.filter(u => u.projectId === p.id).length} căn</small><strong>{p.name}</strong></span>
+        <span className="sz-notch-btn is-mint"><ArrowUpRight size={16}/></span>
+      </Link>;})}</div>
+  </section>;
+}
+
 const budgets: [string, string, number, number][] = [['lt10', 'Dưới 10 tỷ', 0, 10], ['10-20', '10 – 20 tỷ', 10, 20], ['20-50', '20 – 50 tỷ', 20, 50], ['gt50', 'Trên 50 tỷ', 50, Infinity]];
 const PER_PAGE = 9;
 const blank = {status: '', type: '', region: '', budget: '', query: ''};
@@ -362,7 +385,7 @@ export function SpaciazProjects({projects, units, favorites, onFavorite}: {proje
     <Sheet className="sz-home-sheet sz-ring-sheet">
       <ProjectRing projects={projects} units={units} regions={regions} favorites={favorites} onFavorite={onFavorite} onList={pick}/>
 
-      <Showcase projects={showcase} units={units}/>
+      <ShowcaseScatter projects={showcase} units={units}/>
 
       <section className="sz-wrap sz-listing sz-section" id="tat-ca-du-an" ref={top}>
         <div className="sz-news-head sz-listing-head"><div data-fx="left"><Eyebrow>Tất cả dự án</Eyebrow><h2 className="sz-h2">Danh sách dự án</h2></div></div>

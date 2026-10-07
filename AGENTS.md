@@ -11,6 +11,10 @@
 - Auth supports public email/password and Google members plus one allowlisted admin, with hashed opaque sessions in D1. The admin signs in on /dang-nhap with ALPHA_ADMIN_EMAIL and the scrypt hash in ALPHA_ADMIN_PASSWORD_HASH, or with the allowlisted Google identity; Google credentials are optional. Google OAuth talks to Google directly with PKCE and a state check; the id_token is validated for iss, aud, exp and email_verified. getCurrentUser is admin-only; getSignedInUser includes members. Never grant admin access from an id_token claim other than the allowlisted email, and never from email/password signup. Members stay view-only until the administrator sets members.can_edit; that flag allows project, unit, article, about, guide and library edits only and never opens customers, reservations, settings or the member list. GOOGLE_CLIENT_SECRET and the admin password hash are server-only. npm test runs the real Worker on a local Cloudflare runtime with disposable D1 and R2, not the production account.
 - GitHub source and the old chatgpt.site deployment are separate. Do not claim automatic synchronization with chatgpt.site.
 
+## QUY TẮC KHÓA CỨNG (08/10/2026)
+
+- Mọi chỉnh sửa đều phải commit + push lên GitHub `main` và deploy (Workers Builds) xong mới coi là hoàn thành. Máy local chỉ là nơi làm việc IDE; không để thay đổi nằm lại ở local. Khi đổi máy: clone/pull GitHub rồi sửa tiếp. Trả lời ngắn gọn, không hỏi lại thao tác thông thường.
+
 ## Quy trình đã được chủ dự án xác nhận
 
 - Kho mã nguồn: `luanlengoc1991-art/websiteluancloudfare`; nhánh phát hành: `main`. Remote `origin` là `https://github.com/luanlengoc1991-art/websiteluancloudfare.git`. Không đẩy sang `websiteluan`.

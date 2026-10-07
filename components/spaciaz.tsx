@@ -218,7 +218,7 @@ function Showcase({projects, units}: {projects: Project[]; units: Unit[]}) {
   </section>;
 }
 
-function Quotes({faq, image}: {faq: AboutContent['faq']; image?: string}) {
+export function Quotes({faq, image}: {faq: AboutContent['faq']; image?: string}) {
   const [index, setIndex] = useState(0);
   useEffect(() => {if (faq.length < 2) return; const t = setInterval(() => setIndex(i => (i + 1) % faq.length), 7000); return () => clearInterval(t);}, [faq.length]);
   if (!faq.length) return null;

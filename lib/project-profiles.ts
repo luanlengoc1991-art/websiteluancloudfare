@@ -1,6 +1,8 @@
 /** Rich "Tổng quan" content per project (public information, checked 10/2026). Projects without a profile
  *  keep the generic overview. Unit data (quỹ căn) is never taken from here. */
 export type ProjectProfile = {
+  /** home5 (default) or home = Spaciaz main demo layout. */
+  layout?: 'home5' | 'home';
   headline: string; intro: string;
   stats: {value: string; suffix?: string; label: string}[];
   zones: {code: string; name: string; local: string; area: string; body: string}[];
@@ -42,6 +44,40 @@ export const projectProfiles: Record<string, ProjectProfile> = {
     sources: [
       {label: 'Vinhomes Market', url: 'https://market.vinhomes.vn/du-an/vinhomes-green-paradise-can-gio'},
       {label: 'Wiki Batdongsan – 4 phân khu', url: 'https://wiki.batdongsan.com.vn/wiki/4-phan-khu-vinhomes-green-paradise-can-gio-848472'},
+    ],
+  },
+  'saigon-park': {
+    layout: 'home',
+    headline: 'Đại đô thị\ncửa ngõ Tây Bắc',
+    intro: 'Khu đô thị 1.080 ha tại Hóc Môn, TP. Hồ Chí Minh với sân golf nội khu, quần thể giáo dục 150 ha và công viên chủ đề, cho quy mô khoảng 135.000 cư dân.',
+    stats: [
+      {value: '1.080', suffix: 'ha', label: 'Quy mô dự án'},
+      {value: '36', suffix: 'hố', label: 'Sân golf Vinpearl Léman nội khu'},
+      {value: '150', suffix: 'ha', label: 'Quần thể giáo dục'},
+    ],
+    zones: [
+      {code: '01', name: 'Ivy Park', local: 'Khu chủ đề', area: '', body: 'Khu ở chủ đề quốc tế với nhà phố, biệt thự và căn hộ, gắn với trục cảnh quan xanh của dự án.'},
+      {code: '02', name: 'Global Park', local: 'Khu chủ đề', area: '', body: 'Khu đô thị năng động với thương mại, dịch vụ và không gian sống đa văn hóa.'},
+      {code: '03', name: 'Laguna Park', local: 'Khu chủ đề', area: '', body: 'Không gian sống quanh mặt nước, hồ cảnh quan và công viên ven hồ.'},
+      {code: '04', name: 'Zen Park', local: 'Khu chủ đề', area: '', body: 'Nhịp sống thư thái với công viên, vườn cảnh quan và tiện ích chăm sóc sức khỏe.'},
+      {code: '05', name: 'Golf Park', local: 'Khu chủ đề', area: '', body: 'Quần thể quanh sân golf Vinpearl Léman 36 hố khoảng 200 ha – đại đô thị Vinhomes có golf nội khu.'},
+    ],
+    focus: {eyebrow: 'Vì sao chọn Sài Gòn Park', title: 'Golf, giáo dục và công viên\nngay trong khu đô thị', body: 'Sân golf 36 hố, quần thể giáo dục 150 ha với hệ thống trường Vinschool, công viên nước VinWonders 22,7 ha và rừng bách thảo 27 ha phục vụ cư dân ngay trong dự án.'},
+    timeline: [
+      {title: 'Khởi công', body: 'Khởi công ngày 19/12/2025 theo Quyết định 80/QĐ-TTg của Thủ tướng Chính phủ.'},
+      {title: 'San lấp mặt bằng', body: 'Đến 3/2026 cơ bản hoàn tất san lấp hơn 900 ha tại các phân khu trọng điểm.'},
+      {title: 'Mở bán giai đoạn 1', body: 'Dự kiến từ khoảng tháng 6/2026, phân khu phía Nam 55 ha: hơn 2.000 căn hộ và 2.500 nhà phố, biệt thự.'},
+      {title: 'Hoàn thiện toàn khu', body: 'Mục tiêu hoàn thiện toàn bộ dự án trước năm 2035, quy mô dân số khoảng 135.000 người.'},
+    ],
+    amenities: [
+      {title: 'Sân golf Vinpearl Léman 36 hố', body: 'Khoảng 200 ha, điểm nhấn nghỉ dưỡng và thể thao ngay trong khu đô thị.'},
+      {title: 'Quần thể giáo dục 150 ha', body: 'Khoảng 36 trường học các cấp, gồm hệ thống Vinschool và trường công lập, tư thục.'},
+      {title: 'VinWonders 22,7 ha', body: 'Công viên nước chủ đề gia đình phục vụ cư dân và du khách.'},
+      {title: 'Botanical Park 27 ha', body: 'Công viên rừng bách thảo, lá phổi xanh của khu đô thị.'},
+    ],
+    sources: [
+      {label: 'Vinhomes Market', url: 'https://market.vinhomes.vn/du-an/vinhomes-sai-gon-park'},
+      {label: 'Adong Land', url: 'https://adongland.vn/vinhomes-saigon-park/'},
     ],
   },
 };

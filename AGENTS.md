@@ -92,7 +92,7 @@
 ## Tab dự án cuộn dài + Tổng quan home-10 (09/10/2026)
 
 - Các tab nội dung trong dự án (mọi tab trừ Quỹ căn 360° và Mặt bằng) có class `is-page`: trang cuộn dài tự nhiên, không còn khung giới hạn; thanh tab, nút trên cùng cố định (fixed) đi theo khi cuộn.
-- Tổng quan dự án có hồ sơ trong `lib/project-profiles.ts` (hiện: green-paradise, thông tin công khai từ Vinhomes Market / Wiki Batdongsan) hiển thị `components/project-overview.tsx` theo mẫu Spaciaz home-5 (09/10): hero tối + ảnh viên thuốc, dải tên chạy, khối giới thiệu + số lớn, 4 phân khu trên dải tối, lưới ảnh, ảnh call-out, 6 thẻ đánh số so le (thẻ cuối = quỹ căn thật), slider điểm nhấn, form. Danh sách "Quỹ căn dự án" bên phải hiện cả ở tab Tổng quan, cố định khi cuộn; nội dung chừa lề phải 372px (ẩn danh sách dưới 1100px). Dự án chưa có hồ sơ giữ tổng quan cũ.
+- Tổng quan dự án có hồ sơ trong `lib/project-profiles.ts` (hiện: green-paradise, thông tin công khai từ Vinhomes Market / Wiki Batdongsan) hiển thị `components/project-overview.tsx` theo mẫu Spaciaz home-5 (09/10): hero tối + ảnh viên thuốc, dải tên chạy, khối giới thiệu + số lớn, 4 phân khu trên dải tối, lưới ảnh, ảnh call-out, 6 thẻ đánh số so le (thẻ cuối = quỹ căn thật), slider điểm nhấn, form. Danh sách "Quỹ căn dự án" bên phải hiện cả ở tab Tổng quan, cố định khi cuộn; nội dung chừa lề phải 372px (ẩn danh sách dưới 1100px). Hồ sơ có `layout: 'home'` (hiện: saigon-park, nguồn Vinhomes Market/Adong Land) dùng `components/project-overview-home.tsx` theo trang chủ demo Spaciaz (hero ảnh + thẻ kính, khối giới thiệu, bento số liệu + quỹ căn thật, thẻ góc khuyết mở các tab, phân khu nền tối dính, khác biệt, vòng xoay tiến độ, dải tên, form). Dự án chưa có hồ sơ giữ tổng quan cũ.
 
 ## Admin sáng + Nội dung trang (08/10/2026)
 

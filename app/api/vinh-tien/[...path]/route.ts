@@ -16,7 +16,7 @@ async function image(req:Request,p:string){
  const w=Number(new URL(req.url).searchParams.get('w'));const cf=getCloudflareContext() as unknown as Ctx;
  let res:Response;
  if(w>=80&&w<=2400&&cf.env.IMAGES){
-  try{res=(await cf.env.IMAGES.input(r.body as unknown as ReadableStream).transform({width:Math.round(w)}).output({format:'image/webp',quality:80})).response();}
+  try{res=(await cf.env.IMAGES.input(r.body as unknown as ReadableStream).transform({width:Math.round(w),fit:'scale-down'}).output({format:'image/webp',quality:80})).response();}
   catch{return Response.redirect(new URL(new URL(req.url).pathname,req.url).toString(),302);}
  }else res=new Response(r.body,{headers:{'Content-Type':r.headers.get('content-type')||'application/octet-stream'}});
  res=new Response(res.body,{status:200,headers:{'Content-Type':res.headers.get('content-type')||'image/jpeg','Cache-Control':'public, max-age=604800, stale-while-revalidate=86400'}});

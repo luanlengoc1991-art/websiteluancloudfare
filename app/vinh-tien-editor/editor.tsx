@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-function sourceImage(src:string){if(src.startsWith('/api/vinh-tien/'))return src;if(src.startsWith('/'))return '/api/vinh-tien'+src;const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';return src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;}
+/** Proxied source images; large photos come back as resized WebP (w px wide) to keep the page light. */
+function sourceImage(src:string,w=2000){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
 
 type ContentState = {
   unitTitle: string;
@@ -1700,7 +1701,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectPerspective(item)}
                     >
-                      <img src={sourceImage(item.src)} alt="" draggable={false} />
+                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1758,7 +1759,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectGalleryPerspective(item)}
                     >
-                      <img src={sourceImage(item.src)} alt="" draggable={false} />
+                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1816,7 +1817,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectVillaPerspective(item)}
                     >
-                      <img src={sourceImage(item.src)} alt="" draggable={false} />
+                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>
@@ -1874,7 +1875,7 @@ export default function Home() {
                       aria-pressed={selected}
                       onClick={() => selectAmenityPerspective(item)}
                     >
-                      <img src={sourceImage(item.src)} alt="" draggable={false} />
+                      <img src={sourceImage(item.src,480)} alt="" draggable={false} loading="lazy" />
                       <span title={item.name}>{item.name}</span>
                       {selected && <b>ĐANG CHỌN</b>}
                     </button>

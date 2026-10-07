@@ -1,3 +1,4 @@
+import {getCloudflareContext} from '@opennextjs/cloudflare';
 import {bucket, database} from '@/db/store';
 import {seedProjects} from '@/lib/catalog';
 
@@ -33,15 +34,16 @@ export async function storeMedia(file: File, projectId: string, kind: string, is
   if (mime === 'application/pdf' && kind !== 'document') throw new MediaError('Chỉ loại Tài liệu nhận PDF.');
   if (file.type && file.type !== 'application/octet-stream' && file.type !== mime) throw new MediaError('Định dạng file không khớp nội dung.');
   const id = crypto.randomUUID(), key = `admin/${id}`;
-  const name = file.name.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) || 'image';
-  await bucket().put(key, bytes, {httpMetadata: {contentType: mime}});
+  const light = await compressImage(bytes, mime, kind);
+  const name = webpName(file.name.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) || 'image', light.mime);
+  await bucket().put(key, light.bytes, {httpMetadata: {contentType: light.mime}});
   try {
-    await database().prepare('INSERT INTO files(id,owner,project_id,kind,name,mime,object_key) VALUES(?,?,?,?,?,?,?)').bind(id, 'admin', projectId, kind, name, mime, key).run();
+    await database().prepare('INSERT INTO files(id,owner,project_id,kind,name,mime,object_key) VALUES(?,?,?,?,?,?,?)').bind(id, 'admin', projectId, kind, name, light.mime, key).run();
   } catch (error) {
     await bucket().delete(key);
     throw error;
   }
-  return {id, url: `/api/files/${id}`, name, mime, projectId, kind};
+  return {id, url: `/api/files/${id}`, name, mime: light.mime, projectId, kind};
 }
 
 export function mediaFailure(error: unknown) {
@@ -78,10 +80,32 @@ export async function replaceMedia(file: File, id: string, isAdmin: boolean) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const mime = detectedMime(bytes);
   if ((mime === 'application/pdf') !== (row.mime === 'application/pdf')) throw new MediaError(row.mime === 'application/pdf' ? 'Tài liệu chỉ thay bằng PDF.' : 'Ảnh chỉ thay bằng JPG, PNG hoặc WEBP.');
-  const key = `admin/${crypto.randomUUID()}`, name = file.name.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) || 'image';
-  await bucket().put(key, bytes, {httpMetadata: {contentType: mime}});
-  try { await db.prepare("UPDATE files SET object_key=?,mime=?,name=? WHERE owner='admin' AND id=?").bind(key, mime, name, id).run(); }
+  const light = await compressImage(bytes, mime, row.kind);
+  const key = `admin/${crypto.randomUUID()}`, name = webpName(file.name.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) || 'image', light.mime);
+  await bucket().put(key, light.bytes, {httpMetadata: {contentType: light.mime}});
+  try { await db.prepare("UPDATE files SET object_key=?,mime=?,name=? WHERE owner='admin' AND id=?").bind(key, light.mime, name, id).run(); }
   catch (error) { await bucket().delete(key); throw error; }
   await dropObject(row.object_key);
-  return {id, url: `/api/files/${id}`, name, mime, projectId: row.project_id, kind: row.kind};
+  return {id, url: `/api/files/${id}`, name, mime: light.mime, projectId: row.project_id, kind: row.kind};
 }
+
+/** Uploads are stored light: JPG/PNG/WEBP become WebP, scaled down per use (plans and 360° keep detail
+ *  for zooming). Uses the Worker's Cloudflare Images binding; if it is missing or fails, the original is kept. */
+const compressRules: Record<string, {width: number; quality: number}> = {
+  plan: {width: 6000, quality: 78}, panorama: {width: 6000, quality: 80}, background: {width: 2400, quality: 72},
+  gallery: {width: 2000, quality: 75}, model: {width: 2000, quality: 75}, amenity: {width: 2000, quality: 75}, image: {width: 2000, quality: 75},
+};
+type ImagesBinding = {input(stream: ReadableStream): {transform(o: object): {output(o: object): Promise<{response(): Response}>}}};
+export async function compressImage(bytes: Uint8Array, mime: string, kind: string): Promise<{bytes: Uint8Array; mime: string}> {
+  const rule = compressRules[kind];
+  if (!rule || mime === 'application/pdf' || bytes.length < 60 * 1024) return {bytes, mime};
+  try {
+    const images = (getCloudflareContext().env as unknown as {IMAGES?: ImagesBinding}).IMAGES;
+    if (!images) return {bytes, mime};
+    const out = await images.input(new Blob([bytes as BlobPart]).stream() as unknown as ReadableStream)
+      .transform({width: rule.width, height: rule.width, fit: 'scale-down'}).output({format: 'image/webp', quality: rule.quality});
+    const light = new Uint8Array(await out.response().arrayBuffer());
+    return light.length > 0 && light.length < bytes.length ? {bytes: light, mime: 'image/webp'} : {bytes, mime};
+  } catch { return {bytes, mime}; }
+}
+const webpName = (name: string, mime: string) => mime === 'image/webp' ? name.replace(/\.(jpe?g|png)$/i, '') .replace(/\.webp$/i, '') + '.webp' : name;

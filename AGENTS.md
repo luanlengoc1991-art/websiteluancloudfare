@@ -74,6 +74,12 @@
 - **Thay ảnh = xóa ảnh cũ (chủ dự án yêu cầu 06/10/2026, để nhẹ dung lượng).** (1) Lưu bản ghi project/article/unit/settings → `purgeUnusedFiles` xóa D1+R2 các file `/api/files/<id>` cũ không còn bản ghi nào dùng (bỏ qua ảnh tab dự án gallery/plan/panorama/model/amenity/document). (2) Thư viện "Thay ảnh" → `/api/upload` với `replaceId`: giữ nguyên id/URL (pin, liên kết không hỏng), đổi object R2 và xóa object cũ. (3) "Xóa ảnh" → `action:'deleteFile'`, từ chối nếu ảnh còn được bản ghi dùng. Chat/MCP đổi ảnh cũng xóa ảnh cũ. ImageField tải vào `site-library`/`image`, không lẫn vào thư viện dự án. `/api/files` trả ETag + `no-cache` để ảnh thay thế hiện ngay. Khi tự đưa ảnh lên bằng wrangler: thay ảnh cùng vị trí thì xóa file cũ (D1 + R2).
 - Favicon (`app/layout.tsx`) và logo trang `/tai-khoan` vẫn là file tĩnh.
 
+## Ảnh nhẹ tự động (08/10/2026)
+
+- Chủ dự án muốn web tối ưu, ảnh nhẹ nhất có thể. Mọi ảnh JPG/PNG/WEBP tải lên (admin, thay ảnh, chat/MCP) đi qua `compressImage` trong `lib/media-storage.ts`: chuyển WebP qua binding IMAGES, thu nhỏ theo loại — plan/panorama 6000 px (giữ chi tiết để zoom), background 2400 px q72, gallery/model/amenity/image 2000 px q75; ảnh < 60 KB hoặc kết quả không nhỏ hơn thì giữ nguyên; lỗi binding → giữ bản gốc. Tên file đổi đuôi .webp.
+- Ảnh cũ trên R2 đã được nén lại tại chỗ (cùng object key, URL/pin không đổi): 10 MB → 4,9 MB. Khi tự đưa ảnh lên bằng wrangler cũng nén theo đúng quy tắc trên (sharp) trước khi put.
+- `/api/files`: ảnh cache public 5 phút + ETag; PDF vẫn private. Ảnh nguồn Vịnh Tiên qua `/api/vinh-tien` cache edge 7 ngày, ảnh phiếu dùng `?w=2000` WebP. Logo public/alpha-hub-logo.png 320 px (32 KB).
+
 ## Ảnh, video và dung lượng repository
 
 - Repository chỉ giữ code và asset thật sự cần cho giao diện/build, như logo, icon, font và ảnh mẫu nhỏ. Ảnh/video dung lượng lớn, media gốc và file người dùng tải lên lưu ở object storage; không đưa vào GitHub hoặc checkout Codex nếu công việc không cần đến chúng.

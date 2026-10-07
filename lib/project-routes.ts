@@ -6,5 +6,7 @@ export function projectPath(id:string,tab?:string){
   if(id==='green-paradise'&&tab===undefined)return base;
   return `${base}/${projectTabs[tab||'vr']||projectTabs.vr}`;
 }
+/** "Mặt bằng căn" page of one unit (every project). */
+export const unitPlanPath=(u:{projectId:string;code:string})=>`/mat-bang-can?project=${encodeURIComponent(u.projectId)}&code=${encodeURIComponent(u.code)}`;
 export function resolveProject(projects:Project[],slug:string){return projects.find(p=>p.id===slug||projectSlugs[p.id]===slug);}
 export function resolveProjectTab(segment?:string,legacy?:string){return Object.keys(projectTabs).find(k=>projectTabs[k]===segment)||(legacy&&projectTabs[legacy]?legacy:'vr');}

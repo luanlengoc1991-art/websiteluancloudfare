@@ -5,7 +5,7 @@
 import {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import Link from './site-link';
 import {ArrowUpRight, Building2, Calendar, ChevronLeft, ChevronRight, Globe, Handshake, Heart, House, Layers, Mail, MapPin, MessageCircle, Pencil, Phone, Plus, Search, ShieldCheck, Sparkles, Star, TrendingUp, Users, Map as MapIcon} from 'lucide-react';
-import type {Article, Project, Unit} from '@/lib/catalog';
+import type {Article, Asset, Project, Unit} from '@/lib/catalog';
 import type {AboutContent} from '@/lib/site-content';
 import type {PublicContact} from '@/lib/public-contact';
 import {projectPath} from '@/lib/project-routes';
@@ -706,16 +706,39 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
 /** /mat-bang-can: the unit poster as a full page. Visitors see finished posters only, with a code strip,
  *  a sticky info card and related finished units; administrators get the full studio editor. */
 const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname + '?w=640' : src;} catch {return src;}};
-export function SpaciazUnitPlan({projects, units, statusOf, contact, isAdmin = false}: {projects: Project[]; units: Unit[]; statusOf: (u: Unit) => string; contact: PublicContact; isAdmin?: boolean}) {
+type PinLike = {projectId: string; code: string; layer?: string; x: number; y: number};
+const STUDIO = 'green-paradise';
+
+/** Plan (or aerial map) with the unit's pin, for projects without a poster studio. */
+function UnitSpot({project, unit, files, pins}: {project: Project; unit: Unit; files: Asset[]; pins: PinLike[]}) {
+  const up = (s: string) => s.trim().toUpperCase();
+  const plan = files.find(f => f.projectId === project.id && f.kind === 'plan');
+  const planPin = pins.find(p => p.projectId === project.id && up(p.code) === up(unit.code) && p.layer !== 'map');
+  const mapPin = pins.find(p => p.projectId === project.id && up(p.code) === up(unit.code) && p.layer === 'map');
+  const view = plan && planPin ? {src: plan.url, pin: planPin, label: 'Vị trí căn trên mặt bằng dự án'} : mapPin ? {src: project.image, pin: mapPin, label: 'Vị trí căn trên phối cảnh dự án'} : {src: plan?.url || project.image, pin: undefined, label: plan ? 'Mặt bằng dự án · vị trí căn đang được cập nhật' : 'Phối cảnh dự án · vị trí căn đang được cập nhật'};
+  const extra = [unit.posterUrl, unit.layoutUrl].filter(Boolean) as string[];
+  return <div className="sz-up-spot">
+    <div className="sz-up-spot-head"><span>{view.label}</span><Link href={projectPath(project.id, plan ? 'plan' : 'vr')}>Mở toàn màn hình <ArrowUpRight size={14}/></Link></div>
+    <div className="sz-up-spot-map"><img src={view.src} alt={view.label}/>{view.pin && <span className="sz-up-pin" style={{left: `${view.pin.x}%`, top: `${view.pin.y}%`}}><b>{unit.code}</b><i/></span>}</div>
+    {extra.map(src => <div key={src} className="sz-up-spot-map is-extra"><img src={src} alt={`Mặt bằng căn ${unit.code}`}/></div>)}
+  </div>;
+}
+
+/** /mat-bang-can?project=&code=: one page per unit for every project. Green Paradise shows the poster studio
+ *  (finished posters only for visitors, full editor for admins); other projects show the plan with the unit pin. */
+export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact, isAdmin = false}: {projects: Project[]; units: Unit[]; files: Asset[]; pins: PinLike[]; statusOf: (u: Unit) => string; contact: PublicContact; isAdmin?: boolean}) {
   const [editing, setEditing] = useState(false), [frameCode, setFrameCode] = useState('');
-  const project = projects.find(p => p.id === 'green-paradise');
-  const done = useMemo(() => units.filter(u => u.projectId === 'green-paradise' && u.drawing?.main?.src), [units]);
+  const [params, setParams] = useState<{project: string; code: string} | null>(null);
+  useEffect(() => {const q = new URLSearchParams(window.location.search); setParams({project: q.get('project') || '', code: (q.get('code') || '').toUpperCase()});}, []);
+  const withUnits = useMemo(() => projects.filter(p => units.some(u => u.projectId === p.id)), [projects, units]);
+  const projectId = params ? (withUnits.find(p => p.id === params.project)?.id || units.find(u => u.code.toUpperCase() === params.code)?.projectId || STUDIO) : STUDIO;
+  const project = projects.find(p => p.id === projectId);
+  const studio = projectId === STUDIO;
+  const done = useMemo(() => units.filter(u => u.projectId === projectId && (!studio || u.drawing?.main?.src)), [units, projectId, studio]);
   const frame = useRef<HTMLIFrameElement>(null), top = useRef<HTMLDivElement>(null);
   const [admin, setAdmin] = useState<boolean | null>(null), [height, setHeight] = useState(1600), [q, setQ] = useState('');
   const [code, setCode] = useState('');
-  const [initial, setInitial] = useState<string | null>(null);
-  useEffect(() => {setInitial(new URLSearchParams(window.location.search).get('code') || '');}, []);
-  useEffect(() => {if (!code && done.length && initial !== null) setCode(done.find(u => u.code === initial)?.code || done[0].code);}, [done, code, initial]);
+  useEffect(() => {if (params && done.length && !done.some(u => u.code === code)) setCode(done.find(u => u.code.toUpperCase() === params.code)?.code || done[0].code);}, [done, code, params]);
   useEffect(() => {
     const on = (e: MessageEvent) => {
       if (e.origin !== window.location.origin || e.source !== frame.current?.contentWindow) return;
@@ -725,30 +748,38 @@ export function SpaciazUnitPlan({projects, units, statusOf, contact, isAdmin = f
     };
     window.addEventListener('message', on); return () => window.removeEventListener('message', on);
   }, []);
-  useEffect(() => {if (code && initial !== null) window.history.replaceState(null, '', '/mat-bang-can?code=' + encodeURIComponent(code));}, [code]);
+  useEffect(() => {if (code && params) window.history.replaceState(null, '', `/mat-bang-can?project=${encodeURIComponent(projectId)}&code=${encodeURIComponent(code)}`);}, [code, projectId, params]);
   const pick = (c: string, scroll = false) => {
-    setCode(c); frame.current?.contentWindow?.postMessage({type: 'vinh-tien-select', code: c}, window.location.origin);
+    setCode(c); if (studio) frame.current?.contentWindow?.postMessage({type: 'vinh-tien-select', code: c}, window.location.origin);
     if (scroll) top.current?.scrollIntoView({behavior: 'smooth', block: 'start'});
   };
+  const switchProject = (id: string) => {setParams({project: id, code: ''}); setCode(''); setEditing(false); setAdmin(null); setQ('');};
   const unit = done.find(u => u.code === code) || done[0];
   const strip = done.filter(u => u.code.toLowerCase().includes(q.trim().toLowerCase()));
   const related = unit ? [...done.filter(u => u.id !== unit.id && u.type === unit.type), ...done.filter(u => u.id !== unit.id && u.type !== unit.type)].slice(0, 8) : [];
   const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
-  const src = initial === null ? '' : '/vinh-tien-editor?embed=1' + (editing ? '&mode=edit' : '') + '&code=' + encodeURIComponent(frameCode || initial || done[0]?.code || '');
+  const src = !params || !studio ? '' : '/vinh-tien-editor?embed=1' + (editing ? '&mode=edit' : '') + '&code=' + encodeURIComponent(frameCode || params.code || done[0]?.code || '');
+  const adminView = studio && admin === true;
+  const cover = (u: Unit) => studio ? viaProxy(u.drawing?.gallery[0] || u.drawing?.main.src || u.posterUrl) : (u.posterUrl || project?.image || '');
   return <div className="sz sz-up">
-    <Banner title="Mặt bằng căn" crumb={project?.name} aside={`Bảng thông tin từng mã căn ${project?.name || ''}: vị trí trên tổng mặt bằng, phối cảnh, diện tích và giá bán.`}/>
+    <Banner title="Mặt bằng căn" crumb={project?.name} aside={`Bảng thông tin từng mã căn ${project?.name || ''}: vị trí trên mặt bằng, diện tích, loại hình và giá bán.`}/>
     <Sheet>
       <div className="sz-up-wrap" ref={top}>
         <div className="sz-up-bar">
-          <div className="sz-up-bar-head"><Eyebrow>{project?.name || 'Mặt bằng căn'}</Eyebrow><strong>{done.length} mã căn</strong>
+          <div className="sz-up-bar-head">
+            <label className="sz-up-project"><Building2 size={16}/><select value={projectId} onChange={e => switchProject(e.target.value)} aria-label="Chọn dự án">{withUnits.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <strong>{done.length} mã căn</strong>
             <label className="sz-up-search"><Search size={16}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…" aria-label="Tìm mã căn"/></label>
-            {isAdmin && <button type="button" className={'sz-up-admin' + (editing ? ' is-on' : '')} onClick={() => {setFrameCode(code); setEditing(!editing); setAdmin(null);}} title="Chỉ quản trị viên nhìn thấy nút này"><Pencil size={15}/>{editing ? 'Xem như khách' : 'Quản Trị Viên'}</button>}</div>
+            {isAdmin && studio && <button type="button" className={'sz-up-admin' + (editing ? ' is-on' : '')} onClick={() => {setFrameCode(code); setEditing(!editing); setAdmin(null);}} title="Chỉ quản trị viên nhìn thấy nút này"><Pencil size={15}/>{editing ? 'Xem như khách' : 'Quản Trị Viên'}</button>}</div>
           <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>
         </div>
-        <div className={'sz-up-main' + (admin ? ' is-admin' : '')}>
-          <div className="sz-up-poster">{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
-            {src && <iframe key={editing ? 'edit' : 'view'} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</div>
-          {admin !== true && unit && <aside className="sz-up-info" key={unit.id}>
+        <div className={'sz-up-main' + (adminView ? ' is-admin' : '')}>
+          <div className="sz-up-poster">
+            {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
+              {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>
+              : project && unit ? <UnitSpot key={unit.id} project={project} unit={unit} files={files} pins={pins}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
+          </div>
+          {!adminView && unit && <aside className="sz-up-info" key={unit.id}>
             <small><MapPin size={14}/>{unit.zone} · {project?.name}</small>
             <strong className="sz-up-code">{unit.code}</strong>
             <div className="sz-up-price"><span>Giá bán<br/><em>Chưa gồm VAT + KPBT</em></span><b>{unit.price ? <>{fmt(unit.price)} <sub>tỷ</sub></> : 'Liên hệ'}</b></div>
@@ -756,20 +787,20 @@ export function SpaciazUnitPlan({projects, units, statusOf, contact, isAdmin = f
               <div><dt>Diện tích đất</dt><dd>{unit.area ? fmt(unit.area) + ' m²' : '—'}</dd></div>
               <div><dt>Diện tích xây dựng</dt><dd>{unit.builtArea ? fmt(unit.builtArea) + ' m²' : '—'}</dd></div>
               <div><dt>Loại hình</dt><dd>{unit.type || '—'}</dd></div>
-              <div><dt>Tiêu chuẩn BG</dt><dd>{unit.group || '—'}</dd></div>
+              <div><dt>{studio ? 'Tiêu chuẩn BG' : 'Tòa / Tầng'}</dt><dd>{studio ? unit.group || '—' : `${unit.tower || 'Tòa chính'} / ${unit.floor}`}</dd></div>
               <div><dt>Hướng</dt><dd>{unit.direction || '—'}</dd></div>
               <div><dt>Trạng thái</dt><dd className={statusOf(unit) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(unit)}</dd></div>
             </dl>
-            <ArrowButton href={`${projectPath('green-paradise', 'vr')}?product=${encodeURIComponent(unit.code)}`}>Xem trên quỹ căn 360°</ArrowButton>
+            <ArrowButton href={projectPath(projectId, 'vr')}>Xem trên quỹ căn 360°</ArrowButton>
             <div className="sz-up-actions"><Link href="/lien-he" className="sz-up-ghost">Nhận tư vấn</Link><a href={`tel:${contact.phone}`} className="sz-up-ghost"><Phone size={15}/>{contact.phone}</a></div>
-            <p className="sz-up-hint">Tải ảnh phiếu căn ở cuối bảng thông tin bên trái.</p>
+            {studio && <p className="sz-up-hint">Tải ảnh phiếu căn ở cuối bảng thông tin bên trái.</p>}
           </aside>}
         </div>
       </div>
       {related.length > 0 && <section className="sz-up-related">
-        <div className="sz-news-head"><div><Eyebrow>Cùng dự án</Eyebrow><h2 className="sz-h2">Các căn liên quan</h2></div><p>{done.length} mã căn đã có bảng thông tin hoàn chỉnh</p></div>
+        <div className="sz-news-head"><div><Eyebrow>Cùng dự án</Eyebrow><h2 className="sz-h2">Các căn liên quan</h2></div><p>{done.length} mã căn {studio ? 'đã có bảng thông tin hoàn chỉnh' : 'trong ' + (project?.name || 'dự án')}</p></div>
         <div className="sz-up-grid">{related.map(u => <button key={u.id} type="button" className="sz-up-card" onClick={() => pick(u.code, true)}>
-          <span className="sz-up-card-img"><Img src={viaProxy(u.drawing?.gallery[0] || u.drawing?.main.src || u.posterUrl)} alt=""/><em className={statusOf(u) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(u)}</em></span>
+          <span className="sz-up-card-img"><Img src={cover(u)} alt=""/><em className={statusOf(u) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(u)}</em></span>
           <span className="sz-up-card-body"><small>{u.type || 'Sản phẩm'} · {u.zone}</small><b>{u.code}</b>
             <span className="sz-up-card-specs"><span>{u.area ? fmt(u.area) + ' m²' : '—'}</span><span>{u.builtArea ? fmt(u.builtArea) + ' m² XD' : ''}</span></span>
             <span className="sz-up-card-price"><span>{u.price ? <>{fmt(u.price)} <sub>tỷ</sub></> : 'Liên hệ'}</span><i><ArrowUpRight size={16}/></i></span></span>

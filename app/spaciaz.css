@@ -1311,3 +1311,15 @@ button.sz-bento-photo{padding:0}
 .sz-up-admin{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-radius:999px;border:1px solid #fde68a;background:#fde68a;color:#422006;font:700 13.5px var(--font-sans,"Be Vietnam Pro",sans-serif);cursor:pointer;transition:transform .3s,background .3s}
 .sz-up-admin:hover{transform:translateY(-2px)}
 .sz-up-admin.is-on{background:#fff;border-color:#fff;color:var(--sz-deep)}
+.sz-up-project{display:flex;align-items:center;gap:8px;height:46px;padding:0 6px 0 16px;border-radius:999px;background:#ffffff14;border:1px solid #8ef0c470;color:var(--sz-mint)}
+.sz-up-project select{border:0;outline:0;background:transparent;color:#fff;font:700 14px var(--font-sans,"Be Vietnam Pro",sans-serif);max-width:280px;cursor:pointer}
+.sz-up-project option{color:var(--sz-ink)}
+.sz-up-spot{display:grid;gap:18px;padding:22px}
+.sz-up-spot-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700;color:var(--sz-ink)}
+.sz-up-spot-head a{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--sz-em-2);text-decoration:none}
+.sz-up-spot-map{position:relative;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 20px 40px -30px #02261d66}
+.sz-up-spot-map img{display:block;width:100%;height:auto}
+.sz-up-pin{position:absolute;transform:translate(-50%,-100%);display:grid;justify-items:center;gap:4px;z-index:2}
+.sz-up-pin b{padding:6px 12px;border-radius:999px;background:#d4241d;color:#fff;font-size:14px;font-weight:800;white-space:nowrap;box-shadow:0 8px 18px -6px #000a}
+.sz-up-pin i{width:18px;height:18px;border-radius:50%;background:#d4241d;border:3px solid #fff;box-shadow:0 0 0 0 #d4241d99;animation:sz-pin 1.8s infinite}
+@keyframes sz-pin{70%{box-shadow:0 0 0 18px #d4241d00}100%{box-shadow:0 0 0 0 #d4241d00}}

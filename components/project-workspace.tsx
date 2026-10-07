@@ -1,7 +1,7 @@
 'use client';
 import {useState,useMemo,useRef,useEffect} from 'react';
 import Link from './site-link';
-import {projectPath,resolveProjectTab} from '@/lib/project-routes';
+import {projectPath,resolveProjectTab,unitPlanPath} from '@/lib/project-routes';
 import {Search,Menu,X,ChevronUp,ChevronDown,SlidersHorizontal,LayoutGrid,List,Info,Globe,MapPin,House,Waves,FileText,Images,Building2,Layers,Download,Heart,GitCompareArrows,Maximize,Minimize,Plus,Minus,RotateCcw,ArrowUpRight,Compass,Upload,Map,Check,ChevronLeft,ChevronRight} from 'lucide-react';
 import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
 import {Sheet,SheetContent,SheetHeader,SheetTitle,SheetDescription} from '@/components/ui/sheet';
@@ -33,7 +33,7 @@ const visibleCodes=useMemo(()=>new Set(filtered.map(u=>u.code.toUpperCase())),[f
 const title=navigation.find(n=>n[0]===tab)?.[1]||'Dự án';const reset=()=>{setSearch('');setZone('all');setType('all');setDirection('all');setStatus('all');setFloor('all');setTower('all');setPrice([0,150]);setArea([0,1000]);setSavedOnly(false);};
 const activeFilters=[zone,type,direction,status,floor,tower].filter(v=>v!=='all').length+(price[0]>0||price[1]<150?1:0)+(area[0]>0||area[1]<1000?1:0)+(savedOnly?1:0);
 const changeTab=(v:string,showMatrix=false)=>{window.location.assign(projectPath(project.id,v)+(showMatrix?'?view=floors':''));};
-const openUnit=(u:Unit)=>{if(isGreen)window.location.assign(`${projectPath(project.id,'vr')}?product=${encodeURIComponent(u.code)}`);else onSelect(u);};
+const openUnit=(u:Unit)=>window.location.assign(unitPlanPath(u));
 
 const pictureFiles=tab==='gallery'?[{id:'cover',projectId:project.id,kind:'gallery',name:'Phối cảnh tổng thể',url:project.image},...assets.filter(a=>a.kind==='gallery')]:assets.filter(a=>a.kind===tab);
 async function toggleFull(){try{if(document.fullscreenElement){await document.exitFullscreen();setFullscreen(false);}else{await document.documentElement.requestFullscreen();setFullscreen(true);}}catch{toast.error('Thiết bị chưa hỗ trợ chế độ toàn màn hình.');}}

@@ -25,7 +25,7 @@ const benefits = alphaHubContent.topics.filter(t => t.group === 'benefits');
 
 /** Slides keep only the current, previous and next photo in the page. */
 const near = (i: number, active: number, n: number) => {const d = ((i - active) % n + n) % n; return d === 0 || d === 1 || d === n - 1;};
-function Img({src, alt = '', className, w = 1280, eager = false}: {src?: string; alt?: string; className?: string; w?: number; eager?: boolean}) {
+export function Img({src, alt = '', className, w = 1280, eager = false}: {src?: string; alt?: string; className?: string; w?: number; eager?: boolean}) {
   const [broken, setBroken] = useState(false);
   return src && !broken ? <img className={className} src={sized(src, w)} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" onError={() => setBroken(true)}/> : <span className={'sz-img-fallback ' + (className || '')}><Building2 size={32}/></span>;
 }
@@ -55,7 +55,7 @@ export function Sheet({children, className = ''}: {children: ReactNode; classNam
   return <div className={'sz-sheet ' + className}>{children}</div>;
 }
 
-function LeadForm({projects, note, compact = false}: {projects: Project[]; note: string; compact?: boolean}) {
+export function LeadForm({projects, note, compact = false}: {projects: Project[]; note: string; compact?: boolean}) {
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [ok, setOk] = useState(false);
   return <form className={'sz-form' + (compact ? ' is-compact' : '')} onSubmit={async event => {
     event.preventDefault(); const form = event.currentTarget; const data = Object.fromEntries(new FormData(form)) as Record<string, string>;

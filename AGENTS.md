@@ -89,6 +89,11 @@
 - Ảnh quản trị tải lên trong trình chỉnh sửa (`POST /api/vinh-tien/api/assets`) → `storeMedia` (R2 site-library, tự nén WebP, hiện trong Thư viện). Lưu bản chỉnh sửa xong, ảnh tải lên cũ không còn dùng tự bị xóa (`purgeUnusedFiles`). `mapGreenParadise` nhận cả URL `/api/files/<id>`.
 - Record `vinh-tien` không được trả trong /api/state của admin (nặng ~120 KB). npm test kiểm tra lưu D1, upload R2, chặn khách ghi.
 
+## Tab dự án cuộn dài + Tổng quan home-10 (09/10/2026)
+
+- Các tab nội dung trong dự án (mọi tab trừ Quỹ căn 360° và Mặt bằng) có class `is-page`: trang cuộn dài tự nhiên, không còn khung giới hạn; thanh tab, nút trên cùng cố định (fixed) đi theo khi cuộn.
+- Tổng quan dự án có hồ sơ trong `lib/project-profiles.ts` (hiện: green-paradise, thông tin công khai từ Vinhomes Market / Wiki Batdongsan) hiển thị `components/project-overview.tsx` theo mẫu Spaciaz home-10: hero ảnh + số liệu, accordion 4 phân khu, ảnh + thẻ, 5 bước đánh số so le, lưới ảnh, tiện ích, khối quỹ căn (số liệu lấy từ bảng hàng thật, không sửa), form tư vấn. Dự án chưa có hồ sơ giữ tổng quan cũ.
+
 ## Admin sáng + Nội dung trang (08/10/2026)
 
 - Giao diện admin theo màu trang ngoài: `app/admin-light.css` (nạp sau cùng) — nền trắng/mint/xanh trời, sidebar lục bảo đậm, thẻ trắng bo 24px, nút pill mint/đậm, font Be Vietnam Pro.

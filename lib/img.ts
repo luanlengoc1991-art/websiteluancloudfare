@@ -3,5 +3,5 @@ const RESIZABLE = /^(\/api\/files\/[\w-]{8,64}|\/images\/[\w./-]+\.(?:webp|png|j
 export const canResize = (src?: string) => !!src && RESIZABLE.test(src);
 export function sized(src: string | undefined, w: number) {
   if (!src || !canResize(src)) return src || '';
-  return `/api/img?w=${Math.round(w)}&src=${encodeURIComponent(src)}`;
+  return `/api/img?v=2&w=${Math.round(w)}&src=${encodeURIComponent(src)}`;
 }

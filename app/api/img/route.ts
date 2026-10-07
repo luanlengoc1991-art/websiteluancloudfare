@@ -13,23 +13,25 @@ export async function GET(req: Request) {
   const hit = await cache?.match(key); if (hit) return hit;
   const fallback = () => Response.redirect(new URL(src, req.url).toString(), 302);
   try {
-    let body: ReadableStream | null = null;
+    let body: ReadableStream | null = null, size = 0;
     if (src.startsWith('/api/files/')) {
       const row = await database().prepare("SELECT mime,object_key FROM files WHERE owner='admin' AND id=?").bind(src.slice(11)).first<{mime: string; object_key: string}>();
       if (!row || !row.mime.startsWith('image/')) return new Response('Not found', {status: 404});
       const object = await bucket().get(row.object_key); if (!object) return new Response('Not found', {status: 404});
-      body = object.body as unknown as ReadableStream;
+      body = object.body as unknown as ReadableStream; size = object.size;
     } else {
       const r = await fetch(new URL(src, req.url).toString(), {signal: AbortSignal.timeout(20000)});
       if (!r.ok || !r.body) return fallback();
-      body = r.body as unknown as ReadableStream;
+      body = r.body as unknown as ReadableStream; size = Number(r.headers.get('content-length') || 0);
     }
     const cf = getCloudflareContext() as unknown as Ctx;
     if (!cf.env.IMAGES || !body) return fallback();
-    const out = (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: 72})).response();
+    const out = await (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: 70})).response().arrayBuffer();
+    // Never serve something heavier than the original: already-light photos keep their own file.
+    if (size && out.byteLength >= size * 0.9) {const res = Response.redirect(new URL(src, req.url).toString(), 302); const keep = new Response(null, {status: 302, headers: {Location: res.headers.get('Location')!, 'Cache-Control': 'public, max-age=86400'}}); if (cache) (getCloudflareContext() as unknown as Ctx).ctx.waitUntil(cache.put(key, keep.clone())); return keep;}
     // Uploaded files can be replaced under the same id, so they refresh hourly; static sources keep a month.
     const maxAge = src.startsWith('/api/files/') ? 3600 : 2592000;
-    const res = new Response(out.body, {headers: {'Content-Type': 'image/webp', 'Cache-Control': `public, max-age=${maxAge}, stale-while-revalidate=86400`}});
+    const res = new Response(out, {headers: {'Content-Type': 'image/webp', 'Cache-Control': `public, max-age=${maxAge}, stale-while-revalidate=86400`}});
     if (cache) cf.ctx.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch { return fallback(); }

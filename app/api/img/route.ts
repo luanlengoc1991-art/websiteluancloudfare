@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     }
     const cf = getCloudflareContext() as unknown as Ctx;
     if (!cf.env.IMAGES || !body) return fallback();
-    const out = await (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: 70})).response().arrayBuffer();
+    const out = await (await cf.env.IMAGES.input(body).transform({width: w, fit: 'scale-down'}).output({format: 'image/webp', quality: w >= 1400 ? 62 : 70})).response().arrayBuffer();
     // Never serve something heavier than the original: already-light photos keep their own file.
     if (size && out.byteLength >= size * 0.9) {const res = Response.redirect(new URL(src, req.url).toString(), 302); const keep = new Response(null, {status: 302, headers: {Location: res.headers.get('Location')!, 'Cache-Control': 'public, max-age=86400'}}); if (cache) (getCloudflareContext() as unknown as Ctx).ctx.waitUntil(cache.put(key, keep.clone())); return keep;}
     // Uploaded files can be replaced under the same id, so they refresh hourly; static sources keep a month.

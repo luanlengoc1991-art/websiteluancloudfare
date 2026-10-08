@@ -13,6 +13,32 @@ const lines = (t: string) => t.split('\n').map((l, i, a) => <span key={i}>{l}{i 
 const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
 const amenityIcons = [Trophy, Sparkles, Trees, GraduationCap, ShoppingBag, HeartPulse];
 
+/** Count-up number owned by React (site-effects' .fx-count edits the DOM text and breaks hydration). */
+function Count({value}: {value: string}) {
+  const ref = useRef<HTMLElement>(null);
+  const [shown, setShown] = useState(value);
+  useEffect(() => {
+    const target = Number(value.replace(/\./g, ''));
+    const el = ref.current;
+    if (!el || !/^\d[\d.]*$/.test(value) || target < 2) {setShown(value); return;}
+    let raf = 0;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      const start = performance.now(), dur = Math.min(2000, 900 + target * 2);
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / dur);
+        setShown(t < 1 ? Math.round(target * (1 - Math.pow(1 - t, 3))).toLocaleString('vi-VN') : value);
+        if (t < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    }, {threshold: .3});
+    io.observe(el);
+    return () => {io.disconnect(); cancelAnimationFrame(raf);};
+  }, [value]);
+  return <b ref={ref}>{shown}</b>;
+}
+
 export default function ProjectOverviewHome3({project, profile, units, assets, statusOf, contact, onTab}: {project: Project; profile: ProjectProfile; units: Unit[]; assets: Asset[]; statusOf: (u: Unit) => string; contact: PublicContact; onTab: (tab: string) => void}) {
   const photos = [project.image, ...assets.filter(a => ['gallery', 'amenity', 'model'].includes(a.kind)).map(a => a.url)].filter(Boolean);
   const photo = (i: number) => photos[i % photos.length];
@@ -114,7 +140,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       </div>
       {profile.priceFrom && <div className="ph3-hero-float"><small>Giá dự kiến từ</small><b>{profile.priceFrom.value} <em>tỷ</em></b><span>{profile.priceFrom.label.replace(/^tỷ · /, '')}</span></div>}
       <div className="ph3-hero-foot">
-        <div className="ph3-badge" key={'b' + slide}><b className="fx-count">{cur.stat?.value || head.value}</b><span>{cur.stat?.suffix ?? head.suffix}<br/>{(cur.stat?.label || head.label).toLowerCase()}</span></div>
+        <div className="ph3-badge" key={'b' + slide}><Count value={cur.stat?.value || head.value}/><span>{cur.stat?.suffix ?? head.suffix}<br/>{(cur.stat?.label || head.label).toLowerCase()}</span></div>
         <div className="ph3-hero-nav"><span key={'t' + slide}><b>{String(slide + 1).padStart(2, '0')}</b> / {String(slides.length).padStart(2, '0')} · {slides[slide].title}</span>
           <div>{slides.map((s, i) => <button type="button" key={s.image} aria-label={s.title} className={i === slide ? 'is-on' : ''} onClick={() => go(i)}><i/></button>)}</div></div>
       </div>
@@ -138,7 +164,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     {pills.length > 0 && <div className="ph3-pills" aria-hidden><div>{[0, 1].map(k => <span key={k}>{pills.map((p, i) => <span key={p + k}>{i % 2 === 0 && <em><Img w={320} src={pg(i)} alt=""/></em>}<b>{p}</b></span>)}</span>)}</div></div>}
 
     {profile.stats.length > 0 && <section id="khac-biet" className="ph3-stats">{profile.stats.map((s, i) => <div key={s.label} data-fx="up" style={{marginTop: [120, 0, 160, 60][i % 4]}}>
-      <dt><b className="fx-count">{s.value}</b><sup>{s.suffix}</sup></dt><dd>{s.label}</dd></div>)}</section>}
+      <dt><Count value={s.value}/><sup>{s.suffix}</sup></dt><dd>{s.label}</dd></div>)}</section>}
 
     {features.length > 0 && <section className="ph3-diff">
       <div className="ph3-diff-left"><div className="ph3-diff-photo"><Img w={900} src={pg(0)} alt=""/></div>
@@ -223,7 +249,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
 
     {(profile.timeline.length > 0 || profile.legal) && <section id="tien-do" className="ph3-time3">
       <div className="ph3-time3-head"><div><Eyebrow>Pháp lý & tiến độ</Eyebrow><h3 data-fx="title">Các mốc phát triển</h3></div>
-        <div className="ph3-time3-stat"><b className="fx-count">{free.length || units.length}</b><span>căn còn hàng<br/><small>{project.developer}</small></span></div></div>
+        <div className="ph3-time3-stat"><Count value={String(free.length || units.length)}/><span>căn còn hàng<br/><small>{project.developer}</small></span></div></div>
       <ol>{profile.timeline.map((t, i) => <li key={t.title} data-fx="up"><em>{t.date || String(i + 1).padStart(2, '0')}</em><i/><strong>{t.title}</strong><p>{t.body}</p></li>)}</ol>
       {profile.legal && <ul className="ph3-legal">{profile.legal.map(l => <li key={l} data-fx="up"><ShieldCheck size={20}/>{l}</li>)}</ul>}
     </section>}

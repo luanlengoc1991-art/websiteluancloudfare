@@ -2134,3 +2134,5 @@ button.sz-bento-photo{padding:0}
 .nav-drop-item b{font-size:13.5px;color:#0a1f19;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-drop-item small{display:flex;align-items:center;gap:3px;font-size:11.5px;color:#7b8a85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-drop-item em{font-style:normal;font-size:11.5px;font-weight:600;color:#059669}
+.nav-drop-panel{background:#fff!important;backdrop-filter:none!important;transition:opacity .18s,transform .3s cubic-bezier(.2,.8,.2,1),visibility .18s}
+.nav-drop:hover .nav-drop-panel,.nav-drop:focus-within .nav-drop-panel{opacity:1!important}

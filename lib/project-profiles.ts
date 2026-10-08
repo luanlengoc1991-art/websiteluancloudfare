@@ -1,8 +1,8 @@
 /** Rich "Tổng quan" content per project (public information, checked 10/2026). Projects without a profile
  *  keep the generic overview. Unit data (quỹ căn) is never taken from here. */
 export type ProjectProfile = {
-  /** home5 (default) or home = Spaciaz main demo layout. */
-  layout?: 'home5' | 'home';
+  /** home5 (default), home = Spaciaz main demo, home3 = Spaciaz home-3. */
+  layout?: 'home5' | 'home' | 'home3';
   headline: string; intro: string;
   stats: {value: string; suffix?: string; label: string}[];
   zones: {code: string; name: string; local: string; area: string; body: string}[];
@@ -10,6 +10,12 @@ export type ProjectProfile = {
   timeline: {title: string; body: string}[];
   amenities: {title: string; body: string}[];
   sources: {label: string; url: string}[];
+  /** Optional extras used by the home3 layout. */
+  products?: {title: string; body: string}[];
+  connections?: {title: string; body: string}[];
+  legal?: string[];
+  policies?: {value: string; label: string}[];
+  priceFrom?: {value: string; label: string};
 };
 
 export const projectProfiles: Record<string, ProjectProfile> = {
@@ -47,37 +53,63 @@ export const projectProfiles: Record<string, ProjectProfile> = {
     ],
   },
   'saigon-park': {
-    layout: 'home',
-    headline: 'Đại đô thị\ncửa ngõ Tây Bắc',
-    intro: 'Khu đô thị 1.080 ha tại Hóc Môn, TP. Hồ Chí Minh với sân golf nội khu, quần thể giáo dục 150 ha và công viên chủ đề, cho quy mô khoảng 135.000 cư dân.',
+    layout: 'home3',
+    headline: 'Chuẩn sống mới\ncửa ngõ Tây Bắc',
+    intro: 'Đại đô thị 1.080 ha tại Xuân Thới Sơn & Tân Thới Nhì, Hóc Môn: sân golf 36 hố, VinWonders, công viên Bách Thảo và quần thể giáo dục 150 ha cho khoảng 135.000 cư dân.',
     stats: [
-      {value: '1.080', suffix: 'ha', label: 'Quy mô dự án'},
-      {value: '36', suffix: 'hố', label: 'Sân golf Vinpearl Léman nội khu'},
-      {value: '150', suffix: 'ha', label: 'Quần thể giáo dục'},
+      {value: '1.080', suffix: 'ha', label: 'Quy mô đại đô thị'},
+      {value: '135', suffix: 'nghìn', label: 'Cư dân dự kiến'},
+      {value: '59', suffix: 'nghìn tỷ', label: 'Tổng vốn đầu tư'},
+      {value: '70', suffix: '+', label: 'Công viên nội khu'},
     ],
     zones: [
-      {code: '01', name: 'Ivy Park', local: 'Khu chủ đề', area: '', body: 'Khu ở chủ đề quốc tế với nhà phố, biệt thự và căn hộ, gắn với trục cảnh quan xanh của dự án.'},
-      {code: '02', name: 'Global Park', local: 'Khu chủ đề', area: '', body: 'Khu đô thị năng động với thương mại, dịch vụ và không gian sống đa văn hóa.'},
-      {code: '03', name: 'Laguna Park', local: 'Khu chủ đề', area: '', body: 'Không gian sống quanh mặt nước, hồ cảnh quan và công viên ven hồ.'},
-      {code: '04', name: 'Zen Park', local: 'Khu chủ đề', area: '', body: 'Nhịp sống thư thái với công viên, vườn cảnh quan và tiện ích chăm sóc sức khỏe.'},
-      {code: '05', name: 'Golf Park', local: 'Khu chủ đề', area: '', body: 'Quần thể quanh sân golf Vinpearl Léman 36 hố khoảng 200 ha – đại đô thị Vinhomes có golf nội khu.'},
+      {code: '01', name: 'Ivy Park', local: 'Khu chủ đề', area: '', body: 'Nhà phố, biệt thự và căn hộ gắn với trục cảnh quan xanh của dự án.'},
+      {code: '02', name: 'Global Park', local: 'Khu chủ đề', area: '', body: 'Thương mại, dịch vụ và không gian sống đa văn hóa sôi động.'},
+      {code: '03', name: 'Laguna Park', local: 'Khu chủ đề', area: '', body: 'Sống quanh mặt nước, hồ cảnh quan và công viên ven hồ.'},
+      {code: '04', name: 'Zen Park', local: 'Khu chủ đề', area: '', body: 'Nhịp sống thư thái với vườn cảnh quan và tiện ích chăm sóc sức khỏe.'},
+      {code: '05', name: 'Golf Park', local: 'Khu chủ đề', area: '200 ha', body: 'Quần thể quanh sân golf 36 hố – đại đô thị Vinhomes có golf nội khu.'},
     ],
-    focus: {eyebrow: 'Vì sao chọn Sài Gòn Park', title: 'Golf, giáo dục và công viên\nngay trong khu đô thị', body: 'Sân golf 36 hố, quần thể giáo dục 150 ha với hệ thống trường Vinschool, công viên nước VinWonders 22,7 ha và rừng bách thảo 27 ha phục vụ cư dân ngay trong dự án.'},
+    focus: {eyebrow: 'Vì sao chọn Sài Gòn Park', title: 'Điều làm nên\nkhác biệt', body: 'Hệ tiện ích đủ đầy ngay trong khu đô thị, kết nối nhanh về trung tâm và pháp lý sở hữu lâu dài.'},
     timeline: [
-      {title: 'Khởi công', body: 'Khởi công ngày 19/12/2025 theo Quyết định 80/QĐ-TTg của Thủ tướng Chính phủ.'},
-      {title: 'San lấp mặt bằng', body: 'Đến 3/2026 cơ bản hoàn tất san lấp hơn 900 ha tại các phân khu trọng điểm.'},
-      {title: 'Mở bán giai đoạn 1', body: 'Dự kiến từ khoảng tháng 6/2026, phân khu phía Nam 55 ha: hơn 2.000 căn hộ và 2.500 nhà phố, biệt thự.'},
-      {title: 'Hoàn thiện toàn khu', body: 'Mục tiêu hoàn thiện toàn bộ dự án trước năm 2035, quy mô dân số khoảng 135.000 người.'},
+      {title: 'Khởi công', body: 'Khởi công ngày 19/12/2025 theo Quyết định 80/QĐ-TTg.'},
+      {title: 'Quy hoạch 1/500', body: 'Quy hoạch chi tiết 1/500 đã được phê duyệt; hơn 900 ha san lấp xong 3/2026.'},
+      {title: 'Mở bán', body: 'Mở bán từ tháng 6/2026, hiện đang nhận giữ chỗ.'},
+      {title: 'Bàn giao', body: 'Dự kiến bàn giao 2027–2028; sổ hồng cấp trong 6–12 tháng.'},
     ],
     amenities: [
-      {title: 'Sân golf Vinpearl Léman 36 hố', body: 'Khoảng 200 ha, điểm nhấn nghỉ dưỡng và thể thao ngay trong khu đô thị.'},
-      {title: 'Quần thể giáo dục 150 ha', body: 'Khoảng 36 trường học các cấp, gồm hệ thống Vinschool và trường công lập, tư thục.'},
-      {title: 'VinWonders 22,7 ha', body: 'Công viên nước chủ đề gia đình phục vụ cư dân và du khách.'},
-      {title: 'Botanical Park 27 ha', body: 'Công viên rừng bách thảo, lá phổi xanh của khu đô thị.'},
+      {title: 'Sân golf 36 hố', body: 'Khoảng 200 ha ngay trong khu đô thị.'},
+      {title: 'VinWonders 22,7 ha', body: 'Siêu công viên chủ đề cho cả gia đình.'},
+      {title: 'Công viên Bách Thảo 27 ha', body: 'Lá phổi xanh cùng 21 km đường dạo bộ.'},
+      {title: 'Quần thể giáo dục 150 ha', body: '36 trường học các cấp và khu đại học.'},
+      {title: 'Vincom Mega Mall', body: 'Trung tâm thương mại, mua sắm, giải trí.'},
+      {title: 'Bệnh viện Vinmec', body: 'Chăm sóc sức khỏe chuẩn quốc tế.'},
     ],
+    products: [
+      {title: 'Nhà phố', body: '50 – 55 – 70 – 112 m²'},
+      {title: 'Nhà phố xẻ khe', body: '80 – 88 m²'},
+      {title: 'Biệt thự song lập', body: 'Không gian sống riêng tư'},
+      {title: 'Căn hộ cao tầng', body: 'Đa dạng diện tích'},
+    ],
+    connections: [
+      {title: 'Quốc lộ 22', body: 'Trục cửa ngõ Tây Bắc'},
+      {title: 'Vành đai 3 & 4', body: 'Kết nối liên vùng'},
+      {title: 'Cao tốc TP.HCM – Mộc Bài', body: 'Hướng Tây Ninh, Campuchia'},
+      {title: 'Metro số 2', body: 'Bến Thành – Tham Lương'},
+      {title: '20–30 phút', body: 'Đến Tân Sơn Nhất, nội thành'},
+    ],
+    legal: ['Sở hữu lâu dài', 'Quy hoạch 1/500 đã phê duyệt', 'Sổ hồng cấp trong 6–12 tháng', 'Chủ đầu tư: Berjaya Việt Nam – thành viên Vingroup'],
+    policies: [
+      {value: '22,5%', label: 'Chiết khấu thanh toán'},
+      {value: '30%', label: 'Trả trước từ (~1,5 tỷ)'},
+      {value: '80%', label: 'Hỗ trợ vay ngân hàng'},
+      {value: '0%', label: 'Lãi suất trong 18 tháng'},
+      {value: '6%', label: 'Lãi suất tối đa 5 năm'},
+      {value: '30%', label: 'Voucher thanh toán đến'},
+    ],
+    priceFrom: {value: '5,4', label: 'tỷ · nhà phố bàn giao thô (hoàn thiện từ 6,2 tỷ)'},
     sources: [
+      {label: 'vinhomessaigonspark.vn', url: 'https://vinhomessaigonspark.vn/'},
       {label: 'Vinhomes Market', url: 'https://market.vinhomes.vn/du-an/vinhomes-sai-gon-park'},
-      {label: 'Adong Land', url: 'https://adongland.vn/vinhomes-saigon-park/'},
     ],
   },
 };

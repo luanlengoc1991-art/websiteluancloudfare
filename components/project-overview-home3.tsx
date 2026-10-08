@@ -84,7 +84,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     <section className="ph3-about">
       <div className="ph3-about-head"><Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Khám phá {project.name}</h3></div>
       <div className="ph3-about-box" data-fx="up">
-        <div className="ph3-about-photo" key={'p' + about}><Img w={1800} src={at.image} alt={at.label}/></div>
+        <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}><Img w={1800} eager src={t.image} alt={t.label}/></div>)}</div>
         <div className="ph3-about-copy" key={'t' + about}>
           <small>{String(about + 1).padStart(2, '0')} / {String(aboutTabs.length).padStart(2, '0')} · {at.label}</small>
           <h4>{lines(at.title)}</h4><p>{at.body}</p>

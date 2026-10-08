@@ -9,7 +9,7 @@ export const contentNavigation = [
 
 export const publicNavigation = [{id: 'trang-chu', label: 'Tổng quan', href: '/'}, ...contentNavigation.slice(0, 3), {id: 'mat-bang-can', label: 'Mặt bằng căn', href: '/mat-bang-can'}, ...contentNavigation.slice(3), {id: 'lien-he', label: 'Liên hệ', href: '/lien-he'}] as const;
 
-export const adminSections = new Set(['tong-quan', 'noi-dung', ...contentNavigation.map(tab => tab.adminSection), 'khach-hang', 'giao-dich', 'thu-vien', 'thanh-vien', 'claude-ai', 'cau-hinh']);
+export const adminSections = new Set(['tong-quan', 'noi-dung', ...contentNavigation.map(tab => tab.adminSection), 'ma-can', 'khach-hang', 'giao-dich', 'thu-vien', 'thanh-vien', 'claude-ai', 'cau-hinh']);
 export const editorSections = new Set<string>(['noi-dung', ...contentNavigation.map(tab => tab.adminSection), 'thu-vien']);
 
 export function publicTabForAdmin(section: string) {

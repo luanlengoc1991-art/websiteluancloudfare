@@ -9,7 +9,7 @@ export async function GET(){try{
  const signedIn=await getSignedInUser();const user=signedIn?.isAdmin?signedIn:null;
  if(!user){
   const [rows,files,holds]=await Promise.all([
-   readAll<Record>("SELECT kind,id,payload FROM records WHERE owner='admin' AND kind IN ('project','unit','article','settings','about','guide','pin','copy') ORDER BY id ASC"),
+   readAll<Record>("SELECT kind,id,payload FROM records WHERE owner='admin' AND kind IN ('project','unit','article','settings','about','guide','pin','copy','unit-sheet') ORDER BY id ASC"),
    readAll<StoredFile>("SELECT id,project_id,kind,name FROM files WHERE owner='admin' AND (mime<>'application/pdf' OR ?=1) ORDER BY id ASC",signedIn?.canEdit?1:0),
    readAll<Hold>("SELECT unit_id,status,expires_at FROM reservations WHERE owner='admin' ORDER BY id ASC")
   ]);

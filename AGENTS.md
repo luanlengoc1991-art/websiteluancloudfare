@@ -140,3 +140,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Nội dung lấy qua `profileFor(project, units, statusOf)` trong `lib/project-profiles.ts`: dự án có hồ sơ viết tay (saigon-park, green-paradise) dùng hồ sơ đó; dự án khác tự tạo hồ sơ CHỈ từ dữ liệu của chính dự án (tên, vị trí, chủ đầu tư, mô tả, bảng hàng, phân khu, loại hình, giá thấp/cao nhất) – không bịa số liệu. Khối nào thiếu dữ liệu thì tự ẩn (cả mục trên thanh mục lục).
 - Đã xoá layout cũ `project-overview.tsx` (home-5) và `project-overview-home.tsx`. Trang ngoài (/du-an, trang chủ…) không đổi.
 - Số đếm chạy trong landing dùng component `Count` (React tự quản lý), KHÔNG dùng class `.fx-count` của site-effects (sửa DOM trước khi hydrate → lỗi React #418).
+
+## Mã căn đồng bộ Google Sheet (08/10/2026)
+- Quản trị → **Mã căn (Sheet)** (`/admin/ma-can`, chỉ admin; component `components/admin-unit-sheets.tsx`): mỗi dự án gắn 1 link Google Sheet (chia sẻ xem công khai). Nút **Đồng bộ** gọi `POST /api/unit-sheets` → server tải CSV (`lib/unit-sheet.ts`: nhận cột theo tên, bỏ dấu; bắt buộc cột Mã căn; giá ≥ 1 triệu hiểu là VNĐ → tỷ; trạng thái bán/lock/cọc → Đã bán/Đang giữ chỗ).
+- Lưu D1: `unit-sheet` (public: syncedAt, count, units) và `unit-sheet-src` (riêng admin: link). Dự án đã có `unit-sheet` thì website hiện ĐÚNG và CHỈ các căn trong Sheet (hub.tsx thay toàn bộ căn của dự án đó). "Bỏ đồng bộ" xoá 2 bản ghi → dùng lại dữ liệu mặc định.
+
+## Menu header thả xuống (08/10/2026)
+- `components/nav-projects.tsx`: rê chuột vào Dự án / Quỹ căn / Mặt bằng căn hiện bảng danh sách dự án (ảnh, vị trí, số căn) → Tổng quan dự án / tab Bảng hàng / `/mat-bang-can?project=`.

@@ -2112,3 +2112,25 @@ button.sz-bento-photo{padding:0}
 .immersive-site .project-workspace.is-wide .workspace-panel-heading{padding-top:34px!important}
 .project-workspace.is-wide :is(.workspace-top-left,.workspace-brand){top:20px!important}
 @media(max-width:700px){.immersive-site .project-workspace.is-wide :is(.workspace-panel-heading,.workspace-panel-body){padding-left:14px!important;padding-right:14px!important}.immersive-site .project-workspace.is-wide .workspace-panel-heading{padding-top:64px!important}}
+
+/* Header: project dropdown under Dự án / Quỹ căn / Mặt bằng căn */
+.nav-drop{position:relative;display:flex;align-items:center}
+.nav-drop>a{display:inline-flex!important;align-items:center;gap:4px}
+.nav-drop-caret{transition:transform .3s}
+.nav-drop:hover .nav-drop-caret,.nav-drop:focus-within .nav-drop-caret{transform:rotate(180deg)}
+.nav-drop-panel{position:absolute;top:calc(100% + 10px);left:50%;z-index:80;width:min(720px,92vw);padding:16px;border-radius:22px;background:#fffffff7;border:1px solid #e2ece8;box-shadow:0 30px 60px -28px #02261d66;backdrop-filter:blur(18px);opacity:0;visibility:hidden;transform:translate(-50%,10px);transition:opacity .25s,transform .35s cubic-bezier(.2,.8,.2,1),visibility .25s}
+.nav-drop-panel::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+.nav-drop:hover .nav-drop-panel,.nav-drop:focus-within .nav-drop-panel{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.nav-drop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 6px 12px;border-bottom:1px solid #e2ece8;margin-bottom:10px}
+.nav-drop-head b{font-size:14px;color:#0a1f19}
+.desktop-nav .nav-drop-panel a{padding:0!important;color:inherit!important;background:none!important;font-size:inherit!important;font-weight:inherit!important}
+.desktop-nav .nav-drop-panel a::before,.desktop-nav .nav-drop-panel a::after{display:none!important}
+.desktop-nav .nav-drop-head a{display:inline-flex!important;align-items:center;gap:4px;font-size:13px!important;font-weight:700!important;color:#059669!important}
+.nav-drop-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:min(420px,60vh);overflow:auto}
+.desktop-nav a.nav-drop-item{display:grid!important;grid-template-columns:54px 1fr;gap:12px;align-items:center;padding:8px!important;border-radius:14px;transition:background .2s!important}
+.desktop-nav a.nav-drop-item:hover{background:#ecfdf5!important}
+.nav-drop-item img{width:54px;height:54px;border-radius:12px;object-fit:cover}
+.nav-drop-item span{display:grid;gap:2px;min-width:0}
+.nav-drop-item b{font-size:13.5px;color:#0a1f19;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-drop-item small{display:flex;align-items:center;gap:3px;font-size:11.5px;color:#7b8a85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-drop-item em{font-style:normal;font-size:11.5px;font-weight:600;color:#059669}

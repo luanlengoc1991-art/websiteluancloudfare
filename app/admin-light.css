@@ -124,3 +124,22 @@
 .admin-projects-site.admin-projects-site .admin-welcome span{color:var(--a-mint)!important}
 .admin-projects-site.admin-projects-site .admin-welcome a{background:linear-gradient(120deg,var(--a-mint),var(--a-mint2))!important;color:var(--a-deep)!important}
 .admin-projects-site .admin-welcome-mark{color:#8ef0c42e!important}
+
+/* Quản trị → Mã căn (Sheet) */
+.aus{display:grid;gap:14px}
+.aus-intro h2{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.aus-intro p{line-height:1.6;margin:0 0 14px}
+.aus-row{display:grid;gap:12px}
+.aus-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.aus-head h3{margin:0 0 4px;font-size:17px}
+.aus-head p{margin:0}
+.aus-ok{display:inline-block;padding:2px 9px;border-radius:99px;background:#d1fae5;color:#047857;font-weight:700;font-size:12px;margin-right:4px}
+.aus-err{margin:6px 0 0;color:#b91c1c;font-size:13px}
+.aus-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.aus-form input{flex:1 1 380px;min-width:0;height:42px;padding:0 14px;border:1px solid #d6e5df;border-radius:12px;font:inherit;font-size:14px;background:#fff}
+.aus-form .button{height:42px;display:inline-flex;align-items:center;gap:7px}
+.aus-codes{display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+.aus-codes span{padding:5px 10px;border-radius:99px;background:#ecfdf5;border:1px solid #bbf7d0;font-size:12.5px;font-weight:600;color:#065f46}
+.aus-codes span.is-off{background:#f3f4f6;border-color:#e5e7eb;color:#9ca3af;text-decoration:line-through}
+.aus .spin{animation:aus-spin 1s linear infinite}
+@keyframes aus-spin{to{transform:rotate(360deg)}}

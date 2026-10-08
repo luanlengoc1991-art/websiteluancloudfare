@@ -92,7 +92,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     {gal.length > 0 && <section className="ph3-amen">
       <div className="ph3-amen-head"><div><Eyebrow light>Tiện ích nội khu</Eyebrow><h3 data-fx="title">Thành phố công viên<br/>sinh thái hàng đầu châu Á</h3></div>
         <p>Hơn 70 công viên, 21 km đường dạo ven nước, VinWonders, sân golf 36 hố, quần thể giáo dục 150 ha cùng chuỗi phố thương mại quốc tế.</p></div>
-      <div className="ph3-amen-grid">{(allAmenities ? gal : gal.slice(0, 9)).map((a, i) => <figure key={a.title} data-fx="up" className={[0, 7].includes(i % 10) ? 'is-wide' : ''}>
+      <div className="ph3-amen-grid">{(allAmenities ? gal : gal.slice(0, 9)).map((a, i) => <figure key={a.title} data-fx="up" className={[0, 6].includes(i % 10) ? 'is-wide' : ''}>
         <Img w={i % 10 === 0 ? 1600 : 900} src={a.image} alt={a.title}/><figcaption><b>{a.title}</b><span>{a.body}</span></figcaption></figure>)}</div>
       {gal.length > 9 && <button type="button" className="sz-btn is-white ph3-more" onClick={() => setAllAmenities(v => !v)}><span>{allAmenities ? 'Thu gọn' : `Xem thêm ${gal.length - 9} tiện ích`}</span><i><ChevronDown size={16} style={{transform: allAmenities ? 'rotate(180deg)' : ''}}/></i></button>}
     </section>}

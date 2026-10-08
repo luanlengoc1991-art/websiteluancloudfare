@@ -1886,3 +1886,5 @@ button.sz-bento-photo{padding:0}
   .ph3-pay,.ph3-posters{grid-template-columns:1fr}.ph3-offers{grid-template-columns:1fr 1fr}.ph3-offers>div{border-left:0;border-top:1px solid #ffffff22}
   .ph3-posters a{aspect-ratio:3/4}.ph3-faq-list>div>div>p{padding:0 0 0 50px}
 }
+.ph3-prod-photo{aspect-ratio:16/11}.ph3-prod-photo img{object-position:50% 100%;transform:scale(1.14);transform-origin:50% 100%}
+.ph3-acc>a img{transform:scale(1.22);transform-origin:50% 100%}

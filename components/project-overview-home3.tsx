@@ -1,7 +1,7 @@
 'use client';
 /* Project "Tổng quan" in the Spaciaz home-3 style: split hero, numbered cards, pill marquee, staggered
  * counters, icon grid, expanding unit cards (codes from the live inventory, linked to Mặt bằng căn). */
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {ArrowUpRight, Award, Banknote, Building2, Car, ChevronDown, Clock, GraduationCap, HeartPulse, Landmark, MapPin, Phone, Play, ShieldCheck, ShoppingBag, Sparkles, Trees, Trophy, Wallet} from 'lucide-react';
 import type {Asset, Project, Unit} from '@/lib/catalog';
 import type {ProjectProfile} from '@/lib/project-profiles';
@@ -18,6 +18,21 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const photo = (i: number) => photos[i % photos.length];
   const free = units.filter(u => statusOf(u) === 'Còn hàng');
   const picks = [...free.sort((a, b) => a.price - b.price), ...units.filter(u => statusOf(u) !== 'Còn hàng')].slice(0, 6);
+  const slides = [{title: 'Phối cảnh tổng thể', image: project.image}, ...(profile.heroSlides || [])].filter(s => s.image);
+  const [slide, setSlide] = useState(0);
+  const [prev, setPrev] = useState(-1);
+  const heroRef = useRef<HTMLElement>(null);
+  const go = (i: number) => setSlide(cur => {if (cur !== i) setPrev(cur); return i;});
+  useEffect(() => {
+    if (slides.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = window.setTimeout(() => go((slide + 1) % slides.length), 6500);
+    return () => window.clearTimeout(t);
+  }, [slide, slides.length]);
+  const tilt = (e: React.MouseEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect(), el = heroRef.current;
+    el?.style.setProperty('--ry', ((e.clientX - r.left) / r.width - .5) * 6 + 'deg');
+    el?.style.setProperty('--rx', ((e.clientY - r.top) / r.height - .5) * -4 + 'deg');
+  };
   const [open, setOpen] = useState(0);
   const [product, setProduct] = useState(0);
   const [road, setRoad] = useState(0);
@@ -39,15 +54,19 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   ];
 
   return <div className="sz ph3">
-    <section className="ph3-hero">
-      <div className="ph3-hero-photo"><Img w={1600} eager src={project.image} alt={project.name}/></div>
-      <div className="ph3-hero-panel">
-        <div><Eyebrow>{project.name}</Eyebrow><h2 data-fx="title">{lines(profile.headline)}</h2><p>{profile.intro}</p>
-          <button type="button" className="sz-btn is-white" onClick={() => onTab('inventory')}><span>Xem bảng hàng</span><i><ArrowUpRight size={16}/></i></button></div>
-        <div className="ph3-hero-foot">
-          <div className="ph3-badge"><b className="fx-count">{head.value}</b><span>{head.suffix}<br/>{head.label.toLowerCase()}</span></div>
-          <button type="button" className="ph3-watch" onClick={() => onTab('vr')}>Xem 360° <Play size={14} fill="currentColor"/></button>
-        </div>
+    <section ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
+      <div className="ph3-hero-stage">{slides.map((s, i) => <div key={s.image} className={'ph3-slide' + (i === slide ? ' is-on' : i === prev ? ' is-prev' : '')}>
+        <Img w={2560} eager={i === 0} src={s.image} alt={s.title}/></div>)}</div>
+      <div className="ph3-hero-copy" key={'c' + slide}>
+        <Eyebrow light>{project.name}</Eyebrow><h2>{lines(profile.headline)}</h2><p>{profile.intro}</p>
+        <div className="ph3-hero-btns"><button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem bảng hàng</span><i><ArrowUpRight size={16}/></i></button>
+          <button type="button" className="ph3-watch" onClick={() => onTab('vr')}>Xem 360° <Play size={14} fill="currentColor"/></button></div>
+      </div>
+      {profile.priceFrom && <div className="ph3-hero-float"><small>Giá dự kiến từ</small><b>{profile.priceFrom.value} <em>tỷ</em></b><span>{profile.priceFrom.label.replace(/^tỷ · /, '')}</span></div>}
+      <div className="ph3-hero-foot">
+        <div className="ph3-badge"><b className="fx-count">{head.value}</b><span>{head.suffix}<br/>{head.label.toLowerCase()}</span></div>
+        <div className="ph3-hero-nav"><span key={'t' + slide}><b>{String(slide + 1).padStart(2, '0')}</b> / {String(slides.length).padStart(2, '0')} · {slides[slide].title}</span>
+          <div>{slides.map((s, i) => <button type="button" key={s.image} aria-label={s.title} className={i === slide ? 'is-on' : ''} onClick={() => go(i)}><i/></button>)}</div></div>
       </div>
     </section>
 

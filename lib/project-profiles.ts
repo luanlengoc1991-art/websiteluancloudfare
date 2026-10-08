@@ -17,6 +17,7 @@ export type ProjectProfile = {
   policies?: {value: string; label: string}[];
   priceFrom?: {value: string; label: string};
   /** Images below are project files in R2/D1 (/api/files/<id>), replaceable in admin. */
+  heroSlides?: {title: string; image: string}[];
   highlights?: string[];
   location?: {title: string; body: string[]};
   video?: {embed: string; url: string; title: string; poster?: string};
@@ -85,6 +86,13 @@ export const projectProfiles: Record<string, ProjectProfile> = {
       {title: 'Mở bán', body: 'Nhà phố & biệt thự mở bán từ tháng 6/2026; giai đoạn 1 phân khu phía Nam 55 ha với hơn 2.000 căn hộ và 2.500 nhà phố, biệt thự.'},
       {title: 'Bàn giao', body: 'Dự kiến bàn giao 2027–2028; sổ hồng cấp trong 6–12 tháng.'},
       {title: 'Hoàn thiện toàn khu', body: 'Mục tiêu hoàn thiện toàn bộ dự án trước năm 2035, quy mô khoảng 135.000 cư dân.'},
+    ],
+    heroSlides: [
+      {title: 'Sân golf 36 hố – 200 ha', image: '/api/files/sgp-golf'},
+      {title: '100 công viên lớn nhỏ', image: '/api/files/sgp-parks'},
+      {title: 'Công viên Bách Thảo 27 ha', image: '/api/files/sgp-botanica'},
+      {title: 'VinWonders 23 ha', image: '/api/files/sgp-vinwonders'},
+      {title: 'Quần thể giáo dục 150 ha', image: '/api/files/sgp-edu'},
     ],
     highlights: ['Đô thị tri thức – hệ sinh thái toàn diện', 'Hạ tầng bứt phá: Metro – Vành đai – Quốc lộ', 'Vị trí tâm điểm cực tăng trưởng Tây Bắc TP.HCM'],
     location: {title: 'Tâm điểm cực tăng trưởng\nTây Bắc TP.HCM', body: [

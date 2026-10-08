@@ -2042,3 +2042,5 @@ button.sz-bento-photo{padding:0}
 .ph3>section[id]{scroll-margin-top:150px}
 @media(max-width:1000px){.ph3-nav-brand{display:none}.ph3-nav{padding-left:7px}}
 @media(max-width:700px){.ph3-nav{top:74px;width:calc(100vw - 20px)}.ph3-nav-cta{padding:0 14px}.ph3{padding-top:64px}}
+.ph3-nav>div a{padding:10px 10px;font-size:13px}
+@media(max-width:1500px){.ph3-nav-brand{display:none}.ph3-nav{padding-left:7px}}

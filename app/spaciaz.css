@@ -2080,3 +2080,4 @@ button.sz-bento-photo{padding:0}
 }
 .immersive-site .project-workspace.is-landing.is-page{padding:84px 0 40px!important}
 @media(min-width:701px){.immersive-site .project-workspace.is-landing .workspace-panel{margin:0 66px!important}.ph3-nav{left:66px;right:66px}}
+@media(max-width:700px){.project-workspace.is-landing .workspace-top-left{top:10px!important;bottom:auto!important;left:8px!important;flex-direction:row!important;gap:4px!important;padding:4px!important}.project-workspace.is-landing .workspace-top-left .round-tool{width:36px!important;height:36px!important}.project-workspace.is-landing .workspace-brand{display:none!important}.ph3-nav{left:96px;right:8px}}

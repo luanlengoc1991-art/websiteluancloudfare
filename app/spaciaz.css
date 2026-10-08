@@ -1939,3 +1939,8 @@ button.sz-bento-photo{padding:0}
 .ph3-hero-copy{max-width:760px}
 .ph3 .ph3-hero h2{font-size:clamp(44px,4.8vw,74px)}
 @media(max-width:800px){.ph3-hero{padding:50px 22px 120px;min-height:680px}.ph3 .ph3-hero h2{font-size:clamp(34px,9.5vw,46px)}}
+.ph3-hero .ph3-badge b{color:#fff;text-shadow:0 6px 24px #0007}
+.ph3-hero .ph3-badge b::before{opacity:.75}
+.ph3-hero-float{background:#03261d8c;border-color:#ffffff33}
+.ph3-hero-nav{padding:14px 18px;border-radius:18px;background:#03261db3;border:1px solid #ffffff26;backdrop-filter:blur(14px)}
+.ph3-hero::before{background:linear-gradient(95deg,#021a14e6 0%,#021a14a6 34%,#021a1426 62%,transparent 80%),linear-gradient(0deg,#021a14e6 0%,#021a1466 24%,transparent 42%)}

@@ -134,3 +134,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Bên trong dự án – đồng bộ 08/10/2026
+- MỌI dự án dùng cùng cấu trúc của Vinhomes Sài Gòn Park: tab Tổng quan = landing `components/project-overview-home3.tsx` (class `is-landing`: thanh mục lục trên đầu, không thanh tab dưới); các tab phụ (trừ 360°, Mặt bằng) = `is-wide` (tràn viền, icon nổi hai bên, giữ thanh tab dưới).
+- Nội dung lấy qua `profileFor(project, units, statusOf)` trong `lib/project-profiles.ts`: dự án có hồ sơ viết tay (saigon-park, green-paradise) dùng hồ sơ đó; dự án khác tự tạo hồ sơ CHỈ từ dữ liệu của chính dự án (tên, vị trí, chủ đầu tư, mô tả, bảng hàng, phân khu, loại hình, giá thấp/cao nhất) – không bịa số liệu. Khối nào thiếu dữ liệu thì tự ẩn (cả mục trên thanh mục lục).
+- Đã xoá layout cũ `project-overview.tsx` (home-5) và `project-overview-home.tsx`. Trang ngoài (/du-an, trang chủ…) không đổi.

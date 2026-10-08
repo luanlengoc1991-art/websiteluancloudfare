@@ -1,9 +1,13 @@
+import type {Project, Unit} from './catalog';
+
 /** Rich "Tổng quan" content per project (public information, checked 10/2026). Projects without a profile
  *  keep the generic overview. Unit data (quỹ căn) is never taken from here. */
 export type ProjectProfile = {
   /** home5 (default), home = Spaciaz main demo, home3 = Spaciaz home-3. */
   layout?: 'home5' | 'home' | 'home3';
   headline: string; intro: string;
+  /** Title of the "Tổng quan" tab inside the About block. */
+  tagline?: string;
   stats: {value: string; suffix?: string; label: string}[];
   zones: {code: string; name: string; local: string; area: string; body: string}[];
   focus: {eyebrow: string; title: string; body: string};
@@ -65,6 +69,7 @@ export const projectProfiles: Record<string, ProjectProfile> = {
   },
   'saigon-park': {
     layout: 'home3',
+    tagline: 'Đại đô thị Vinhomes\ncó golf nội khu',
     headline: 'Chuẩn sống mới\ncửa ngõ Tây Bắc',
     intro: 'Đại đô thị 1.080 ha tại Xuân Thới Sơn & Tân Thới Nhì, Hóc Môn: sân golf 36 hố, VinWonders, công viên Bách Thảo và quần thể giáo dục 150 ha cho khoảng 135.000 cư dân.',
     stats: [
@@ -200,3 +205,40 @@ export const projectProfiles: Record<string, ProjectProfile> = {
     ],
   },
 };
+
+/** Every project's "Tổng quan" uses the landing layout (home3). Projects without a written profile get one built
+ *  only from their own data (name, location, developer, description, inventory); nothing is invented. */
+export function profileFor(project: Project, units: Unit[], statusOf: (u: Unit) => string): ProjectProfile {
+  const own = projectProfiles[project.id];
+  if (own) return {...own, layout: 'home3'};
+  const free = units.filter(u => statusOf(u) === 'Còn hàng');
+  const zones = Array.from(new Set(units.map(u => u.zone).filter(Boolean)));
+  const types = Array.from(new Set(units.map(u => u.type).filter(Boolean)));
+  const prices = units.map(u => u.price).filter(p => p > 0);
+  const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
+  const kind = project.category === 'high' ? 'Căn hộ cao tầng' : 'Nhà phố, biệt thự thấp tầng';
+  return {
+    layout: 'home3',
+    headline: project.name,
+    tagline: project.name,
+    intro: `${kind} tại ${project.location}. Chủ đầu tư ${project.developer} · ${project.status}.`,
+    stats: [
+      {value: String(units.length), suffix: 'căn', label: 'Trong bảng hàng'},
+      {value: String(free.length), suffix: 'căn', label: 'Còn hàng'},
+      {value: String(zones.length), label: 'Phân khu'},
+      {value: String(types.length), label: 'Loại hình sản phẩm'},
+    ],
+    zones: zones.map((z, i) => ({code: String(i + 1).padStart(2, '0'), name: z, local: 'Phân khu', area: '', body: `${units.filter(u => u.zone === z).length} căn · ${free.filter(u => u.zone === z).length} còn hàng`})),
+    focus: {eyebrow: 'Thông tin dự án', title: 'Thông tin\nnổi bật', body: project.description},
+    timeline: [], amenities: [], sources: [],
+    products: types.map(t => ({title: t, body: `${units.filter(u => u.type === t).length} căn`})),
+    priceFrom: prices.length ? {value: fmt(Math.min(...prices)), label: `tỷ · giá thấp nhất trong bảng hàng (cao nhất ${fmt(Math.max(...prices))} tỷ)`} : undefined,
+    facts: [
+      {label: 'Vị trí', value: project.location},
+      {label: 'Chủ đầu tư', value: project.developer},
+      {label: 'Loại hình', value: kind},
+      {label: 'Trạng thái', value: project.status},
+      {label: 'Quỹ căn', value: `${units.length} căn · ${free.length} còn hàng`},
+    ],
+  };
+}

@@ -2,7 +2,7 @@
 /* Project "Tổng quan" in the Spaciaz home-3 style: split hero, numbered cards, pill marquee, staggered
  * counters, icon grid, expanding unit cards (codes from the live inventory, linked to Mặt bằng căn). */
 import {useState} from 'react';
-import {ArrowUpRight, Award, Building2, Car, GraduationCap, HeartPulse, MapPin, Phone, Play, ShieldCheck, ShoppingBag, Sparkles, Trees, Trophy} from 'lucide-react';
+import {ArrowUpRight, Award, Banknote, Building2, Car, ChevronDown, Clock, GraduationCap, HeartPulse, Landmark, MapPin, Phone, Play, ShieldCheck, ShoppingBag, Sparkles, Trees, Trophy, Wallet} from 'lucide-react';
 import type {Asset, Project, Unit} from '@/lib/catalog';
 import type {ProjectProfile} from '@/lib/project-profiles';
 import type {PublicContact} from '@/lib/public-contact';
@@ -19,6 +19,16 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const free = units.filter(u => statusOf(u) === 'Còn hàng');
   const picks = [...free.sort((a, b) => a.price - b.price), ...units.filter(u => statusOf(u) !== 'Còn hàng')].slice(0, 6);
   const [open, setOpen] = useState(0);
+  const [product, setProduct] = useState(0);
+  const [road, setRoad] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [allAmenities, setAllAmenities] = useState(false);
+  const [faq, setFaq] = useState(0);
+  const gal = profile.amenityGallery || [];
+  const pg = (i: number) => gal.length ? gal[i % gal.length].image : photo(i);
+  const houses = (profile.products || []).filter(p => p.image);
+  const roads = (profile.connections || []).filter(c => c.detail);
+  const payIcons = [Clock, Banknote, Landmark];
   const head = profile.stats[0];
   const pills = [...profile.amenities.map(a => a.title), ...(profile.products || []).map(p => p.title)];
   const features = [...(profile.connections || []).slice(0, 2).map(c => ({...c, Icon: Car})), ...profile.amenities.slice(0, 4).map((a, i) => ({...a, Icon: amenityIcons[i % amenityIcons.length]}))];
@@ -44,27 +54,63 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     <section className="ph3-who">
       <Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Đại đô thị Vinhomes<br/>có golf nội khu</h3>
       <div className="ph3-cards">{cards.map((c, i) => <button type="button" key={c.n} data-fx="up" className={'ph3-card is-' + i} onClick={() => onTab(c.tab)}>
-        {i === 2 && <Img w={900} src={photo(1)} alt=""/>}
+        {i === 2 && <Img w={900} src={profile.plans?.[1]?.image || photo(1)} alt=""/>}
         <small>{c.n}</small><strong>{c.title}</strong><p>{c.body}</p><u>{c.link}</u><i><ArrowUpRight size={15}/></i></button>)}</div>
     </section>
 
-    <div className="ph3-pills" aria-hidden><div>{[0, 1].map(k => <span key={k}>{pills.map((p, i) => <span key={p + k}>{i % 2 === 0 && <em><Img w={320} src={photo(i)} alt=""/></em>}<b>{p}</b></span>)}</span>)}</div></div>
+    <div className="ph3-pills" aria-hidden><div>{[0, 1].map(k => <span key={k}>{pills.map((p, i) => <span key={p + k}>{i % 2 === 0 && <em><Img w={320} src={pg(i)} alt=""/></em>}<b>{p}</b></span>)}</span>)}</div></div>
 
     <section className="ph3-stats">{profile.stats.map((s, i) => <div key={s.label} data-fx="up" style={{marginTop: [120, 0, 160, 60][i % 4]}}>
       <dt><b className="fx-count">{s.value}</b><sup>{s.suffix}</sup></dt><dd>{s.label}</dd></div>)}</section>
 
     <section className="ph3-diff">
-      <div className="ph3-diff-left"><div className="ph3-diff-photo"><Img w={1200} src={photo(2)} alt=""/></div>
+      <div className="ph3-diff-left"><div className="ph3-diff-photo"><Img w={1200} src={pg(0)} alt=""/></div>
         <Eyebrow>{profile.focus.eyebrow}</Eyebrow><h3 data-fx="title">{lines(profile.focus.title)}</h3><p>{profile.focus.body}</p>
         <button type="button" className="sz-btn is-white" onClick={() => onTab('gallery')}><span>Thư viện ảnh</span><i><ArrowUpRight size={16}/></i></button></div>
       <div className="ph3-feats">{features.map(({title, body, Icon}) => <div key={title} data-fx="up"><i><Icon size={22}/></i><strong>{title}</strong><p>{body}</p></div>)}</div>
     </section>
 
+    {profile.video && <section className="ph3-video">
+      <div className="ph3-video-head"><div><Eyebrow>Video dự án</Eyebrow><h3 data-fx="title">{profile.video.title}</h3></div>
+        {profile.highlights && <ul>{profile.highlights.map(h => <li key={h}><Sparkles size={16}/>{h}</li>)}</ul>}</div>
+      <div className="ph3-video-frame" data-fx="zoom">{playing
+        ? <iframe src={profile.video.embed} title={profile.video.title} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen/>
+        : <button type="button" onClick={() => setPlaying(true)} aria-label="Phát video"><Img w={2560} src={profile.video.poster || project.image} alt=""/><i><Play size={30} fill="currentColor"/></i><span>Xem phim tổng quan</span></button>}</div>
+      <a className="ph3-video-link" href={profile.video.url} target="_blank" rel="noreferrer">Mở video trên Vimeo <ArrowUpRight size={14}/></a>
+    </section>}
+
+    {profile.location && <section className="ph3-loc">
+      <div className="ph3-loc-copy"><Eyebrow>Vị trí & kết nối</Eyebrow><h3 data-fx="title">{lines(profile.location.title)}</h3>{profile.location.body.map(p => <p key={p.slice(0, 20)}>{p}</p>)}
+        <button type="button" className="sz-btn is-white" onClick={() => onTab('location')}><span>Xem bản đồ vị trí</span><i><ArrowUpRight size={16}/></i></button></div>
+      {roads.length > 0 && <div className="ph3-roads">
+        <div className="ph3-roads-photo"><Img w={1600} src={roads[road].image} alt={roads[road].title}/><span><Car size={16}/>{roads[road].title} · {roads[road].body}</span></div>
+        <ol>{roads.map((r, i) => <li key={r.title} className={i === road ? 'is-on' : ''} onMouseEnter={() => setRoad(i)} onClick={() => setRoad(i)}>
+          <b>{String(i + 1).padStart(2, '0')}</b><div><strong>{r.title}<em>{r.body}</em></strong><p>{r.detail}</p></div></li>)}</ol>
+      </div>}
+    </section>}
+
+    {gal.length > 0 && <section className="ph3-amen">
+      <div className="ph3-amen-head"><div><Eyebrow light>Tiện ích nội khu</Eyebrow><h3 data-fx="title">Thành phố công viên<br/>sinh thái hàng đầu châu Á</h3></div>
+        <p>Hơn 70 công viên, 21 km đường dạo ven nước, VinWonders, sân golf 36 hố, quần thể giáo dục 150 ha cùng chuỗi phố thương mại quốc tế.</p></div>
+      <div className="ph3-amen-grid">{(allAmenities ? gal : gal.slice(0, 9)).map((a, i) => <figure key={a.title} data-fx="up" className={[0, 7].includes(i % 10) ? 'is-wide' : ''}>
+        <Img w={i % 10 === 0 ? 1600 : 900} src={a.image} alt={a.title}/><figcaption><b>{a.title}</b><span>{a.body}</span></figcaption></figure>)}</div>
+      {gal.length > 9 && <button type="button" className="sz-btn is-white ph3-more" onClick={() => setAllAmenities(v => !v)}><span>{allAmenities ? 'Thu gọn' : `Xem thêm ${gal.length - 9} tiện ích`}</span><i><ChevronDown size={16} style={{transform: allAmenities ? 'rotate(180deg)' : ''}}/></i></button>}
+    </section>}
+
+    {houses.length > 0 && <section className="ph3-prod">
+      <div className="ph3-prod-list"><Eyebrow>Loại hình sản phẩm</Eyebrow><h3 data-fx="title">Nhà phố &<br/>biệt thự</h3>
+        <ul>{houses.map((p, i) => <li key={p.title}><button type="button" className={i === product ? 'is-on' : ''} onMouseEnter={() => setProduct(i)} onClick={() => setProduct(i)}><small>{p.body}</small><b>{p.title}</b><ArrowUpRight size={16}/></button></li>)}</ul>
+        {profile.priceFrom && <p className="ph3-prod-price">Giá dự kiến từ <b>{profile.priceFrom.value} tỷ</b><br/>{profile.priceFrom.label.replace(/^tỷ · /, '')}</p>}</div>
+      <div className="ph3-prod-view"><div key={product} className="ph3-prod-photo"><Img w={2000} src={houses[product].image!} alt={houses[product].title}/></div>
+        <div className="ph3-prod-card"><small>{houses[product].body}</small><strong>{houses[product].title}</strong><p>{houses[product].detail}</p>
+          <button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem căn còn hàng</span><i><ArrowUpRight size={16}/></i></button></div></div>
+    </section>}
+
     {picks.length > 0 && <section className="ph3-units">
       <div className="ph3-units-head"><div><Eyebrow light>Quỹ căn dự án</Eyebrow><h3 data-fx="title">Chọn căn đẹp<br/>giá tốt nhất</h3></div>
         <button type="button" className="sz-btn is-white" onClick={() => onTab('inventory')}><span>Toàn bộ {units.length} căn</span><i><ArrowUpRight size={16}/></i></button></div>
       <div className="ph3-acc">{picks.map((u, i) => <a key={u.id} href={unitPlanPath(u)} className={i === open ? 'is-open' : ''} onMouseEnter={() => setOpen(i)} onFocus={() => setOpen(i)}>
-        <Img w={1200} src={photo(i)} alt=""/>
+        <Img w={1200} src={houses.length ? houses[i % houses.length].image : photo(i)} alt=""/>
         <b className="ph3-acc-code">{u.code}</b>
         <div className="ph3-acc-info"><small><MapPin size={14}/>{u.zone || project.location}</small><strong>{u.code}</strong>
           <p>{u.type}{u.area ? ` · ${fmt(u.area)} m²` : ''}{u.direction ? ` · ${u.direction}` : ''}</p>
@@ -77,9 +123,21 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
 
     <section className="ph3-zones"><Eyebrow>Phân khu</Eyebrow><h3 data-fx="title">{profile.zones.length} khu chủ đề</h3>
       <div>{profile.zones.map((z, i) => <button type="button" key={z.code} data-fx="up" className={i % 2 ? 'is-low' : ''} onClick={() => onTab('zones')}>
-        <span className="ph3-zone-photo"><Img w={700} src={photo(i + 3)} alt=""/><i><ArrowUpRight size={14}/></i></span>
+        <span className="ph3-zone-photo"><Img w={700} src={pg(i * 3 + 2)} alt=""/><i><ArrowUpRight size={14}/></i></span>
         <span className="ph3-zone-tag"><small>{z.local}{z.area ? ' · ' + z.area : ''}</small><b>{z.name}</b></span><p>{z.body}</p></button>)}</div>
     </section>
+
+    {profile.plans && <section className="ph3-plans"><Eyebrow>Mặt bằng</Eyebrow><h3 data-fx="title">Tổng quan đô thị</h3>
+      <div>{profile.plans.map((p, i) => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up" className={i === 0 ? 'is-big' : ''}>
+        <Img w={i === 0 ? 2560 : 1200} src={p.image} alt={p.title}/><span><b>{p.title}</b><small>{p.body}</small></span><i><ArrowUpRight size={16}/></i></a>)}</div>
+    </section>}
+
+    {profile.payment && <section className="ph3-policy">
+      <div className="ph3-policy-head"><Eyebrow light>Chính sách bán hàng</Eyebrow><h3 data-fx="title">Phương thức thanh toán<br/>linh hoạt</h3></div>
+      <div className="ph3-pay">{profile.payment.map((p, i) => {const Icon = payIcons[i % payIcons.length]; return <div key={p.title} data-fx="up"><span>0{i + 1}</span><i><Icon size={24}/></i><strong>{p.title}</strong><p>{p.body}</p></div>;})}</div>
+      {profile.policies && <dl className="ph3-offers">{profile.policies.map(p => <div key={p.label} data-fx="up"><dt>{p.value}</dt><dd>{p.label}</dd></div>)}</dl>}
+      {profile.policyImages && <div className="ph3-posters">{profile.policyImages.map(p => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up"><Img w={900} src={p.image} alt={p.title}/><span><Wallet size={15}/>{p.title}</span></a>)}</div>}
+    </section>}
 
     {profile.policies && <section className="ph3-awards"><Eyebrow>Chính sách bán hàng</Eyebrow><h3 data-fx="title">Ưu đãi<br/>khi sở hữu</h3>
       {profile.priceFrom && <p>Giá dự kiến từ <b>{profile.priceFrom.value}</b> {profile.priceFrom.label}</p>}
@@ -90,9 +148,17 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-voice-list"><Eyebrow>Pháp lý & tiến độ</Eyebrow>
         {profile.timeline.map(t => <blockquote key={t.title} data-fx="up"><p>“{t.body}”</p><cite><ShieldCheck size={16}/>{t.title}</cite></blockquote>)}
         {profile.legal && <ul>{profile.legal.map(l => <li key={l}><ShieldCheck size={16}/>{l}</li>)}</ul>}</div>
-      <div className="ph3-voice-photo"><Img w={1200} src={photo(4)} alt=""/>
+      <div className="ph3-voice-photo"><Img w={1200} src={pg(8)} alt=""/>
         <div className="ph3-rate"><b className="fx-count">{free.length || units.length}</b><span>căn còn hàng</span><small><Building2 size={14}/>{project.developer}</small></div></div>
     </section>
+
+    {profile.faq && <section className="ph3-faq">
+      <div><Eyebrow>FAQs</Eyebrow><h3 data-fx="title">Câu hỏi<br/>thường gặp</h3><p>Chưa thấy câu trả lời bạn cần? Gọi ngay để được tư vấn.</p>
+        <a href={`tel:${contact.phone}`} className="sz-btn is-mint"><span>{contact.phone}</span><i><Phone size={16}/></i></a></div>
+      <div className="ph3-faq-list">{profile.faq.map((f, i) => <div key={f.q} className={i === faq ? 'is-open' : ''}>
+        <button type="button" onClick={() => setFaq(i === faq ? -1 : i)} aria-expanded={i === faq}><span>{String(i + 1).padStart(2, '0')}</span>{f.q}<ChevronDown size={18}/></button>
+        <div><p>{f.a}</p></div></div>)}</div>
+    </section>}
 
     <section className="ph3-enquiry">
       <div><Eyebrow>Tư vấn nhanh</Eyebrow><h3>Nhận bảng giá &<br/>giữ chỗ ưu tiên</h3><p>Đội ngũ tư vấn gửi thông tin {project.name} mới nhất cho bạn.</p>

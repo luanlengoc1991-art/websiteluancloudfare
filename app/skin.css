@@ -89,8 +89,6 @@
 .fx-ready [data-fx=title]{transform:translate3d(0,60px,0);clip-path:inset(0 0 100% 0);transition-property:opacity,transform,clip-path}
 .fx-ready [data-fx].fx-in{opacity:1;transform:none;clip-path:inset(-20% -10% -20% -10%)}
 @media(prefers-reduced-motion:reduce){
-  .fx-ready [data-fx]{opacity:1;transform:none;clip-path:none;transition:none}
-  .fx-marquee-track{animation:none}
   [data-skin=emerald] .site-atmosphere-photo{transform:none}
 }
 

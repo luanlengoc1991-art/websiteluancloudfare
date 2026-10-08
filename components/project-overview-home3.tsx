@@ -24,7 +24,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const heroRef = useRef<HTMLElement>(null);
   const go = (i: number) => setSlide(cur => {if (cur !== i) setPrev(cur); return i;});
   useEffect(() => {
-    if (slides.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (slides.length < 2) return;
     const t = window.setTimeout(() => go((slide + 1) % slides.length), 6500);
     return () => window.clearTimeout(t);
   }, [slide, slides.length]);

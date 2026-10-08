@@ -5,7 +5,8 @@ import {usePathname} from 'next/navigation';
 
 /* Spaciaz-style motion for the public site: scroll reveal, counters, magnetic buttons,
  * header state and hero parallax. Content works without JS; it is only hidden once
- * <html> carries .fx-ready, and reduced-motion users get none of it. */
+ * <html> carries .fx-ready. The owner wants motion even when the OS asks for reduced motion.
+ * Elements marked data-fx / .fx-count are handled on every page, immersive ones included. */
 const scope = '.public-site:not(.immersive-site):not(.admin-site)';
 const reveal: [string, string][] = [
   ['title', ':is(.page-heading,.compact-hero,.results-heading,.section-heading,.al-section-heading,.al-heading,.pd-heading,.nm-head,.nm-section-title,.market-section-heading) :is(h1,h2)'],
@@ -20,7 +21,6 @@ export default function SiteEffects() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     root.classList.add('fx-ready');
 
     const seen = new WeakSet<Element>();
@@ -45,14 +45,14 @@ export default function SiteEffects() {
         });
       }
       // Layout components mark their own elements with data-fx.
-      document.querySelectorAll(`${scope} [data-fx]`).forEach(el => {
+      document.querySelectorAll('[data-fx]').forEach(el => {
         if (seen.has(el)) return;
         seen.add(el);
         const siblings = el.parentElement ? Array.from(el.parentElement.children).filter(c => c.hasAttribute('data-fx')) : [];
         (el as HTMLElement).style.setProperty('--fx-i', String(Math.max(0, siblings.indexOf(el)) % 6));
         io.observe(el);
       });
-      document.querySelectorAll(`${scope} ${counters}`).forEach(el => {
+      document.querySelectorAll(`${scope} ${counters}, .fx-count`).forEach(el => {
         if (seen.has(el)) return;
         seen.add(el);
         io.observe(el);

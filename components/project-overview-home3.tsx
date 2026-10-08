@@ -22,6 +22,8 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const [slide, setSlide] = useState(0);
   const [prev, setPrev] = useState(-1);
   const heroRef = useRef<HTMLElement>(null);
+  const [seenSlides] = useState(() => new Set<number>());
+  seenSlides.add(slide).add((slide + 1) % Math.max(1, slides.length));
   const go = (i: number) => setSlide(cur => {if (cur !== i) setPrev(cur); return i;});
   useEffect(() => {
     if (slides.length < 2) return;
@@ -64,7 +66,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   }, [about, aboutTabs.length]);
   const at = aboutTabs[about];
   const [seenAbout] = useState(() => new Set<number>());
-  seenAbout.add(about);
+  seenAbout.add(about).add((about + 1) % aboutTabs.length);
   const sections = ([['tong-quan', 'Tổng quan', 1], ['ve-du-an', 'Về dự án', 1], ['khac-biet', 'Khác biệt', 1], ['video', 'Video', profile.video], ['vi-tri', 'Vị trí', profile.location], ['tien-ich', 'Tiện ích', gal.length], ['san-pham', 'Sản phẩm', houses.length], ['quy-can', 'Quỹ căn', picks.length], ['phan-khu', 'Phân khu', 1], ['mat-bang', 'Mặt bằng', profile.plans], ['chinh-sach', 'Chính sách', profile.payment], ['tien-do', 'Tiến độ', 1], ['hoi-dap', 'Hỏi đáp', profile.faq], ['lien-he', 'Liên hệ', 1]] as const).filter(x => x[2]).map(x => [x[0], x[1]] as const);
   const [active, setActive] = useState('tong-quan');
   const navRef = useRef<HTMLDivElement>(null);
@@ -104,7 +106,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     </nav>
     <section id="tong-quan" ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
       <div className="ph3-hero-stage">{slides.map((s, i) => <div key={s.image} className={'ph3-slide' + (i === slide ? ' is-on' : i === prev ? ' is-prev' : '')}>
-        {(i === slide || i === prev || i === (slide + 1) % slides.length) && <Img w={1920} eager src={s.image} alt={s.title}/>}</div>)}</div>
+        {(i === slide || i === prev || i === (slide + 1) % slides.length || seenSlides.has(i)) && <Img w={1600} eager src={s.image} alt={s.title}/>}</div>)}</div>
       <div className="ph3-hero-copy" key={'c' + slide}>
         <Eyebrow light>{cur.eyebrow || project.name}</Eyebrow><h2>{lines(cur.headline || cur.title)}</h2><p>{cur.body || profile.intro}</p>
         <div className="ph3-hero-btns"><button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem bảng hàng</span><i><ArrowUpRight size={16}/></i></button>
@@ -121,7 +123,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     <section id="ve-du-an" className="ph3-about">
       <div className="ph3-about-head"><Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Khám phá {project.name}</h3></div>
       <div className="ph3-about-box" data-fx="up">
-        <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}>{(i === about || i === (about + 1) % aboutTabs.length || seenAbout.has(i)) && <Img w={1400} eager src={t.image} alt={t.label}/>}</div>)}</div>
+        <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}>{(i === about || i === (about + 1) % aboutTabs.length || seenAbout.has(i)) && <Img w={1200} eager src={t.image} alt={t.label}/>}</div>)}</div>
         <div className="ph3-about-copy" key={'t' + about}>
           <small>{String(about + 1).padStart(2, '0')} / {String(aboutTabs.length).padStart(2, '0')} · {at.label}</small>
           <h4>{lines(at.title)}</h4><p>{at.body}</p>

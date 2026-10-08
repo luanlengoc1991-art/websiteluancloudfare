@@ -63,9 +63,44 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     return () => window.clearTimeout(t);
   }, [about, aboutTabs.length]);
   const at = aboutTabs[about];
+  const sections = ([['tong-quan', 'Tổng quan', 1], ['ve-du-an', 'Về dự án', 1], ['khac-biet', 'Khác biệt', 1], ['video', 'Video', profile.video], ['vi-tri', 'Vị trí', profile.location], ['tien-ich', 'Tiện ích', gal.length], ['san-pham', 'Sản phẩm', houses.length], ['quy-can', 'Quỹ căn', picks.length], ['phan-khu', 'Phân khu', 1], ['mat-bang', 'Mặt bằng', profile.plans], ['chinh-sach', 'Chính sách', profile.payment], ['tien-do', 'Tiến độ', 1], ['hoi-dap', 'Hỏi đáp', profile.faq], ['lien-he', 'Liên hệ', 1]] as const).filter(x => x[2]).map(x => [x[0], x[1]] as const);
+  const [active, setActive] = useState('tong-quan');
+  const navRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let tick = 0;
+    const spy = () => {
+      if (tick) return;
+      tick = requestAnimationFrame(() => {
+        tick = 0;
+        let cur = 'tong-quan';
+        document.querySelectorAll<HTMLElement>('.ph3 > section[id]').forEach(el => {if (el.getBoundingClientRect().top < 220) cur = el.id;});
+        setActive(cur);
+      });
+    };
+    spy();
+    window.addEventListener('scroll', spy, {passive: true});
+    return () => {window.removeEventListener('scroll', spy); cancelAnimationFrame(tick);};
+  }, []);
+  useEffect(() => {
+    const link = navRef.current?.querySelector<HTMLElement>('a.is-on');
+    const box = navRef.current;
+    if (link && box) box.scrollTo({left: link.offsetLeft - box.clientWidth / 2 + link.clientWidth / 2, behavior: 'smooth'});
+  }, [active]);
+  const jump = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    window.scrollTo({top: id === 'tong-quan' ? 0 : el.getBoundingClientRect().top + window.scrollY - 150, behavior: 'smooth'});
+    history.replaceState(null, '', '#' + id);
+  };
 
   return <div className="sz ph3">
-    <section ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
+    <nav className="ph3-nav" aria-label="Mục lục trang">
+      <a href="#tong-quan" className="ph3-nav-brand" onClick={e => jump(e, 'tong-quan')}><b>{project.name}</b><small>{project.location}</small></a>
+      <div ref={navRef}>{sections.map(([id, label]) => <a key={id} href={'#' + id} className={active === id ? 'is-on' : ''} onClick={e => jump(e, id)}>{label}</a>)}</div>
+      <button type="button" className="ph3-nav-cta" onClick={() => onTab('inventory')}>Bảng hàng <ArrowUpRight size={15}/></button>
+    </nav>
+    <section id="tong-quan" ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
       <div className="ph3-hero-stage">{slides.map((s, i) => <div key={s.image} className={'ph3-slide' + (i === slide ? ' is-on' : i === prev ? ' is-prev' : '')}>
         <Img w={2560} eager={i === 0} src={s.image} alt={s.title}/></div>)}</div>
       <div className="ph3-hero-copy" key={'c' + slide}>
@@ -81,7 +116,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       </div>
     </section>
 
-    <section className="ph3-about">
+    <section id="ve-du-an" className="ph3-about">
       <div className="ph3-about-head"><Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Khám phá {project.name}</h3></div>
       <div className="ph3-about-box" data-fx="up">
         <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}><Img w={1800} eager src={t.image} alt={t.label}/></div>)}</div>
@@ -98,7 +133,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
 
     <div className="ph3-pills" aria-hidden><div>{[0, 1].map(k => <span key={k}>{pills.map((p, i) => <span key={p + k}>{i % 2 === 0 && <em><Img w={320} src={pg(i)} alt=""/></em>}<b>{p}</b></span>)}</span>)}</div></div>
 
-    <section className="ph3-stats">{profile.stats.map((s, i) => <div key={s.label} data-fx="up" style={{marginTop: [120, 0, 160, 60][i % 4]}}>
+    <section id="khac-biet" className="ph3-stats">{profile.stats.map((s, i) => <div key={s.label} data-fx="up" style={{marginTop: [120, 0, 160, 60][i % 4]}}>
       <dt><b className="fx-count">{s.value}</b><sup>{s.suffix}</sup></dt><dd>{s.label}</dd></div>)}</section>
 
     <section className="ph3-diff">
@@ -108,7 +143,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-feats">{features.map(({title, body, Icon}) => <div key={title} data-fx="up"><i><Icon size={22}/></i><strong>{title}</strong><p>{body}</p></div>)}</div>
     </section>
 
-    {profile.video && <section className="ph3-video">
+    {profile.video && <section id="video" className="ph3-video">
       <div className="ph3-video-head"><div><Eyebrow>Video dự án</Eyebrow><h3 data-fx="title">{profile.video.title}</h3></div>
         {profile.highlights && <ul>{profile.highlights.map(h => <li key={h}><Sparkles size={16}/>{h}</li>)}</ul>}</div>
       <div className="ph3-video-frame" data-fx="zoom">{playing
@@ -117,7 +152,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <a className="ph3-video-link" href={profile.video.url} target="_blank" rel="noreferrer">Mở video trên Vimeo <ArrowUpRight size={14}/></a>
     </section>}
 
-    {profile.location && <section className="ph3-loc">
+    {profile.location && <section id="vi-tri" className="ph3-loc">
       <div className="ph3-loc-copy"><Eyebrow>Vị trí & kết nối</Eyebrow><h3 data-fx="title">{lines(profile.location.title)}</h3>{profile.location.body.map(p => <p key={p.slice(0, 20)}>{p}</p>)}
         <button type="button" className="sz-btn is-white" onClick={() => onTab('location')}><span>Xem bản đồ vị trí</span><i><ArrowUpRight size={16}/></i></button></div>
       {roads.length > 0 && <div className="ph3-roads">
@@ -127,7 +162,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       </div>}
     </section>}
 
-    {gal.length > 0 && <section className="ph3-amen">
+    {gal.length > 0 && <section id="tien-ich" className="ph3-amen">
       <div className="ph3-amen-head"><div><Eyebrow light>Tiện ích nội khu</Eyebrow><h3 data-fx="title">Thành phố công viên<br/>sinh thái hàng đầu châu Á</h3></div>
         <p>Hơn 70 công viên, 21 km đường dạo ven nước, VinWonders, sân golf 36 hố, quần thể giáo dục 150 ha cùng chuỗi phố thương mại quốc tế.</p></div>
       <div className="ph3-amen-grid">{(allAmenities ? gal : gal.slice(0, 9)).map((a, i) => <figure key={a.title} data-fx="up" className={[0, 6].includes(i % 10) ? 'is-wide' : ''}>
@@ -135,7 +170,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       {gal.length > 9 && <button type="button" className="sz-btn is-white ph3-more" onClick={() => setAllAmenities(v => !v)}><span>{allAmenities ? 'Thu gọn' : `Xem thêm ${gal.length - 9} tiện ích`}</span><i><ChevronDown size={16} style={{transform: allAmenities ? 'rotate(180deg)' : ''}}/></i></button>}
     </section>}
 
-    {houses.length > 0 && <section className="ph3-prod">
+    {houses.length > 0 && <section id="san-pham" className="ph3-prod">
       <div className="ph3-prod-list"><Eyebrow>Loại hình sản phẩm</Eyebrow><h3 data-fx="title">Nhà phố &<br/>biệt thự</h3>
         <ul>{houses.map((p, i) => <li key={p.title}><button type="button" className={i === product ? 'is-on' : ''} onMouseEnter={() => setProduct(i)} onClick={() => setProduct(i)}><small>{p.body}</small><b>{p.title}</b><ArrowUpRight size={16}/></button></li>)}</ul>
         {profile.priceFrom && <p className="ph3-prod-price">Giá dự kiến từ <b>{profile.priceFrom.value} tỷ</b><br/>{profile.priceFrom.label.replace(/^tỷ · /, '')}</p>}</div>
@@ -144,7 +179,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
           <button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem căn còn hàng</span><i><ArrowUpRight size={16}/></i></button></div></div>
     </section>}
 
-    {picks.length > 0 && <section className="ph3-units">
+    {picks.length > 0 && <section id="quy-can" className="ph3-units">
       <div className="ph3-units-head"><div><Eyebrow light>Quỹ căn dự án</Eyebrow><h3 data-fx="title">Chọn căn đẹp<br/>giá tốt nhất</h3></div>
         <button type="button" className="sz-btn is-white" onClick={() => onTab('inventory')}><span>Toàn bộ {units.length} căn</span><i><ArrowUpRight size={16}/></i></button></div>
       <div className="ph3-acc">{picks.map((u, i) => <a key={u.id} href={unitPlanPath(u)} className={i === open ? 'is-open' : ''} onMouseEnter={() => setOpen(i)} onFocus={() => setOpen(i)}>
@@ -159,18 +194,18 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
         {units.length > 40 && <button type="button" onClick={() => onTab('inventory')}>+{units.length - 40} căn</button>}</div>
     </section>}
 
-    <section className="ph3-zones"><Eyebrow>Phân khu</Eyebrow><h3 data-fx="title">{profile.zones.length} khu chủ đề</h3>
+    <section id="phan-khu" className="ph3-zones"><Eyebrow>Phân khu</Eyebrow><h3 data-fx="title">{profile.zones.length} khu chủ đề</h3>
       <div>{profile.zones.map((z, i) => <button type="button" key={z.code} data-fx="up" className={i % 2 ? 'is-low' : ''} onClick={() => onTab('zones')}>
         <span className="ph3-zone-photo"><Img w={700} src={pg(i * 3 + 2)} alt=""/><i><ArrowUpRight size={14}/></i></span>
         <span className="ph3-zone-tag"><small>{z.local}{z.area ? ' · ' + z.area : ''}</small><b>{z.name}</b></span><p>{z.body}</p></button>)}</div>
     </section>
 
-    {profile.plans && <section className="ph3-plans"><Eyebrow>Mặt bằng</Eyebrow><h3 data-fx="title">Tổng quan đô thị</h3>
+    {profile.plans && <section id="mat-bang" className="ph3-plans"><Eyebrow>Mặt bằng</Eyebrow><h3 data-fx="title">Tổng quan đô thị</h3>
       <div>{profile.plans.map((p, i) => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up" className={i === 0 ? 'is-big' : ''}>
         <Img w={i === 0 ? 2560 : 1200} src={p.image} alt={p.title}/><span><b>{p.title}</b><small>{p.body}</small></span><i><ArrowUpRight size={16}/></i></a>)}</div>
     </section>}
 
-    {profile.payment && <section className="ph3-policy">
+    {profile.payment && <section id="chinh-sach" className="ph3-policy">
       <div className="ph3-policy-head"><Eyebrow light>Chính sách bán hàng</Eyebrow><h3 data-fx="title">Phương thức thanh toán<br/>linh hoạt</h3></div>
       <div className="ph3-pay">{profile.payment.map((p, i) => {const Icon = payIcons[i % payIcons.length]; return <div key={p.title} data-fx="up"><span>0{i + 1}</span><i><Icon size={24}/></i><strong>{p.title}</strong><p>{p.body}</p></div>;})}</div>
       {profile.policies && <dl className="ph3-offers">{profile.policies.map(p => <div key={p.label} data-fx="up"><dt>{p.value}</dt><dd>{p.label}</dd></div>)}</dl>}
@@ -182,14 +217,14 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       {[0, 1].map(row => <div key={row} className={'ph3-award-row' + (row ? ' is-rev' : '')}><div>{[0, 1].map(k => <span key={k}>{(row ? [...(profile.products || []), ...(profile.connections || [])].map(p => ({value: p.title, label: p.body})) : [...profile.policies!, ...profile.policies!]).map((p, j) => <span key={p.label + k + j} className="ph3-award"><i><Award size={16}/></i><b>{p.value}</b><small>{p.label}</small></span>)}</span>)}</div></div>)}
     </section>}
 
-    <section className="ph3-time3">
+    <section id="tien-do" className="ph3-time3">
       <div className="ph3-time3-head"><div><Eyebrow>Pháp lý & tiến độ</Eyebrow><h3 data-fx="title">Các mốc phát triển</h3></div>
         <div className="ph3-time3-stat"><b className="fx-count">{free.length || units.length}</b><span>căn còn hàng<br/><small>{project.developer}</small></span></div></div>
       <ol>{profile.timeline.map((t, i) => <li key={t.title} data-fx="up"><em>{t.date || String(i + 1).padStart(2, '0')}</em><i/><strong>{t.title}</strong><p>{t.body}</p></li>)}</ol>
       {profile.legal && <ul className="ph3-legal">{profile.legal.map(l => <li key={l} data-fx="up"><ShieldCheck size={20}/>{l}</li>)}</ul>}
     </section>
 
-    {profile.faq && <section className="ph3-faq3">
+    {profile.faq && <section id="hoi-dap" className="ph3-faq3">
       <div className="ph3-faq3-head"><div><Eyebrow>FAQs</Eyebrow><h3 data-fx="title">Câu hỏi thường gặp</h3></div>
         <a href={`tel:${contact.phone}`} className="sz-btn is-mint"><span>Hỏi tư vấn {contact.phone}</span><i><Phone size={16}/></i></a></div>
       <div className="ph3-faq3-grid">{profile.faq.map((f, i) => <div key={f.q} className={i === faq ? 'is-open' : ''}>
@@ -197,7 +232,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
         <div><p>{f.a}</p></div></div>)}</div>
     </section>}
 
-    <section className="ph3-enquiry">
+    <section id="lien-he" className="ph3-enquiry">
       <div><Eyebrow>Tư vấn nhanh</Eyebrow><h3>Nhận bảng giá &<br/>giữ chỗ ưu tiên</h3><p>Đội ngũ tư vấn gửi thông tin {project.name} mới nhất cho bạn.</p>
         <a href={`tel:${contact.phone}`}><i><Phone size={18}/></i><span><small>Hotline / Zalo</small><b>{contact.phone}</b></span></a></div>
       <LeadForm projects={[project]} note={`Tư vấn ${project.name} (trang Tổng quan dự án)`} compact/>

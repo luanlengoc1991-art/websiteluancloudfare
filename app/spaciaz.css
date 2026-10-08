@@ -2023,3 +2023,22 @@ button.sz-bento-photo{padding:0}
 .ph3-about-photo>div.is-on{opacity:1}
 .ph3-about-photo img{animation:none}.ph3-about-photo>div.is-on img{animation:ph3-kb 10s ease-out both}
 .ph3-about-photo::after{z-index:1}
+
+/* home-3 overview: landing-page header nav replaces the bottom dock (Sài Gòn Park only) */
+.project-workspace.is-landing .workspace-bottom{display:none!important}
+.ph3{padding-top:74px}
+.ph3-nav{position:fixed;z-index:60;top:86px;left:50%;transform:translateX(-50%);width:min(1240px,calc(100vw - 48px));display:flex;align-items:center;gap:14px;padding:7px 7px 7px 20px;border-radius:99px;background:#ffffffe6;border:1px solid #ffffffb3;box-shadow:0 18px 40px -24px #02261d66;backdrop-filter:blur(18px);animation:ph3-navin .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ph3-navin{from{opacity:0;transform:translate(-50%,-20px)}}
+.ph3-nav-brand{display:grid;flex:none;line-height:1.15;text-decoration:none;color:var(--sz-ink);padding-right:14px;border-right:1px solid var(--sz-line)}
+.ph3-nav-brand b{font-size:14.5px;letter-spacing:-.02em}
+.ph3-nav-brand small{font-size:11px;color:var(--sz-muted)}
+.ph3-nav>div{flex:1;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth}
+.ph3-nav>div::-webkit-scrollbar{display:none}
+.ph3-nav>div a{position:relative;flex:none;padding:10px 13px;border-radius:99px;font-size:13.5px;font-weight:600;color:var(--sz-text);text-decoration:none;white-space:nowrap;transition:color .3s,background .3s}
+.ph3-nav>div a:hover{color:var(--sz-em);background:var(--sz-soft)}
+.ph3-nav>div a.is-on{color:var(--sz-deep);background:linear-gradient(120deg,var(--sz-mint),var(--sz-mint-2));box-shadow:0 8px 18px -10px #059669aa}
+.ph3-nav-cta{flex:none;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 20px;border:0;border-radius:99px;background:var(--sz-deep);color:#fff;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .3s}
+.ph3-nav-cta:hover{background:var(--sz-em)}
+.ph3>section[id]{scroll-margin-top:150px}
+@media(max-width:1000px){.ph3-nav-brand{display:none}.ph3-nav{padding-left:7px}}
+@media(max-width:700px){.ph3-nav{top:74px;width:calc(100vw - 20px)}.ph3-nav-cta{padding:0 14px}.ph3{padding-top:64px}}

@@ -750,7 +750,7 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
   const projectId = params ? (withUnits.find(p => p.id === params.project)?.id || units.find(u => u.code.toUpperCase() === params.code)?.projectId || STUDIO) : STUDIO;
   const project = projects.find(p => p.id === projectId);
   const studio = projectId === STUDIO;
-  const done = useMemo(() => units.filter(u => u.projectId === projectId && (!studio || u.drawing?.main?.src)), [units, projectId, studio]);
+  const done = useMemo(() => units.filter(u => u.projectId === projectId && (!studio || u.drawing?.main?.src || u.sourceLabel === 'Google Sheet')), [units, projectId, studio]);
   const frame = useRef<HTMLIFrameElement>(null), top = useRef<HTMLDivElement>(null);
   const [admin, setAdmin] = useState<boolean | null>(null), [height, setHeight] = useState(1600), [q, setQ] = useState('');
   const [code, setCode] = useState('');

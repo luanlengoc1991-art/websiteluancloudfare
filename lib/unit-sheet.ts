@@ -68,8 +68,10 @@ const number = (v: string) => {
     : Number(t.replace(',', '.').replace(/[^\d.]/g, ''));
   return Number.isFinite(n) ? n : 0;
 };
+export const PENDING = 'Đang cập nhật';
 const status = (v: string) => {
   const p = plain(v);
+  if (!p) return PENDING;
   if (/da ban|sold|ban roi|het hang/.test(p)) return 'Đã bán';
   if (/giu|lock|coc|booking|dat cho/.test(p)) return 'Đang giữ chỗ';
   return 'Còn hàng';
@@ -93,8 +95,8 @@ export function mapSheetUnits(projectId: string, category: string, table: string
     if (price >= 1e6) price = price / 1e9; // VND → tỷ
     const unit: Unit = {
       id: `sheet-${projectId}-${code.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, code, projectId, category,
-      zone: get(row, 'zone') || 'Chưa phân khu', tower: get(row, 'tower') || undefined, type: get(row, 'type') || 'Chưa cập nhật',
-      group: get(row, 'group'), direction: get(row, 'direction') || 'Chưa cập nhật',
+      zone: get(row, 'zone') || PENDING, tower: get(row, 'tower') || PENDING, type: get(row, 'type') || PENDING,
+      group: get(row, 'group'), direction: get(row, 'direction') || PENDING,
       area: number(get(row, 'area')), builtArea: number(get(row, 'builtArea')), price: Math.round(price * 1000) / 1000,
       status: status(get(row, 'status')), beds: number(get(row, 'beds')), floor: number(get(row, 'floor')),
       x: 10 + (n % 8) * 11, y: 15 + Math.floor(n / 8) % 7 * 11,
@@ -106,4 +108,15 @@ export function mapSheetUnits(projectId: string, category: string, table: string
     };
     return [unit];
   }).slice(0, 2000);
+}
+
+/** Sheet units replace a project's units but keep what only the website knows for the same code
+ *  (Vịnh Tiên drawing, poster/layout images, unit id used by holds and pins). */
+export function withSiteData(sheetUnits: Unit[], base: Unit[]): Unit[] {
+  const byCode = new Map(base.map(u => [u.projectId + '|' + u.code.trim().toUpperCase(), u]));
+  return sheetUnits.map(u => {
+    const old = byCode.get(u.projectId + '|' + u.code);
+    if (!old) return u;
+    return {...u, id: old.id, drawing: old.drawing, posterUrl: u.posterUrl || old.posterUrl, layoutUrl: u.layoutUrl || old.layoutUrl, x: old.x, y: old.y};
+  });
 }

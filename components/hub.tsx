@@ -19,6 +19,7 @@ import LoginForm from './login-form';
 import ContactForm from './contact-form';
 import ProjectChatWidget from './project-chat-widget';
 import NavProjects from './nav-projects';
+import {withSiteData} from '@/lib/unit-sheet';
 import AdminShell from './admin-shell';
 
 import GuideCenter from './guide-center';
@@ -109,7 +110,7 @@ useEffect(()=>{
 const channel=useRef<BroadcastChannel|null>(null);
 useEffect(()=>{const refresh=()=>{if(document.visibilityState==='visible'){reload();setNow(Date.now());}};window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',refresh);if(typeof BroadcastChannel!=='undefined'){channel.current=new BroadcastChannel('alpha-hub-content');channel.current.onmessage=refresh;}return()=>{window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',refresh);channel.current?.close();channel.current=null;};},[reload]);
 const merge=<T extends {id:string}>(kind:string,seed:T[]):T[]=>{const map=new Map(seed.map(x=>[x.id,x]));state.records.filter(r=>r.kind===kind).forEach(r=>map.set(r.id,r.data));return Array.from(map.values());};
-const projects=useMemo(()=>merge<Project>('project',seedProjects),[state.records]),units=useMemo(()=>{const sheets=new Map(state.records.filter(r=>r.kind==='unit-sheet'&&Array.isArray(r.data?.units)).map(r=>[r.id,r.data.units as Unit[]]));const base=merge<Unit>('unit',[...seedUnits.filter(u=>u.projectId!=='green-paradise'),...greenUnits]).filter(u=>!sheets.has(u.projectId));return [...base,...Array.from(sheets.values()).flat()];},[state.records,greenUnits]),customers=useMemo(()=>merge<Customer>('customer',[]),[state.records]),articles=useMemo(()=>merge<Article>('article',seedArticles),[state.records]);const settings:Settings={...defaultSettings,...state.records.find(r=>r.kind==='settings'&&r.id==='main')?.data};
+const projects=useMemo(()=>merge<Project>('project',seedProjects),[state.records]),units=useMemo(()=>{const sheets=new Map(state.records.filter(r=>r.kind==='unit-sheet'&&Array.isArray(r.data?.units)).map(r=>[r.id,r.data.units as Unit[]]));const all=merge<Unit>('unit',[...seedUnits.filter(u=>u.projectId!=='green-paradise'),...greenUnits]);return [...all.filter(u=>!sheets.has(u.projectId)),...withSiteData(Array.from(sheets.values()).flat(),all)];},[state.records,greenUnits]),customers=useMemo(()=>merge<Customer>('customer',[]),[state.records]),articles=useMemo(()=>merge<Article>('article',seedArticles),[state.records]);const settings:Settings={...defaultSettings,...state.records.find(r=>r.kind==='settings'&&r.id==='main')?.data};
 const unitCounts=useMemo(()=>{const counts=new Map<string,number>();for(const unit of units)counts.set(unit.projectId,(counts.get(unit.projectId)||0)+1);return counts;},[units]);
 const aboutContent=useMemo<AboutContent>(()=>({...defaultAbout,...state.records.find(r=>r.kind==='about'&&r.id==='main')?.data}),[state.records]);
 const guideContent=useMemo(()=>mergeGuides(state.records),[state.records]);

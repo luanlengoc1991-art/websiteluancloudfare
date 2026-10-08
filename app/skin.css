@@ -86,7 +86,7 @@
 .fx-ready [data-fx=left]{transform:translate3d(-60px,0,0)}
 .fx-ready [data-fx=right]{transform:translate3d(60px,0,0)}
 .fx-ready [data-fx=zoom]{transform:scale(.94)}
-.fx-ready [data-fx=title]{transform:translate3d(0,60px,0);clip-path:inset(0 0 100% 0);transition-property:opacity,transform,clip-path}
+.fx-ready [data-fx=title]{transform:translate3d(0,60px,0);clip-path:inset(0 0 45% 0);transition-property:opacity,transform,clip-path}
 .fx-ready [data-fx].fx-in{opacity:1;transform:none;clip-path:inset(-20% -10% -20% -10%)}
 @media(prefers-reduced-motion:reduce){
   [data-skin=emerald] .site-atmosphere-photo{transform:none}

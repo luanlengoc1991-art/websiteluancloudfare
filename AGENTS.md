@@ -147,4 +147,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Menu header thả xuống (08/10/2026)
 - `components/nav-projects.tsx`: rê chuột vào Dự án / Quỹ căn / Mặt bằng căn hiện bảng danh sách dự án (ảnh, vị trí, số căn) → Tổng quan dự án / tab Bảng hàng / `/mat-bang-can?project=`.
-- Căn từ Sheet được ghép với căn cũ CÙNG MÃ (`withSiteData`): giữ id, bản vẽ Vịnh Tiên, ảnh poster/layout, toạ độ; số liệu lấy theo Sheet. Ô trống Phân khu/Tòa/Loại hình/Hướng/Trạng thái = "Đang cập nhật". Trang Mặt bằng căn của Green Paradise hiện cả căn từ Sheet chưa có bản vẽ.
+- Căn từ Sheet được ghép với căn cũ CÙNG MÃ (`withSiteData`): giữ id, bản vẽ Vịnh Tiên, ảnh poster/layout, toạ độ; số liệu lấy theo Sheet. Ô trống Phân khu/Tòa/Loại hình/Hướng = "Đang cập nhật"; Trạng thái trống = "Còn hàng". Admin bật/tắt Còn hàng/Hết hàng từng căn + nút "Còn hàng tất cả" ở /admin/ma-can (lưu `overrides` theo mã trong bản ghi unit-sheet, giữ nguyên khi đồng bộ lại). Trang Mặt bằng căn của Green Paradise hiện cả căn từ Sheet chưa có bản vẽ.

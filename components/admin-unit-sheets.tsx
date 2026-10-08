@@ -1,6 +1,6 @@
 'use client';
 import {useEffect, useState} from 'react';
-import {ExternalLink, FileSpreadsheet, Link2Off, RefreshCw, Search} from 'lucide-react';
+import {CheckCheck, ExternalLink, FileSpreadsheet, Link2Off, RefreshCw, Search} from 'lucide-react';
 import {toast} from 'sonner';
 import type {Project, Unit} from '@/lib/catalog';
 import {projectPath} from '@/lib/project-routes';
@@ -30,6 +30,14 @@ export default function AdminUnitSheets({projects, units, onRefresh}: {projects:
     } catch (e) {toast.error(e instanceof Error ? e.message : 'Không đồng bộ được.'); load();}
     finally {setBusy('');}
   };
+  const setStatus = async (projectId: string, body: object, ok: string) => {
+    setBusy(projectId + 'status');
+    try {
+      const r = await fetch('/api/unit-sheets', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({projectId, ...body})});
+      const d = await r.json(); if (!r.ok) throw Error(d.error || 'Không cập nhật được.');
+      toast.success(ok); await onRefresh();
+    } catch (e) {toast.error(e instanceof Error ? e.message : 'Không cập nhật được.');} finally {setBusy('');}
+  };
   const time = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
   const list = projects.filter(p => !q.trim() || p.name.toLowerCase().includes(q.trim().toLowerCase()));
   return <div className="aus">
@@ -53,7 +61,13 @@ export default function AdminUnitSheets({projects, units, onRefresh}: {projects:
           {(synced || info.url) && <button className="button subtle" disabled={!!busy} onClick={() => {if (confirm(`Bỏ đồng bộ Sheet của ${p.name}? Website sẽ dùng lại dữ liệu mặc định.`)) call(p.id, 'clear');}}><Link2Off size={15}/>Bỏ đồng bộ</button>}
           <button className="button subtle" onClick={() => setOpen(open === p.id ? '' : p.id)}>{open === p.id ? 'Ẩn mã căn' : `Xem ${mine.length} mã căn`}</button>
         </div>
-        {open === p.id && <div className="aus-codes">{mine.map(u => <span key={u.id} className={u.status === 'Còn hàng' ? '' : 'is-off'} title={`${u.type} · ${u.area} m² · ${u.price} tỷ · ${u.status}`}>{u.code}</span>)}{!mine.length && <em className="muted">Chưa có căn.</em>}</div>}
+        {open === p.id && <div className="aus-units">
+          {synced && <div className="aus-units-bar"><span>{mine.filter(u => u.status === 'Còn hàng').length} còn hàng · {mine.filter(u => u.status !== 'Còn hàng').length} hết hàng</span><button className="button subtle" disabled={!!busy} onClick={() => setStatus(p.id, {action: 'all-available'}, 'Đã đặt tất cả căn về Còn hàng.')}><CheckCheck size={15}/>Còn hàng tất cả</button></div>}
+          {!synced && <p className="muted">Đồng bộ Sheet để chỉnh trạng thái từng căn.</p>}
+          <div className="aus-codes">{mine.map(u => {const on = u.status === 'Còn hàng'; return synced
+            ? <button type="button" key={u.id} disabled={!!busy} className={'aus-code' + (on ? ' is-on' : ' is-sold')} title={`${u.type} · ${u.area} m² · ${u.price} tỷ — bấm để đổi trạng thái`} onClick={() => setStatus(p.id, {action: 'status', code: u.code, status: on ? 'Đã bán' : 'Còn hàng'}, `${u.code}: ${on ? 'Hết hàng' : 'Còn hàng'}`)}><b>{u.code}</b><small>{on ? 'Còn hàng' : 'Hết hàng'}</small></button>
+            : <span key={u.id} className="aus-code is-on"><b>{u.code}</b><small>{u.status}</small></span>;})}{!mine.length && <em className="muted">Chưa có căn.</em>}</div>
+        </div>}
       </section>;
     })}
   </div>;

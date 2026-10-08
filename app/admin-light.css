@@ -143,3 +143,11 @@
 .aus-codes span.is-off{background:#f3f4f6;border-color:#e5e7eb;color:#9ca3af;text-decoration:line-through}
 .aus .spin{animation:aus-spin 1s linear infinite}
 @keyframes aus-spin{to{transform:rotate(360deg)}}
+.aus-units{display:grid;gap:10px}
+.aus-units-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:600;color:#334155}
+.aus-units-bar .button{height:36px;display:inline-flex;align-items:center;gap:6px}
+.aus-code{display:inline-grid;gap:1px;padding:6px 12px;border-radius:12px;border:1px solid #bbf7d0;background:#ecfdf5;color:#065f46;font:inherit;text-align:left;cursor:pointer;transition:background .2s,border-color .2s}
+button.aus-code:hover{border-color:#059669}
+.aus-code b{font-size:13px}
+.aus-code small{font-size:11px;font-weight:600}
+.aus-code.is-sold{background:#fef2f2;border-color:#fecaca;color:#b91c1c}

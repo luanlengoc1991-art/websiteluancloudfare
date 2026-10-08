@@ -2,7 +2,7 @@ import {getSignedInUser} from '@/lib/auth';
 import {database, readAll} from '@/db/store';
 import {isSameOrigin} from '@/lib/request-origin';
 import {seedProjects} from '@/lib/catalog';
-import {mapSheetUnits, parseCsv, sheetCsvUrl, type UnitSheet} from '@/lib/unit-sheet';
+import {applyOverrides, mapSheetUnits, parseCsv, sheetCsvUrl, type UnitSheet} from '@/lib/unit-sheet';
 export const dynamic = 'force-dynamic';
 
 const save = (kind: string, id: string, data: unknown) => database().prepare('INSERT INTO records(owner,kind,id,payload,updated) VALUES(?,?,?,?,?) ON CONFLICT(owner,kind,id) DO UPDATE SET payload=excluded.payload,updated=excluded.updated').bind('admin', kind, id, JSON.stringify(data), Date.now()).run();
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!isSameOrigin(request)) return Response.json({error: 'Yêu cầu không hợp lệ.'}, {status: 403});
     const user = await getSignedInUser();
     if (!user?.isAdmin) return Response.json({error: 'Chỉ quản trị viên được đồng bộ Sheet.'}, {status: 403});
-    const body = await request.json() as {projectId?: string; url?: string; action?: string};
+    const body = await request.json() as {projectId?: string; url?: string; action?: string; code?: string; status?: string};
     const project = await projectOf(String(body.projectId || ''));
     if (!project?.id) return Response.json({error: 'Dự án không tồn tại.'}, {status: 404});
     if (body.action === 'clear') {
@@ -38,6 +38,21 @@ export async function POST(request: Request) {
         database().prepare("DELETE FROM records WHERE owner='admin' AND kind='unit-sheet-src' AND id=?").bind(project.id),
       ]);
       return Response.json({ok: true});
+    }
+    const current = await database().prepare("SELECT payload FROM records WHERE owner='admin' AND kind='unit-sheet' AND id=?").bind(project.id).first<{payload: string}>();
+    const sheet: UnitSheet | null = current ? JSON.parse(current.payload) : null;
+    if (body.action === 'status' || body.action === 'all-available') {
+      if (!sheet) return Response.json({error: 'Dự án chưa đồng bộ Sheet.'}, {status: 400});
+      const overrides = {...(sheet.overrides || {})};
+      if (body.action === 'all-available') sheet.units.forEach(u => {overrides[u.code] = 'Còn hàng';});
+      else {
+        const code = String(body.code || '').toUpperCase(), status = body.status === 'Đã bán' ? 'Đã bán' : 'Còn hàng';
+        if (!sheet.units.some(u => u.code === code)) return Response.json({error: 'Không có mã căn này.'}, {status: 404});
+        overrides[code] = status;
+      }
+      const next = {...sheet, overrides, units: applyOverrides(sheet.units, overrides)};
+      await save('unit-sheet', project.id, next);
+      return Response.json({ok: true, units: next.units.map(u => ({code: u.code, status: u.status}))});
     }
     const url = String(body.url || '').trim().slice(0, 2000);
     let csv: string;
@@ -52,7 +67,8 @@ export async function POST(request: Request) {
     }
     const units = mapSheetUnits(project.id, project.category || 'low', parseCsv(text));
     if (!units.length) return Response.json({error: 'Sheet không có dòng mã căn nào.'}, {status: 400});
-    const data: UnitSheet = {syncedAt: Date.now(), count: units.length, units};
+    const overrides = sheet?.overrides || {};
+    const data: UnitSheet = {syncedAt: Date.now(), count: units.length, units: applyOverrides(units, overrides), overrides};
     await save('unit-sheet', project.id, data);
     await save('unit-sheet-src', project.id, {url});
     return Response.json({ok: true, count: units.length, syncedAt: data.syncedAt, sample: units.slice(0, 5).map(u => u.code)});

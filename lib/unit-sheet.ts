@@ -4,7 +4,10 @@ import type {Unit} from './catalog';
  *  - kind 'unit-sheet'     id=<projectId>  public  {syncedAt, count, units}
  *  - kind 'unit-sheet-src' id=<projectId>  private {url, gid}
  *  A project with a 'unit-sheet' record shows exactly the sheet's units on the website. */
-export type UnitSheet = {syncedAt: number; count: number; units: Unit[]};
+export type UnitSheet = {syncedAt: number; count: number; units: Unit[]; overrides?: Record<string, string>};
+
+/** Admin-set statuses (by code) win over the sheet and survive re-syncs. */
+export const applyOverrides = (units: Unit[], o: Record<string, string> = {}) => units.map(u => o[u.code] ? {...u, status: o[u.code]} : u);
 
 /** Any Google Sheets link (edit/view/share, optional #gid) → CSV export URL. */
 export function sheetCsvUrl(input: string) {
@@ -71,7 +74,7 @@ const number = (v: string) => {
 export const PENDING = 'Đang cập nhật';
 const status = (v: string) => {
   const p = plain(v);
-  if (!p) return PENDING;
+  if (!p) return 'Còn hàng';
   if (/da ban|sold|ban roi|het hang/.test(p)) return 'Đã bán';
   if (/giu|lock|coc|booking|dat cho/.test(p)) return 'Đang giữ chỗ';
   return 'Còn hàng';

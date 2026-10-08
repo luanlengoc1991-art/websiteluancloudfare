@@ -2082,3 +2082,25 @@ button.sz-bento-photo{padding:0}
 @media(min-width:701px){.immersive-site .project-workspace.is-landing .workspace-panel{margin:0 66px!important}.ph3-nav{left:66px;right:66px}}
 @media(max-width:700px){.project-workspace.is-landing .workspace-top-left{top:10px!important;bottom:auto!important;left:8px!important;flex-direction:row!important;gap:4px!important;padding:4px!important}.project-workspace.is-landing .workspace-top-left .round-tool{width:36px!important;height:36px!important}.project-workspace.is-landing .workspace-brand{display:none!important}.ph3-nav{left:96px;right:8px}}
 @media(max-width:700px){.ph3-nav-cta{font-size:0;width:40px;height:40px;padding:0;justify-content:center;gap:0}.ph3-nav-cta svg{width:17px;height:17px}}
+/* landing v3: edge-to-edge bands, floating icon buttons, image placeholders */
+@media(min-width:701px){.immersive-site .project-workspace.is-landing .workspace-panel{margin:0!important}}
+.immersive-site .project-workspace.is-landing .workspace-panel{margin:0!important}
+.ph3>section{border-radius:0!important;margin-left:0!important;margin-right:0!important}
+.ph3>section+section,.ph3-pills+section{margin-top:0!important}
+.ph3-hero{min-height:calc(100vh - 84px)}
+.ph3-stats{padding-top:90px}
+.ph3-diff,.ph3-time3,.ph3-faq3{box-shadow:none!important}
+.ph3-nav{left:16px;right:16px}
+@media(min-width:701px){.ph3-nav{left:16px;right:16px}}
+.project-workspace.is-landing :is(.workspace-top-left,.workspace-brand){padding:0!important;background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;gap:10px!important}
+.project-workspace.is-landing :is(.workspace-back-label,.workspace-brand span){display:none!important}
+.project-workspace.is-landing .workspace-top-left .round-tool{width:46px!important;height:46px!important;background:#fffffff2!important;color:var(--sz-deep)!important;box-shadow:0 10px 24px -10px #02261d80!important}
+.project-workspace.is-landing .workspace-top-left .round-tool svg{width:20px;height:20px}
+.project-workspace.is-landing .workspace-brand img{width:52px!important;height:52px!important;padding:6px;box-shadow:0 10px 24px -10px #02261d80!important}
+.project-workspace.is-landing :is(.workspace-top-left,.workspace-brand){top:96px!important}
+.project-workspace.is-landing .workspace-top-left{left:14px!important}.project-workspace.is-landing .workspace-brand{right:14px!important}
+/* placeholders while photos load */
+:is(.ph3-slide,.ph3-about-photo>div,.ph3-amen-grid figure,.ph3-prod-photo,.ph3-plans a,.ph3-posters a,.ph3-roads-photo,.ph3-video-frame,.ph3-acc>a,.ph3-zone-photo,.ph3-diff-photo){background:linear-gradient(110deg,#0b3a2e 30%,#14574400 50%,#0b3a2e 70%),#0b3a2e;background-size:250% 100%,auto;animation:ph3-shimmer 1.6s linear infinite}
+@keyframes ph3-shimmer{from{background-position:120% 0,0 0}to{background-position:-120% 0,0 0}}
+.ph3-slide{animation:ph3-shimmer 1.6s linear infinite}
+@media(max-width:700px){.project-workspace.is-landing .workspace-top-left{top:10px!important;flex-direction:row!important;gap:6px!important}.project-workspace.is-landing .workspace-top-left .round-tool{width:38px!important;height:38px!important}}

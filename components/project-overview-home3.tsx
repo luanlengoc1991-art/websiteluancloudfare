@@ -63,6 +63,8 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     return () => window.clearTimeout(t);
   }, [about, aboutTabs.length]);
   const at = aboutTabs[about];
+  const [seenAbout] = useState(() => new Set<number>());
+  seenAbout.add(about);
   const sections = ([['tong-quan', 'Tổng quan', 1], ['ve-du-an', 'Về dự án', 1], ['khac-biet', 'Khác biệt', 1], ['video', 'Video', profile.video], ['vi-tri', 'Vị trí', profile.location], ['tien-ich', 'Tiện ích', gal.length], ['san-pham', 'Sản phẩm', houses.length], ['quy-can', 'Quỹ căn', picks.length], ['phan-khu', 'Phân khu', 1], ['mat-bang', 'Mặt bằng', profile.plans], ['chinh-sach', 'Chính sách', profile.payment], ['tien-do', 'Tiến độ', 1], ['hoi-dap', 'Hỏi đáp', profile.faq], ['lien-he', 'Liên hệ', 1]] as const).filter(x => x[2]).map(x => [x[0], x[1]] as const);
   const [active, setActive] = useState('tong-quan');
   const navRef = useRef<HTMLDivElement>(null);
@@ -102,7 +104,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     </nav>
     <section id="tong-quan" ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
       <div className="ph3-hero-stage">{slides.map((s, i) => <div key={s.image} className={'ph3-slide' + (i === slide ? ' is-on' : i === prev ? ' is-prev' : '')}>
-        <Img w={2560} eager={i === 0} src={s.image} alt={s.title}/></div>)}</div>
+        {(i === slide || i === prev || i === (slide + 1) % slides.length) && <Img w={1920} eager src={s.image} alt={s.title}/>}</div>)}</div>
       <div className="ph3-hero-copy" key={'c' + slide}>
         <Eyebrow light>{cur.eyebrow || project.name}</Eyebrow><h2>{lines(cur.headline || cur.title)}</h2><p>{cur.body || profile.intro}</p>
         <div className="ph3-hero-btns"><button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem bảng hàng</span><i><ArrowUpRight size={16}/></i></button>
@@ -119,7 +121,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
     <section id="ve-du-an" className="ph3-about">
       <div className="ph3-about-head"><Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Khám phá {project.name}</h3></div>
       <div className="ph3-about-box" data-fx="up">
-        <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}><Img w={1800} eager src={t.image} alt={t.label}/></div>)}</div>
+        <div className="ph3-about-photo">{aboutTabs.map((t, i) => <div key={t.key} className={i === about ? 'is-on' : ''}>{(i === about || i === (about + 1) % aboutTabs.length || seenAbout.has(i)) && <Img w={1400} eager src={t.image} alt={t.label}/>}</div>)}</div>
         <div className="ph3-about-copy" key={'t' + about}>
           <small>{String(about + 1).padStart(2, '0')} / {String(aboutTabs.length).padStart(2, '0')} · {at.label}</small>
           <h4>{lines(at.title)}</h4><p>{at.body}</p>
@@ -137,7 +139,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <dt><b className="fx-count">{s.value}</b><sup>{s.suffix}</sup></dt><dd>{s.label}</dd></div>)}</section>
 
     <section className="ph3-diff">
-      <div className="ph3-diff-left"><div className="ph3-diff-photo"><Img w={1200} src={pg(0)} alt=""/></div>
+      <div className="ph3-diff-left"><div className="ph3-diff-photo"><Img w={900} src={pg(0)} alt=""/></div>
         <Eyebrow>{profile.focus.eyebrow}</Eyebrow><h3 data-fx="title">{lines(profile.focus.title)}</h3><p>{profile.focus.body}</p>
         <button type="button" className="sz-btn is-white" onClick={() => onTab('gallery')}><span>Thư viện ảnh</span><i><ArrowUpRight size={16}/></i></button></div>
       <div className="ph3-feats">{features.map(({title, body, Icon}) => <div key={title} data-fx="up"><i><Icon size={22}/></i><strong>{title}</strong><p>{body}</p></div>)}</div>
@@ -148,7 +150,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
         {profile.highlights && <ul>{profile.highlights.map(h => <li key={h}><Sparkles size={16}/>{h}</li>)}</ul>}</div>
       <div className="ph3-video-frame" data-fx="zoom">{playing
         ? <iframe src={profile.video.embed} title={profile.video.title} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen/>
-        : <button type="button" onClick={() => setPlaying(true)} aria-label="Phát video"><Img w={2560} src={profile.video.poster || project.image} alt=""/><i><Play size={30} fill="currentColor"/></i><span>Xem phim tổng quan</span></button>}</div>
+        : <button type="button" onClick={() => setPlaying(true)} aria-label="Phát video"><Img w={1600} src={profile.video.poster || project.image} alt=""/><i><Play size={30} fill="currentColor"/></i><span>Xem phim tổng quan</span></button>}</div>
       <a className="ph3-video-link" href={profile.video.url} target="_blank" rel="noreferrer">Mở video trên Vimeo <ArrowUpRight size={14}/></a>
     </section>}
 
@@ -156,7 +158,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-loc-copy"><Eyebrow>Vị trí & kết nối</Eyebrow><h3 data-fx="title">{lines(profile.location.title)}</h3>{profile.location.body.map(p => <p key={p.slice(0, 20)}>{p}</p>)}
         <button type="button" className="sz-btn is-white" onClick={() => onTab('location')}><span>Xem bản đồ vị trí</span><i><ArrowUpRight size={16}/></i></button></div>
       {roads.length > 0 && <div className="ph3-roads">
-        <div className="ph3-roads-photo"><Img w={1600} src={roads[road].image} alt={roads[road].title}/><span><Car size={16}/>{roads[road].title} · {roads[road].body}</span></div>
+        <div className="ph3-roads-photo"><Img w={1200} src={roads[road].image} alt={roads[road].title}/><span><Car size={16}/>{roads[road].title} · {roads[road].body}</span></div>
         <ol>{roads.map((r, i) => <li key={r.title} className={i === road ? 'is-on' : ''} onMouseEnter={() => setRoad(i)} onClick={() => setRoad(i)}>
           <b>{String(i + 1).padStart(2, '0')}</b><div><strong>{r.title}<em>{r.body}</em></strong><p>{r.detail}</p></div></li>)}</ol>
       </div>}
@@ -166,7 +168,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-amen-head"><div><Eyebrow light>Tiện ích nội khu</Eyebrow><h3 data-fx="title">Thành phố công viên<br/>sinh thái hàng đầu châu Á</h3></div>
         <p>Hơn 70 công viên, 21 km đường dạo ven nước, VinWonders, sân golf 36 hố, quần thể giáo dục 150 ha cùng chuỗi phố thương mại quốc tế.</p></div>
       <div className="ph3-amen-grid">{(allAmenities ? gal : gal.slice(0, 9)).map((a, i) => <figure key={a.title} data-fx="up" className={[0, 6].includes(i % 10) ? 'is-wide' : ''}>
-        <Img w={i % 10 === 0 ? 1600 : 900} src={a.image} alt={a.title}/><figcaption><b>{a.title}</b><span>{a.body}</span></figcaption></figure>)}</div>
+        <Img w={i % 10 === 0 ? 1200 : 720} src={a.image} alt={a.title}/><figcaption><b>{a.title}</b><span>{a.body}</span></figcaption></figure>)}</div>
       {gal.length > 9 && <button type="button" className="sz-btn is-white ph3-more" onClick={() => setAllAmenities(v => !v)}><span>{allAmenities ? 'Thu gọn' : `Xem thêm ${gal.length - 9} tiện ích`}</span><i><ChevronDown size={16} style={{transform: allAmenities ? 'rotate(180deg)' : ''}}/></i></button>}
     </section>}
 
@@ -174,7 +176,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-prod-list"><Eyebrow>Loại hình sản phẩm</Eyebrow><h3 data-fx="title">Nhà phố &<br/>biệt thự</h3>
         <ul>{houses.map((p, i) => <li key={p.title}><button type="button" className={i === product ? 'is-on' : ''} onMouseEnter={() => setProduct(i)} onClick={() => setProduct(i)}><small>{p.body}</small><b>{p.title}</b><ArrowUpRight size={16}/></button></li>)}</ul>
         {profile.priceFrom && <p className="ph3-prod-price">Giá dự kiến từ <b>{profile.priceFrom.value} tỷ</b><br/>{profile.priceFrom.label.replace(/^tỷ · /, '')}</p>}</div>
-      <div className="ph3-prod-view"><div key={product} className="ph3-prod-photo"><Img w={2000} src={houses[product].image!} alt={houses[product].title}/></div>
+      <div className="ph3-prod-view"><div key={product} className="ph3-prod-photo"><Img w={1400} src={houses[product].image!} alt={houses[product].title}/></div>
         <div className="ph3-prod-card"><small>{houses[product].body}</small><strong>{houses[product].title}</strong><p>{houses[product].detail}</p>
           <button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem căn còn hàng</span><i><ArrowUpRight size={16}/></i></button></div></div>
     </section>}
@@ -183,7 +185,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       <div className="ph3-units-head"><div><Eyebrow light>Quỹ căn dự án</Eyebrow><h3 data-fx="title">Chọn căn đẹp<br/>giá tốt nhất</h3></div>
         <button type="button" className="sz-btn is-white" onClick={() => onTab('inventory')}><span>Toàn bộ {units.length} căn</span><i><ArrowUpRight size={16}/></i></button></div>
       <div className="ph3-acc">{picks.map((u, i) => <a key={u.id} href={unitPlanPath(u)} className={i === open ? 'is-open' : ''} onMouseEnter={() => setOpen(i)} onFocus={() => setOpen(i)}>
-        <Img w={1200} src={houses.length ? houses[i % houses.length].image : photo(i)} alt=""/>
+        <Img w={1000} src={houses.length ? houses[i % houses.length].image : photo(i)} alt=""/>
         <b className="ph3-acc-code">{u.code}</b>
         <div className="ph3-acc-info"><small><MapPin size={14}/>{u.zone || project.location}</small><strong>{u.code}</strong>
           <p>{u.type}{u.area ? ` · ${fmt(u.area)} m²` : ''}{u.direction ? ` · ${u.direction}` : ''}</p>
@@ -202,14 +204,14 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
 
     {profile.plans && <section id="mat-bang" className="ph3-plans"><Eyebrow>Mặt bằng</Eyebrow><h3 data-fx="title">Tổng quan đô thị</h3>
       <div>{profile.plans.map((p, i) => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up" className={i === 0 ? 'is-big' : ''}>
-        <Img w={i === 0 ? 2560 : 1200} src={p.image} alt={p.title}/><span><b>{p.title}</b><small>{p.body}</small></span><i><ArrowUpRight size={16}/></i></a>)}</div>
+        <Img w={i === 0 ? 1800 : 900} src={p.image} alt={p.title}/><span><b>{p.title}</b><small>{p.body}</small></span><i><ArrowUpRight size={16}/></i></a>)}</div>
     </section>}
 
     {profile.payment && <section id="chinh-sach" className="ph3-policy">
       <div className="ph3-policy-head"><Eyebrow light>Chính sách bán hàng</Eyebrow><h3 data-fx="title">Phương thức thanh toán<br/>linh hoạt</h3></div>
       <div className="ph3-pay">{profile.payment.map((p, i) => {const Icon = payIcons[i % payIcons.length]; return <div key={p.title} data-fx="up"><span>0{i + 1}</span><i><Icon size={24}/></i><strong>{p.title}</strong><p>{p.body}</p></div>;})}</div>
       {profile.policies && <dl className="ph3-offers">{profile.policies.map(p => <div key={p.label} data-fx="up"><dt>{p.value}</dt><dd>{p.label}</dd></div>)}</dl>}
-      {profile.policyImages && <div className="ph3-posters">{profile.policyImages.map(p => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up"><Img w={900} src={p.image} alt={p.title}/><span><Wallet size={15}/>{p.title}</span></a>)}</div>}
+      {profile.policyImages && <div className="ph3-posters">{profile.policyImages.map(p => <a key={p.title} href={p.image} target="_blank" rel="noreferrer" data-fx="up"><Img w={700} src={p.image} alt={p.title}/><span><Wallet size={15}/>{p.title}</span></a>)}</div>}
     </section>}
 
     {profile.policies && <section className="ph3-awards"><Eyebrow>Chính sách bán hàng</Eyebrow><h3 data-fx="title">Ưu đãi<br/>khi sở hữu</h3>

@@ -18,7 +18,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const photo = (i: number) => photos[i % photos.length];
   const free = units.filter(u => statusOf(u) === 'Còn hàng');
   const picks = [...free.sort((a, b) => a.price - b.price), ...units.filter(u => statusOf(u) !== 'Còn hàng')].slice(0, 6);
-  const slides = [{title: 'Phối cảnh tổng thể', image: project.image}, ...(profile.heroSlides || [])].filter(s => s.image);
+  const slides = [{title: 'Phối cảnh tổng thể', image: project.image, eyebrow: project.name, headline: profile.headline, body: profile.intro, stat: profile.stats[0]}, ...(profile.heroSlides || [])].filter(s => s.image);
   const [slide, setSlide] = useState(0);
   const [prev, setPrev] = useState(-1);
   const heroRef = useRef<HTMLElement>(null);
@@ -39,6 +39,7 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const [playing, setPlaying] = useState(false);
   const [allAmenities, setAllAmenities] = useState(false);
   const [faq, setFaq] = useState(0);
+  const [about, setAbout] = useState(0);
   const gal = profile.amenityGallery || [];
   const pg = (i: number) => gal.length ? gal[i % gal.length].image : photo(i);
   const houses = (profile.products || []).filter(p => p.image);
@@ -47,34 +48,52 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
   const head = profile.stats[0];
   const pills = [...profile.amenities.map(a => a.title), ...(profile.products || []).map(p => p.title)];
   const features = [...(profile.connections || []).slice(0, 2).map(c => ({...c, Icon: Car})), ...profile.amenities.slice(0, 4).map((a, i) => ({...a, Icon: amenityIcons[i % amenityIcons.length]}))];
-  const cards = [
-    {n: '01.', title: 'Tổng quan', body: profile.intro, link: 'Quỹ căn 360°', tab: 'vr'},
-    {n: '02.', title: 'Sản phẩm', body: (profile.products || []).map(p => `${p.title} ${p.body}`).join(' · ') || `${units.length} căn trong bảng hàng`, link: 'Xem bảng hàng', tab: 'inventory'},
-    {n: '03.', title: 'Mặt bằng', body: `${profile.zones.length} khu chủ đề: ${profile.zones.map(z => z.name).join(', ')}.`, link: 'Xem mặt bằng', tab: 'plan'},
+  const cur = slides[slide] || slides[0];
+  const imgOf = (id: string, i: number) => [...gal, ...(profile.plans || []), ...houses.map(h => ({image: h.image!}))].find(x => x.image.endsWith(id))?.image || photo(i);
+  const aboutTabs = [
+    {key: 'overview', label: 'Tổng quan', title: 'Đại đô thị Vinhomes\ncó golf nội khu', body: profile.location?.body[0] || profile.intro, image: project.image, chips: (profile.facts || []).map(f => `${f.label}: ${f.value}`), cta: 'Quỹ căn 360°', tab: 'vr'},
+    {key: 'product', label: 'Sản phẩm', title: 'Nhà phố &\nbiệt thự', body: `${units.length} căn trong bảng hàng, ${free.length} căn còn hàng. ${profile.priceFrom ? `Giá dự kiến từ ${profile.priceFrom.value} ${profile.priceFrom.label}.` : ''}`, image: houses[0]?.image || photo(1), chips: (profile.products || []).map(p => p.title), cta: 'Xem bảng hàng', tab: 'inventory'},
+    {key: 'plan', label: 'Mặt bằng', title: `${profile.zones.length} khu chủ đề`, body: profile.zones.map(z => `${z.name}: ${z.body}`).slice(0, 2).join(' '), image: imgOf('sgp-masterplan', 2), chips: profile.zones.map(z => z.name), cta: 'Xem mặt bằng', tab: 'plan'},
+    {key: 'location', label: 'Vị trí', title: 'Cửa ngõ\nTây Bắc TP.HCM', body: profile.location?.body[1] || project.location, image: imgOf('sgp-aerial', 3), chips: (profile.connections || []).map(c => c.title), cta: 'Xem vị trí', tab: 'location'},
+    {key: 'amenity', label: 'Tiện ích', title: 'Thành phố\ncông viên tri thức', body: profile.focus.body, image: imgOf('sgp-golf', 4), chips: profile.amenities.map(a => a.title), cta: 'Xem tiện ích', tab: 'amenity'},
+    {key: 'policy', label: 'Chính sách', title: 'Ưu đãi\nkhi sở hữu', body: (profile.payment || []).map(p => `${p.title}: ${p.body}`).join(' '), image: imgOf('sgp-vincom', 5), chips: (profile.policies || []).map(p => `${p.value} ${p.label.toLowerCase()}`), cta: 'Tài liệu & bảng giá', tab: 'document'},
   ];
+  useEffect(() => {
+    const t = window.setTimeout(() => setAbout(a => (a + 1) % aboutTabs.length), 9000);
+    return () => window.clearTimeout(t);
+  }, [about, aboutTabs.length]);
+  const at = aboutTabs[about];
 
   return <div className="sz ph3">
     <section ref={heroRef} className="ph3-hero" onMouseMove={tilt} onMouseLeave={() => heroRef.current?.style.setProperty('--rx', '0deg') || heroRef.current?.style.setProperty('--ry', '0deg')}>
       <div className="ph3-hero-stage">{slides.map((s, i) => <div key={s.image} className={'ph3-slide' + (i === slide ? ' is-on' : i === prev ? ' is-prev' : '')}>
         <Img w={2560} eager={i === 0} src={s.image} alt={s.title}/></div>)}</div>
       <div className="ph3-hero-copy" key={'c' + slide}>
-        <Eyebrow light>{project.name}</Eyebrow><h2>{lines(profile.headline)}</h2><p>{profile.intro}</p>
+        <Eyebrow light>{cur.eyebrow || project.name}</Eyebrow><h2>{lines(cur.headline || cur.title)}</h2><p>{cur.body || profile.intro}</p>
         <div className="ph3-hero-btns"><button type="button" className="sz-btn is-mint" onClick={() => onTab('inventory')}><span>Xem bảng hàng</span><i><ArrowUpRight size={16}/></i></button>
           <button type="button" className="ph3-watch" onClick={() => onTab('vr')}>Xem 360° <Play size={14} fill="currentColor"/></button></div>
       </div>
       {profile.priceFrom && <div className="ph3-hero-float"><small>Giá dự kiến từ</small><b>{profile.priceFrom.value} <em>tỷ</em></b><span>{profile.priceFrom.label.replace(/^tỷ · /, '')}</span></div>}
       <div className="ph3-hero-foot">
-        <div className="ph3-badge"><b className="fx-count">{head.value}</b><span>{head.suffix}<br/>{head.label.toLowerCase()}</span></div>
+        <div className="ph3-badge" key={'b' + slide}><b className="fx-count">{cur.stat?.value || head.value}</b><span>{cur.stat?.suffix ?? head.suffix}<br/>{(cur.stat?.label || head.label).toLowerCase()}</span></div>
         <div className="ph3-hero-nav"><span key={'t' + slide}><b>{String(slide + 1).padStart(2, '0')}</b> / {String(slides.length).padStart(2, '0')} · {slides[slide].title}</span>
           <div>{slides.map((s, i) => <button type="button" key={s.image} aria-label={s.title} className={i === slide ? 'is-on' : ''} onClick={() => go(i)}><i/></button>)}</div></div>
       </div>
     </section>
 
-    <section className="ph3-who">
-      <Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Đại đô thị Vinhomes<br/>có golf nội khu</h3>
-      <div className="ph3-cards">{cards.map((c, i) => <button type="button" key={c.n} data-fx="up" className={'ph3-card is-' + i} onClick={() => onTab(c.tab)}>
-        {i === 2 && <Img w={900} src={profile.plans?.[1]?.image || photo(1)} alt=""/>}
-        <small>{c.n}</small><strong>{c.title}</strong><p>{c.body}</p><u>{c.link}</u><i><ArrowUpRight size={15}/></i></button>)}</div>
+    <section className="ph3-about">
+      <div className="ph3-about-head"><Eyebrow>Về dự án</Eyebrow><h3 data-fx="title">Khám phá {project.name}</h3></div>
+      <div className="ph3-about-box" data-fx="up">
+        <div className="ph3-about-photo" key={'p' + about}><Img w={1800} src={at.image} alt={at.label}/></div>
+        <div className="ph3-about-copy" key={'t' + about}>
+          <small>{String(about + 1).padStart(2, '0')} / {String(aboutTabs.length).padStart(2, '0')} · {at.label}</small>
+          <h4>{lines(at.title)}</h4><p>{at.body}</p>
+          {at.chips.length > 0 && <ul>{at.chips.slice(0, 8).map(c => <li key={c}>{c}</li>)}</ul>}
+          <button type="button" className="sz-btn is-mint" onClick={() => onTab(at.tab)}><span>{at.cta}</span><i><ArrowUpRight size={16}/></i></button>
+        </div>
+        <div className="ph3-about-tabs" role="tablist">{aboutTabs.map((t, i) => <button type="button" role="tab" aria-selected={i === about} key={t.key} className={i === about ? 'is-on' : ''} onClick={() => setAbout(i)}>
+          <span><Img w={240} src={t.image} alt=""/></span><b><small>0{i + 1}</small>{t.label}</b><i/></button>)}</div>
+      </div>
     </section>
 
     <div className="ph3-pills" aria-hidden><div>{[0, 1].map(k => <span key={k}>{pills.map((p, i) => <span key={p + k}>{i % 2 === 0 && <em><Img w={320} src={pg(i)} alt=""/></em>}<b>{p}</b></span>)}</span>)}</div></div>
@@ -163,18 +182,17 @@ export default function ProjectOverviewHome3({project, profile, units, assets, s
       {[0, 1].map(row => <div key={row} className={'ph3-award-row' + (row ? ' is-rev' : '')}><div>{[0, 1].map(k => <span key={k}>{(row ? [...(profile.products || []), ...(profile.connections || [])].map(p => ({value: p.title, label: p.body})) : [...profile.policies!, ...profile.policies!]).map((p, j) => <span key={p.label + k + j} className="ph3-award"><i><Award size={16}/></i><b>{p.value}</b><small>{p.label}</small></span>)}</span>)}</div></div>)}
     </section>}
 
-    <section className="ph3-voice">
-      <div className="ph3-voice-list"><Eyebrow>Pháp lý & tiến độ</Eyebrow>
-        {profile.timeline.map(t => <blockquote key={t.title} data-fx="up"><p>“{t.body}”</p><cite><ShieldCheck size={16}/>{t.title}</cite></blockquote>)}
-        {profile.legal && <ul>{profile.legal.map(l => <li key={l}><ShieldCheck size={16}/>{l}</li>)}</ul>}</div>
-      <div className="ph3-voice-photo"><Img w={1200} src={pg(8)} alt=""/>
-        <div className="ph3-rate"><b className="fx-count">{free.length || units.length}</b><span>căn còn hàng</span><small><Building2 size={14}/>{project.developer}</small></div></div>
+    <section className="ph3-time3">
+      <div className="ph3-time3-head"><div><Eyebrow>Pháp lý & tiến độ</Eyebrow><h3 data-fx="title">Các mốc phát triển</h3></div>
+        <div className="ph3-time3-stat"><b className="fx-count">{free.length || units.length}</b><span>căn còn hàng<br/><small>{project.developer}</small></span></div></div>
+      <ol>{profile.timeline.map((t, i) => <li key={t.title} data-fx="up"><em>{t.date || String(i + 1).padStart(2, '0')}</em><i/><strong>{t.title}</strong><p>{t.body}</p></li>)}</ol>
+      {profile.legal && <ul className="ph3-legal">{profile.legal.map(l => <li key={l} data-fx="up"><ShieldCheck size={20}/>{l}</li>)}</ul>}
     </section>
 
-    {profile.faq && <section className="ph3-faq">
-      <div><Eyebrow>FAQs</Eyebrow><h3 data-fx="title">Câu hỏi<br/>thường gặp</h3><p>Chưa thấy câu trả lời bạn cần? Gọi ngay để được tư vấn.</p>
-        <a href={`tel:${contact.phone}`} className="sz-btn is-mint"><span>{contact.phone}</span><i><Phone size={16}/></i></a></div>
-      <div className="ph3-faq-list">{profile.faq.map((f, i) => <div key={f.q} className={i === faq ? 'is-open' : ''}>
+    {profile.faq && <section className="ph3-faq3">
+      <div className="ph3-faq3-head"><div><Eyebrow>FAQs</Eyebrow><h3 data-fx="title">Câu hỏi thường gặp</h3></div>
+        <a href={`tel:${contact.phone}`} className="sz-btn is-mint"><span>Hỏi tư vấn {contact.phone}</span><i><Phone size={16}/></i></a></div>
+      <div className="ph3-faq3-grid">{profile.faq.map((f, i) => <div key={f.q} className={i === faq ? 'is-open' : ''}>
         <button type="button" onClick={() => setFaq(i === faq ? -1 : i)} aria-expanded={i === faq}><span>{String(i + 1).padStart(2, '0')}</span>{f.q}<ChevronDown size={18}/></button>
         <div><p>{f.a}</p></div></div>)}</div>
     </section>}

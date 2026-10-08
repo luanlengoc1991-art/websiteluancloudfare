@@ -7,7 +7,7 @@ export type ProjectProfile = {
   stats: {value: string; suffix?: string; label: string}[];
   zones: {code: string; name: string; local: string; area: string; body: string}[];
   focus: {eyebrow: string; title: string; body: string};
-  timeline: {title: string; body: string}[];
+  timeline: {title: string; body: string; date?: string}[];
   amenities: {title: string; body: string}[];
   sources: {label: string; url: string}[];
   /** Optional extras used by the home3 layout. */
@@ -17,7 +17,8 @@ export type ProjectProfile = {
   policies?: {value: string; label: string}[];
   priceFrom?: {value: string; label: string};
   /** Images below are project files in R2/D1 (/api/files/<id>), replaceable in admin. */
-  heroSlides?: {title: string; image: string}[];
+  heroSlides?: {title: string; image: string; eyebrow?: string; headline?: string; body?: string; stat?: {value: string; suffix?: string; label: string}}[];
+  facts?: {label: string; value: string}[];
   highlights?: string[];
   location?: {title: string; body: string[]};
   video?: {embed: string; url: string; title: string; poster?: string};
@@ -81,18 +82,26 @@ export const projectProfiles: Record<string, ProjectProfile> = {
     ],
     focus: {eyebrow: 'Vì sao chọn Sài Gòn Park', title: 'Điều làm nên\nkhác biệt', body: 'Hệ tiện ích đủ đầy ngay trong khu đô thị, kết nối nhanh về trung tâm và pháp lý sở hữu lâu dài.'},
     timeline: [
-      {title: 'Khởi công', body: 'Khởi công ngày 19/12/2025 theo Quyết định 80/QĐ-TTg.'},
-      {title: 'Quy hoạch 1/500', body: 'Quy hoạch chi tiết 1/500 đã được phê duyệt; hơn 900 ha san lấp xong 3/2026.'},
-      {title: 'Mở bán', body: 'Nhà phố & biệt thự mở bán từ tháng 6/2026; giai đoạn 1 phân khu phía Nam 55 ha với hơn 2.000 căn hộ và 2.500 nhà phố, biệt thự.'},
-      {title: 'Bàn giao', body: 'Dự kiến bàn giao 2027–2028; sổ hồng cấp trong 6–12 tháng.'},
-      {title: 'Hoàn thiện toàn khu', body: 'Mục tiêu hoàn thiện toàn bộ dự án trước năm 2035, quy mô khoảng 135.000 cư dân.'},
+      {date: '19/12/2025', title: 'Khởi công', body: 'Khởi công theo Quyết định 80/QĐ-TTg của Thủ tướng Chính phủ.'},
+      {date: '3/2026', title: 'Quy hoạch 1/500', body: 'Quy hoạch 1/500 đã phê duyệt; hơn 900 ha san lấp xong.'},
+      {date: '6/2026', title: 'Mở bán', body: 'Nhà phố & biệt thự mở bán; giai đoạn 1 phân khu phía Nam 55 ha.'},
+      {date: '2027–2028', title: 'Bàn giao', body: 'Bàn giao đợt đầu; sổ hồng cấp trong 6–12 tháng.'},
+      {date: '2035', title: 'Hoàn thiện', body: 'Hoàn thiện toàn khu, khoảng 135.000 cư dân.'},
+    ],
+    facts: [
+      {label: 'Vị trí', value: 'Quốc lộ 22 – Vành đai 3, Xuân Thới Sơn, TP.HCM'},
+      {label: 'Quy mô', value: '1.080 ha – 135.000 cư dân'},
+      {label: 'Sản phẩm', value: 'Nhà phố | Biệt thự | Căn hộ'},
+      {label: 'Bàn giao', value: '2027 – 2028'},
+      {label: 'Vốn đầu tư', value: '59.000 tỷ đồng'},
+      {label: 'Pháp lý', value: 'Sở hữu lâu dài'},
     ],
     heroSlides: [
-      {title: 'Sân golf 36 hố – 200 ha', image: '/api/files/sgp-golf'},
-      {title: '100 công viên lớn nhỏ', image: '/api/files/sgp-parks'},
-      {title: 'Công viên Bách Thảo 27 ha', image: '/api/files/sgp-botanica'},
-      {title: 'VinWonders 23 ha', image: '/api/files/sgp-vinwonders'},
-      {title: 'Quần thể giáo dục 150 ha', image: '/api/files/sgp-edu'},
+      {title: 'Sân golf 36 hố – 200 ha', image: '/api/files/sgp-golf', eyebrow: 'Golf nội khu', headline: 'Sân golf 36 hố\nngay trong đô thị', body: 'Vinpearl Golf Léman quy mô 200 ha – khu đô thị sân golf chuẩn resort bậc nhất khu vực, cho cư dân tận hưởng nhịp sống nghỉ dưỡng mỗi ngày.', stat: {value: '200', suffix: 'ha', label: 'sân golf 36 hố'}},
+      {title: '100 công viên lớn nhỏ', image: '/api/files/sgp-parks', eyebrow: 'Thành phố công viên', headline: 'Sống giữa\n100 công viên xanh', body: 'Bộ sưu tập 5 đại công viên cùng hơn 70 công viên nội khu, 21 km đường dạo ven nước tự điều hòa một vùng khí hậu riêng.', stat: {value: '21', suffix: 'km', label: 'đường dạo ven nước'}},
+      {title: 'Công viên Bách Thảo 27 ha', image: '/api/files/sgp-botanica', eyebrow: 'Botanica Park', headline: 'Công viên\nBách Thảo 27 ha', body: 'Nơi quy tụ vườn hoa nhà kính lớn nhất thế giới 15 ha và "thư viện sống" hàng nghìn loài thực vật của 5 châu lục.', stat: {value: '27', suffix: 'ha', label: 'rừng bách thảo'}},
+      {title: 'VinWonders 23 ha', image: '/api/files/sgp-vinwonders', eyebrow: 'Giải trí', headline: 'VinWonders\nhàng đầu châu Á', body: 'Siêu công viên giải trí và công viên nước chủ đề cho cả gia đình, cùng Global Village 19,3 ha và phố Little HongKong 7,5 ha.', stat: {value: '23', suffix: 'ha', label: 'công viên VinWonders'}},
+      {title: 'Quần thể giáo dục 150 ha', image: '/api/files/sgp-edu', eyebrow: 'Đô thị tri thức', headline: 'Đô thị tri thức\n150 ha giáo dục', body: 'Quần thể đại học nghiên cứu cùng 36 trường học chất lượng cao, làng khởi nghiệp Startup Village và tháp văn phòng 35 tầng.', stat: {value: '36', suffix: 'trường', label: 'học chất lượng cao'}},
     ],
     highlights: ['Đô thị tri thức – hệ sinh thái toàn diện', 'Hạ tầng bứt phá: Metro – Vành đai – Quốc lộ', 'Vị trí tâm điểm cực tăng trưởng Tây Bắc TP.HCM'],
     location: {title: 'Tâm điểm cực tăng trưởng\nTây Bắc TP.HCM', body: [

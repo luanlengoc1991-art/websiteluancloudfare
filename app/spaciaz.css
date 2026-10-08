@@ -2104,3 +2104,4 @@ button.sz-bento-photo{padding:0}
 @keyframes ph3-shimmer{from{background-position:120% 0,0 0}to{background-position:-120% 0,0 0}}
 .ph3-slide{animation:ph3-shimmer 1.6s linear infinite}
 @media(max-width:700px){.project-workspace.is-landing .workspace-top-left{top:10px!important;flex-direction:row!important;gap:6px!important}.project-workspace.is-landing .workspace-top-left .round-tool{width:38px!important;height:38px!important}}
+.project-workspace.is-landing .workspace-side-tools{display:none!important}

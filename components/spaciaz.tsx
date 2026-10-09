@@ -1,6 +1,6 @@
 'use client';
 import UnitCardView from './unit-card-view';
-import SaigonParkPoster from './saigon-park-poster';
+import SaigonParkPoster, {SgpFilter} from './saigon-park-poster';
 import {cardId, type UnitCard} from '@/lib/unit-card';
 import {projectProfiles} from '@/lib/project-profiles';
 import {SAIGON_PARK, saigonParkModelImage} from '@/lib/saigon-park-models';
@@ -777,13 +777,14 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
             <strong>{done.length} mã căn</strong>
             <label className="sz-up-search"><Search size={16}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…" aria-label="Tìm mã căn"/></label>
             {isAdmin && studio && <button type="button" className={'sz-up-admin' + (editing ? ' is-on' : '')} onClick={() => {setFrameCode(code); setEditing(!editing); setAdmin(null);}} title="Chỉ quản trị viên nhìn thấy nút này"><Pencil size={15}/>{editing ? 'Xem như khách' : 'Quản Trị Viên'}</button>}</div>
-          <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>
+          {projectId !== SAIGON_PARK && <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>}
         </div>
-        <div className={'sz-up-main' + (adminView ? ' is-admin' : '')}>
+        <div className={'sz-up-main' + (adminView ? ' is-admin' : '') + (projectId === SAIGON_PARK ? ' is-sgp' : '')}>
+          {projectId === SAIGON_PARK && <SgpFilter units={done} code={unit?.code} onPick={c => pick(c)} statusOf={statusOf}/>}
           <div className="sz-up-poster">
             {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
               {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>
-              : project && unit && project.id === SAIGON_PARK ? <SaigonParkPoster key={unit.id} project={project} unit={unit} status={statusOf(unit)} own={cards[cardId(project.id, unit.code)]} base={cards[project.id + '|*']} files={files} isAdmin={isAdmin} onSaved={() => onReload?.()}/>
+              : project && unit && project.id === SAIGON_PARK ? <SaigonParkPoster key={unit.id} project={project} unit={unit} units={done} status={statusOf(unit)} statusOf={statusOf} cards={cards} files={files} isAdmin={isAdmin} onSaved={() => onReload?.()}/>
               : project && unit ? <UnitCardView key={unit.id} project={project} unit={unit} status={statusOf(unit)} own={cards[cardId(project.id, unit.code)]} base={cards[project.id + '|*']} files={files} isAdmin={isAdmin} onSaved={() => onReload?.()}
                 fallbackPin={pins.find(p => p.projectId === project.id && p.code.trim().toUpperCase() === unit.code.toUpperCase() && p.layer === 'map')} defaultNearby={(projectProfiles[project.id]?.amenities || []).map(a => a.title)} autoPerspective={project.id === SAIGON_PARK ? saigonParkModelImage(unit.model) : undefined}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
           </div>

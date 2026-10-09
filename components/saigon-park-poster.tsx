@@ -2,6 +2,7 @@
 /* Vinhomes Saigon Park unit poster (1512 × 2044), the owner's former studio layout rebuilt natively: every layer is an R2 image
  * + live text from the Google Sheet. Everyone gets the filter list and JPEG download; only admins see the editing tools. */
 import {useEffect, useMemo, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 import {Check, ChevronRight, Clock, Download, Expand, FileArchive, ImagePlus, Images, MapPin, Pencil, RotateCcw, Save, Search, SlidersHorizontal, X} from 'lucide-react';
 import {toast} from 'sonner';
 import type {Asset, Project, Unit} from '@/lib/catalog';
@@ -207,7 +208,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
       <p>Ô để trống = lấy theo Google Sheet. Ảnh nhà tự lấy theo cột Mẫu nhà.</p>
     </div>}
 
-    {view && <div className="spp-light" role="dialog" aria-label="Xem ảnh lớn" onClick={() => setView(null)}>
+    {view && createPortal(<div className="spp-light" role="dialog" aria-label="Xem ảnh lớn" onClick={() => setView(null)}>
       <div onClick={e => e.stopPropagation()}>
         <header><b>{view === 'plan' ? `Mặt bằng chỉ căn ${unit.code}` : `Ảnh nhà · ${unit.model || unit.code}`}</b>
           {isAdmin && <span>
@@ -222,7 +223,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
             <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}}));}}/></div></div>}
         </div> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}
       </div>
-    </div>}
+    </div>, document.body)}
     <input ref={fileInput} type="file" accept="image/*" hidden onChange={async e => {
       const file = e.target.files?.[0]; e.target.value = ''; if (!file) return;
       setBusy('upload');
@@ -230,11 +231,11 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
         const r = await fetch('/api/upload', {method: 'POST', body: form}); const d = await r.json(); if (!r.ok) throw Error(d.error);
         setImage(uploadSlot.current, d.url); toast.success('Đã tải ảnh – bấm Lưu để áp dụng.');} catch (err) {toast.error(err instanceof Error ? err.message : 'Lỗi tải ảnh.');} finally {setBusy('');}
     }}/>
-    {pick && <div className="uc-picker" role="dialog" onClick={() => setPick(null)}><div onClick={e => e.stopPropagation()}>
+    {pick && createPortal(<div className="uc-picker" role="dialog" onClick={() => setPick(null)}><div onClick={e => e.stopPropagation()}>
       <header><b>Chọn {pick === 'plan' ? 'ảnh mặt bằng' : 'ảnh nhà'}</b><button type="button" onClick={() => setPick(null)} aria-label="Đóng"><X size={18}/></button></header>
       <div className="uc-picker-grid">{files.filter(a => a.projectId === project.id && ['model', 'gallery', 'image', 'plan'].includes(a.kind) && !/sgp-(pin|strip|loc|price|logo|marker)/.test(a.url)).map(a =>
         <button type="button" key={a.url} onClick={() => {setImage(pick, a.url); setPick(null);}}><img src={sized(a.url, 360)} alt="" loading="lazy"/><span>{a.name}</span></button>)}</div>
-    </div></div>}
+    </div></div>, document.body)}
     {batch && <div className="spp-offscreen" ref={batchRef} aria-hidden><PosterArt unit={batch} status={statusOf(batch)} data={resolve(batch, base, cards[cardId(project.id, batch.code)])}/></div>}
   </div>;
 }

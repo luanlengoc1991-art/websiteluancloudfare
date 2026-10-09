@@ -2377,3 +2377,7 @@ button.sz-bento-photo{padding:0}
 .spp-light-preview{width:100%}
 .spp-light-preview .spp{border-radius:10px;pointer-events:auto}
 @media(max-width:900px){.spp-light-body.has-side{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.spp-light-side{max-height:40vh}.spp-light-preview{width:200px}}
+.spp-light-map .spp-mark{width:auto;height:auto;margin:0;border:0;border-radius:0;background:none;box-shadow:none}
+.spp-light-map .spp-mark b{position:static}
+.spp-light{z-index:1000}
+.uc-picker{z-index:1010}

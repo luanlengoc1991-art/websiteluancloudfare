@@ -2226,3 +2226,50 @@ button.sz-bento-photo{padding:0}
 .uc-crop-pin b,.uc-pin b{font-size:14px;letter-spacing:.02em}
 .uc-hero-img{top:auto!important;bottom:0;height:112%!important}
 .uc-hero-img{height:118%!important}
+
+/* ══ Saigon Park poster (layout of the owner's studio, 1512 × 2044) ══ */
+@font-face{font-family:'UTM Trajan Pro';src:url(/fonts/sgp/utm-trajan-pro-bold.ttf) format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:Motherland;src:url(/fonts/sgp/motherland.ttf) format('truetype');font-display:swap}
+.spp-wrap{display:grid;gap:14px}
+.spp{position:relative;width:100%;aspect-ratio:1512/2044;overflow:hidden;border-radius:18px;background:#0b2a22;container-type:inline-size;box-shadow:0 30px 60px -40px #02261d99;user-select:none}
+.spp>*{position:absolute}
+.spp img{display:block;max-width:none}
+.spp-bg{inset:0;width:100%;height:100%;object-fit:cover}
+.spp-aerial{left:0;top:58.3%;width:100%;height:41.7%;overflow:hidden}
+.spp-aerial img{position:absolute;left:-17.5%;top:-17.3%;width:135%;height:135.1%;object-fit:cover}
+.spp-house{left:0;top:0;width:100%;height:34.5%;overflow:hidden}
+.spp-house img{position:absolute;left:-7%;top:-4.3%;width:107%;height:113.9%;object-fit:cover;animation:ph3-kb 14s ease-out both}
+.spp-strip{left:0;top:19.7%;width:100%;height:24.1%}
+.spp-logo{left:5.3%;top:2.1%;width:24.2%;height:6.9%;object-fit:contain}
+.spp-script{left:5.7%;top:23.1%;font-family:Motherland,cursive;font-size:4.56cqw;line-height:1.3;color:#fff;white-space:nowrap}
+.spp-code{left:4.8%;top:26.4%;font-family:'UTM Trajan Pro',Georgia,serif;font-size:8.6cqw;line-height:1.05;color:#f6d984;letter-spacing:.01em;white-space:nowrap;text-shadow:0 .3cqw 1.2cqw #0007}
+.spp-fact{display:grid;grid-template-columns:44% 56%;width:27.9%;height:2.9%;border-radius:99px;overflow:hidden;border:.12cqw dashed #fff9;font-family:Manrope,var(--font-sans),sans-serif;font-size:1.72cqw;font-weight:600}
+.spp-fact i{display:flex;align-items:center;justify-content:center;font-style:normal;color:#f4f5f1;background:#0a2d24cc}
+.spp-fact em{display:flex;align-items:center;padding-left:6%;font-style:normal;font-weight:800;color:#fff4d1;background:linear-gradient(120deg,#0f7a5f,#14946f);text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.spp-fact.is-0{left:3.7%;top:35.8%}.spp-fact.is-1{left:32.5%;top:35.8%}.spp-fact.is-2{left:3.5%;top:40.1%}.spp-fact.is-3{left:32.6%;top:40.1%}
+.spp-price{left:62.4%;top:31.3%;width:33.6%;height:11.6%;display:grid;justify-items:center;align-content:start;color:#075043;font-family:'UTM Trajan Pro',Georgia,serif}
+.spp-price>img{position:absolute;inset:0;width:100%;height:100%}
+.spp-price small{position:relative;margin-top:2.4%;font-family:Manrope,var(--font-sans),sans-serif;font-size:1.19cqw;font-weight:700;line-height:1.2;text-align:center}
+.spp-price b{position:relative;display:flex;align-items:flex-start;font-size:9.99cqw;line-height:1;margin-top:1%}
+.spp-price b sup{font-size:.52em;margin:.06em 0 0 .08em;line-height:1}
+.spp-price b.is-contact{font-size:5.6cqw;margin-top:4%}
+.spp-plan{left:4%;top:43.9%;width:59.5%;height:21.2%;overflow:hidden;background:#d9dfdc;border-radius:.8cqw;box-shadow:0 1cqw 2cqw -1cqw #0009}
+.spp-plan>img{position:absolute;left:40%;top:50%;height:auto}
+.spp-plan svg{position:absolute;inset:0;width:100%;height:100%}
+.spp-loc{left:64.1%;top:46.7%;width:31.8%;height:4%}
+.spp-tag{display:flex;align-items:flex-end;transform:translate(-1.6cqw,-100%);pointer-events:none}
+.spp-tag img{width:5.7cqw;height:auto;position:relative;z-index:1;filter:drop-shadow(0 .4cqw .6cqw #0008);animation:spp-bob 2.4s ease-in-out infinite}
+.spp-tag b{margin:0 0 3.2cqw -1.4cqw;padding:.6cqw 2cqw .6cqw 2.2cqw;border-radius:99px;background:#04261c;border:.2cqw solid #d8b46a;font-family:'UTM Trajan Pro',Georgia,serif;font-size:2.3cqw;font-weight:700;color:#fff;white-space:nowrap;box-shadow:0 .6cqw 1.4cqw -.4cqw #000}
+.spp-tag.is-inset{left:63%;top:44%;transform:translateY(-55%)}
+.spp-tag.is-inset img{width:4.6cqw}
+.spp-tag.is-inset b{font-size:2.1cqw;color:#f5d271;margin-bottom:2.6cqw}
+@keyframes spp-bob{50%{transform:translateY(-.5cqw)}}
+.spp-sold{right:3%;top:2.4%;padding:.8cqw 2cqw;border-radius:99px;background:#b91c1c;color:#fff;font-size:1.8cqw;font-weight:800}
+.spp-hint{left:50%;bottom:2%;transform:translateX(-50%);padding:1cqw 2.4cqw;border-radius:99px;background:#fde68a;color:#78350f;font-size:1.8cqw;font-weight:800}
+.spp-wrap.is-edit .spp{cursor:crosshair}
+.spp-editor{display:grid;gap:10px;padding:14px;border-radius:18px;background:#04211a;color:#e6f7ef}
+.spp-editor p{margin:0;font-size:13.5px}
+.spp-map{position:relative;border-radius:12px;overflow:hidden;cursor:crosshair}
+.spp-map img{display:block;width:100%}
+.spp-map span{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#e11d48;border:3px solid #fff;box-shadow:0 0 0 6px #e11d4855}
+@media(prefers-reduced-motion:no-preference){.spp-tag img{animation:spp-bob 2.4s ease-in-out infinite}}

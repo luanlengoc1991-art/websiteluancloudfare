@@ -45,9 +45,10 @@ const plain = (s: string) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace
 const columns: [keyof Unit, string[]][] = [
   ['code', ['ma can', 'ma', 'ma san pham', 'can', 'code', 'unit', 'unit code', 'so can']],
   ['zone', ['phan khu', 'khu', 'zone', 'phan khu khu']],
-  ['tower', ['toa', 'block', 'tower', 'day']],
-  ['type', ['loai hinh', 'loai', 'loai can', 'san pham', 'type', 'product type', 'loai san pham']],
-  ['group', ['quy', 'nhom', 'quy can', 'group', 'ban giao', 'tieu chuan ban giao']],
+  ['tower', ['toa', 'block', 'tower', 'day', 'day duong']],
+  ['type', ['loai sp', 'loai hinh', 'loai', 'loai can', 'san pham', 'type', 'product type', 'loai san pham']],
+  ['model', ['mau nha', 'mau', 'mau thiet ke']],
+  ['group', ['tcbg', 'quy', 'nhom', 'quy can', 'group', 'ban giao', 'tieu chuan ban giao']],
   ['direction', ['huong', 'huong cua', 'huong ban cong', 'direction']],
   ['area', ['dien tich', 'dien tich dat', 'dt dat', 'dt', 'area', 'dien tich m2', 'dien tich tim tuong', 'dt tim tuong']],
   ['builtArea', ['dien tich xay dung', 'dt xay dung', 'dien tich san', 'dt san', 'dt thong thuy', 'dien tich thong thuy', 'built area']],
@@ -59,7 +60,7 @@ const columns: [keyof Unit, string[]][] = [
   ['note', ['ghi chu', 'note', 'mo ta']],
   ['gift', ['uu dai', 'qua tang', 'chinh sach']],
   ['layoutUrl', ['link mat bang', 'mat bang', 'layout', 'link layout']],
-  ['posterUrl', ['link anh', 'anh', 'poster', 'hinh anh']],
+  ['posterUrl', ['phieu tinh gia hinh chi can', 'link anh', 'anh', 'poster', 'hinh anh']],
 ];
 
 const number = (v: string) => {
@@ -99,7 +100,7 @@ export function mapSheetUnits(projectId: string, category: string, table: string
     const unit: Unit = {
       id: `sheet-${projectId}-${code.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, code, projectId, category,
       zone: get(row, 'zone') || PENDING, tower: get(row, 'tower') || PENDING, type: get(row, 'type') || PENDING,
-      group: get(row, 'group'), direction: get(row, 'direction') || PENDING,
+      group: get(row, 'group'), model: get(row, 'model') || undefined, direction: get(row, 'direction') || PENDING,
       area: number(get(row, 'area')), builtArea: number(get(row, 'builtArea')), price: Math.round(price * 1000) / 1000,
       status: status(get(row, 'status')), beds: number(get(row, 'beds')), floor: number(get(row, 'floor')),
       x: 10 + (n % 8) * 11, y: 15 + Math.floor(n / 8) % 7 * 11,

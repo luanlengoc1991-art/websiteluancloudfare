@@ -1,4 +1,7 @@
 'use client';
+import UnitCardView from './unit-card-view';
+import {cardId, type UnitCard} from '@/lib/unit-card';
+import {projectProfiles} from '@/lib/project-profiles';
 
 /* Public layouts modelled on the Spaciaz theme (demo2.wpopal.com/spaciaz), filled with
  * Alpha Hub's own projects, units, articles and About/AlphaHub copy. Styles: app/spaciaz.css. */
@@ -724,24 +727,9 @@ const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new UR
 type PinLike = {projectId: string; code: string; layer?: string; x: number; y: number};
 const STUDIO = 'green-paradise';
 
-/** Plan (or aerial map) with the unit's pin, for projects without a poster studio. */
-function UnitSpot({project, unit, files, pins}: {project: Project; unit: Unit; files: Asset[]; pins: PinLike[]}) {
-  const up = (s: string) => s.trim().toUpperCase();
-  const plan = files.find(f => f.projectId === project.id && f.kind === 'plan');
-  const planPin = pins.find(p => p.projectId === project.id && up(p.code) === up(unit.code) && p.layer !== 'map');
-  const mapPin = pins.find(p => p.projectId === project.id && up(p.code) === up(unit.code) && p.layer === 'map');
-  const view = plan && planPin ? {src: plan.url, pin: planPin, label: 'Vị trí căn trên mặt bằng dự án'} : mapPin ? {src: project.image, pin: mapPin, label: 'Vị trí căn trên phối cảnh dự án'} : {src: plan?.url || project.image, pin: undefined, label: plan ? 'Mặt bằng dự án · vị trí căn đang được cập nhật' : 'Phối cảnh dự án · vị trí căn đang được cập nhật'};
-  const extra = [unit.posterUrl, unit.layoutUrl].filter(Boolean) as string[];
-  return <div className="sz-up-spot">
-    <div className="sz-up-spot-head"><span>{view.label}</span><Link href={projectPath(project.id, plan ? 'plan' : 'vr')}>Mở toàn màn hình <ArrowUpRight size={14}/></Link></div>
-    <div className="sz-up-spot-map"><img src={view.src} alt={view.label}/>{view.pin && <span className="sz-up-pin" style={{left: `${view.pin.x}%`, top: `${view.pin.y}%`}}><b>{unit.code}</b><i/></span>}</div>
-    {extra.map(src => <div key={src} className="sz-up-spot-map is-extra"><img src={src} alt={`Mặt bằng căn ${unit.code}`}/></div>)}
-  </div>;
-}
-
 /** /mat-bang-can?project=&code=: one page per unit for every project. Green Paradise shows the poster studio
  *  (finished posters only for visitors, full editor for admins); other projects show the plan with the unit pin. */
-export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact, isAdmin = false}: {projects: Project[]; units: Unit[]; files: Asset[]; pins: PinLike[]; statusOf: (u: Unit) => string; contact: PublicContact; isAdmin?: boolean}) {
+export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact, isAdmin = false, cards = {}, onReload}: {projects: Project[]; units: Unit[]; files: Asset[]; pins: PinLike[]; statusOf: (u: Unit) => string; contact: PublicContact; isAdmin?: boolean; cards?: Record<string, UnitCard>; onReload?: () => unknown}) {
   const t = useCopy();
   const [editing, setEditing] = useState(false), [frameCode, setFrameCode] = useState('');
   const [params, setParams] = useState<{project: string; code: string} | null>(null);
@@ -793,7 +781,8 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
           <div className="sz-up-poster">
             {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
               {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>
-              : project && unit ? <UnitSpot key={unit.id} project={project} unit={unit} files={files} pins={pins}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
+              : project && unit ? <UnitCardView key={unit.id} project={project} unit={unit} status={statusOf(unit)} own={cards[cardId(project.id, unit.code)]} base={cards[project.id + '|*']} files={files} isAdmin={isAdmin} onSaved={() => onReload?.()}
+                fallbackPin={pins.find(p => p.projectId === project.id && p.code.trim().toUpperCase() === unit.code.toUpperCase() && p.layer === 'map')} defaultNearby={(projectProfiles[project.id]?.amenities || []).map(a => a.title)}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
           </div>
           {!adminView && unit && <aside className="sz-up-info" key={unit.id}>
             <small><MapPin size={14}/>{unit.zone} · {project?.name}</small>
@@ -803,7 +792,7 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
               <div><dt>Diện tích đất</dt><dd>{unit.area ? fmt(unit.area) + ' m²' : '—'}</dd></div>
               <div><dt>Diện tích xây dựng</dt><dd>{unit.builtArea ? fmt(unit.builtArea) + ' m²' : '—'}</dd></div>
               <div><dt>Loại hình</dt><dd>{unit.type || '—'}</dd></div>
-              <div><dt>{studio ? 'Tiêu chuẩn BG' : 'Tòa / Tầng'}</dt><dd>{studio ? unit.group || '—' : `${unit.tower || 'Tòa chính'} / ${unit.floor}`}</dd></div>
+              <div><dt>{studio || unit.group ? 'Tiêu chuẩn BG' : 'Tòa / Tầng'}</dt><dd>{studio || unit.group ? unit.group || '—' : `${unit.tower || 'Tòa chính'} / ${unit.floor > 0 ? unit.floor : 'Đang cập nhật'}`}</dd></div>
               <div><dt>Hướng</dt><dd>{unit.direction || '—'}</dd></div>
               <div><dt>Trạng thái</dt><dd className={statusOf(unit) === 'Còn hàng' ? 'is-free' : ''}>{statusOf(unit)}</dd></div>
             </dl>

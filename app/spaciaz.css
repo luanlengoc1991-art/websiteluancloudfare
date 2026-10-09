@@ -2335,3 +2335,45 @@ button.sz-bento-photo{padding:0}
 @media(max-width:1400px){.sz-up-main.is-sgp{grid-template-columns:280px minmax(0,1fr)}.sz-up-main.is-sgp>.sz-up-info{grid-column:2}}
 @media(max-width:900px){.sz-up-main.is-sgp{grid-template-columns:1fr}.sz-up-main.is-sgp>.sz-up-info{grid-column:auto}.sgf{position:static;max-height:none}.sgf-list{max-height:320px}.spp-light-tools{grid-template-columns:1fr}.spp-light-preview{display:none}}
 .sz-up-main.is-sgp>.sz-up-info{order:0;top:96px;padding:22px}
+
+/* Saigon Park v3: draggable pins synced between the small frame and the big plan */
+.spp-mark{position:absolute;z-index:3;display:flex;align-items:flex-end;transform:translate(-2.3cqw,-100%);pointer-events:none}
+.spp-mark img{width:4.6cqw;height:auto;filter:drop-shadow(0 .4cqw .6cqw #0008)}
+.spp-mark b{margin:0 0 2.4cqw -1cqw;padding:.5cqw 1.8cqw .5cqw 2cqw;border-radius:99px;background:#04261c;border:.2cqw solid #d8b46a;font-family:'UTM Trajan Pro',Georgia,serif;font-size:2.1cqw;font-weight:700;color:#f5d271;white-space:nowrap;box-shadow:0 .6cqw 1.4cqw -.4cqw #000}
+.spp-mark.is-aerial{transform:translate(-2.85cqw,-100%)}
+.spp-mark.is-aerial img{width:5.7cqw}
+.spp-mark.is-aerial b{font-size:2.3cqw;color:#fff;margin-bottom:3.2cqw}
+.spp-mark.is-drag{pointer-events:auto;cursor:grab;touch-action:none}
+.spp-mark.is-drag:active{cursor:grabbing}
+.spp-mark.is-drag img{outline:.25cqw dashed #fde68a;outline-offset:.3cqw;border-radius:40%}
+.spp-plan>img{position:absolute;max-width:none;height:auto;pointer-events:none}
+.spp-plan>svg,.spp-plan>.spp-tag{display:none}
+.spp-house img{left:0!important;top:0!important;width:100%!important;height:100%!important;object-fit:cover;object-position:50% 30%}
+.spp-wrap,.sz-up-main.is-sgp>*{min-width:0}
+.spp-wrap .uc-form{grid-template-columns:repeat(4,minmax(0,1fr))}
+.spp-wrap .uc-admin{min-width:0}
+/* filter panel keeps its list inside the green card */
+.sgf{display:flex;flex-direction:column;overflow:hidden}
+.sgf>*{flex:none}
+.sgf-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+/* lightbox */
+.spp-light>div{width:min(1500px,100%);height:94vh;grid-template-rows:auto minmax(0,1fr)}
+.spp-light-body{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-height:0}
+.spp-light-body.has-side{grid-template-columns:minmax(0,1fr) 340px}
+.spp-big{display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px;min-height:0}
+.spp-big-zoom{display:flex;align-items:center;gap:6px}
+.spp-big-zoom button{min-width:36px;height:34px;padding:0 12px;border:1px solid var(--sz-line);border-radius:99px;background:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.spp-big-zoom button:last-child{font-size:12.5px}
+.spp-big-zoom span{min-width:52px;text-align:center;font-size:13px;font-weight:800}
+.spp-light-map{position:relative;overflow:auto;border-radius:12px;background:#e5ebe8;min-height:0;height:100%}
+.spp-light-map>div{position:relative}
+.spp-light-map>div>img{display:block;width:100%;height:auto;user-select:none}
+.spp-light-map>span{display:none}
+.spp-mark.is-big{transform:translate(-17px,-100%)}
+.spp-mark.is-big img{width:34px}
+.spp-mark.is-big b{margin:0 0 18px -8px;padding:4px 12px 4px 14px;font-size:14px;border-width:2px}
+.spp-light-side{display:grid;align-content:start;gap:12px;overflow:auto;font-size:13px;color:#334155}
+.spp-light-side p{margin:0;line-height:1.5}
+.spp-light-preview{width:100%}
+.spp-light-preview .spp{border-radius:10px;pointer-events:auto}
+@media(max-width:900px){.spp-light-body.has-side{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.spp-light-side{max-height:40vh}.spp-light-preview{width:200px}}

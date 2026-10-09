@@ -17,6 +17,9 @@ const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-d
 const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 9};
 const defaultPin: CardSpot = {src: F('sgp-aerial-2026'), x: 49, y: 68, zoom: 1};
 type Slot = 'house' | 'plan';
+/** Where the unit point sits inside the small plan frame (% of the frame). */
+const PIN_X = 50, PIN_Y = 62;
+const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)) * 100) / 100;
 
 /** Resolved poster content for one unit. */
 function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
@@ -29,25 +32,53 @@ function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   };
 }
 
-/** The poster itself (also rendered off-screen for the ZIP export). */
-function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse}: {
+/** Pointer drag helper: reports the movement as a fraction of the given element's size. */
+function useDrag(onMove: (fx: number, fy: number, done: boolean) => void) {
+  return (e: React.PointerEvent<HTMLElement>, box: HTMLElement) => {
+    e.preventDefault(); e.stopPropagation();
+    const r = box.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY;
+    const move = (ev: PointerEvent) => onMove((ev.clientX - x0) / r.width, (ev.clientY - y0) / r.height, false);
+    const up = (ev: PointerEvent) => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); onMove((ev.clientX - x0) / r.width, (ev.clientY - y0) / r.height, true);};
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
+}
+
+/** The poster itself (also rendered off-screen for the ZIP export and as the live preview in the editor).
+ *  Small plan: the unit point sits under the pin (frame centre); dragging the pin moves the point on the plan. */
+function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanPoint, onPin}: {
   unit: Unit; status: string; data: ReturnType<typeof resolve>; tool?: string | null;
   onPoster?: (x: number, y: number) => void; onPlan?: () => void; onHouse?: () => void;
+  onPlanPoint?: (x: number, y: number) => void; onPin?: (x: number, y: number) => void;
 }) {
   const {f, plan, pin, house} = data;
+  const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null), [pinGhost, setPinGhost] = useState<{dx: number; dy: number} | null>(null);
+  const planBox = useRef<HTMLButtonElement>(null), posterBox = useRef<HTMLDivElement>(null);
+  const dragPlan = useDrag((fx, fy, done) => {
+    if (!done) {setGhost({dx: fx, dy: fy}); return;}
+    setGhost(null);
+    // frame fraction → plan percent: the plan image is `zoom` frames wide; its height follows the image ratio (≈ 0.516 of its width).
+    const box = planBox.current, im = box?.querySelector('img'); if (!onPlanPoint || !box || !im || !(fx || fy)) return;
+    const imgRatio = im.naturalHeight / im.naturalWidth || .5165, frameRatio = box.clientHeight / box.clientWidth;
+    onPlanPoint(clamp(plan.x + fx * 100 / plan.zoom), clamp(plan.y + fy * 100 * frameRatio / (plan.zoom * imgRatio)));
+  });
+  const dragPin = useDrag((fx, fy, done) => {
+    if (!done) {setPinGhost({dx: fx, dy: fy}); return;}
+    setPinGhost(null);
+    if (onPin && (fx || fy)) onPin(clamp(pin.x + fx * 100), clamp(pin.y + fy * 100));
+  });
   const price = f.price || (unit.price ? fmt(unit.price) : '');
   const facts: [string, string][] = [
     ['Loại hình:', f.type || unit.type], ['TCBG:', f.group || unit.group],
     ['DT Đất:', f.area || (unit.area ? fmt(unit.area) + ' m²' : '')], ['DTXD:', f.builtArea || (unit.builtArea ? fmt(unit.builtArea) + ' m²' : '')],
   ];
-  return <div className={'spp' + (tool === 'pin' ? ' is-pinning' : '')} onClick={e => {
+  return <div ref={posterBox} className={'spp' + (tool === 'pin' ? ' is-pinning' : '') + (onPlanPoint ? ' is-editable' : '')} onClick={e => {
     if (tool !== 'pin' || !onPoster) return;
     const r = e.currentTarget.getBoundingClientRect();
     onPoster(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);
   }}>
     <img className="spp-bg" src={sized(F('sgp-poster-bg'), 1600)} alt=""/>
     <div className="spp-aerial"><img src={sized(F('sgp-aerial-2026'), 2000)} alt="Phối cảnh tổng Vinhomes Saigon Park"/></div>
-    <button type="button" className="spp-house" onClick={e => {if (tool !== 'pin' && onHouse) {e.stopPropagation(); onHouse();}}} aria-label="Xem ảnh nhà lớn"><img src={sized(house, 1600)} alt={`Mẫu nhà ${unit.model || ''}`}/></button>
+    <button type="button" className="spp-house" onClick={e => {if (tool !== 'pin' && onHouse) {e.stopPropagation(); onHouse();}}} aria-label="Xem ảnh nhà lớn"><img src={sized(house, 1520)} alt={`Mẫu nhà ${unit.model || ''}`}/></button>
     <img className="spp-strip" src={F('sgp-strip')} alt=""/>
     <img className="spp-logo" src={F('sgp-logo')} alt="Vinhomes Saigon Park"/>
     <span className="spp-script">{f.title || 'Mã căn'}</span>
@@ -55,16 +86,37 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse}: {
     {facts.map(([k, v], i) => <span key={k} className={'spp-fact is-' + i}><i>{k}</i><em>{v || 'Đang cập nhật'}</em></span>)}
     <div className="spp-price"><img src={F('sgp-price-bg')} alt=""/><small>GIÁ BÁN<br/>(CHƯA VAT + KPBT)</small>
       {price ? <b>{price}<sup>TỶ</sup></b> : <b className="is-contact">LIÊN HỆ</b>}</div>
-    <button type="button" className="spp-plan" onClick={e => {if (tool !== 'pin' && onPlan) {e.stopPropagation(); onPlan();}}} aria-label="Xem mặt bằng lớn">
-      <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} style={{width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden><path d="M58 62 Q50 60 41.5 51" stroke="#e11d2a" strokeWidth="2.4" fill="none" vectorEffect="non-scaling-stroke"/><path d="M40.6 49.6 L44.5 50 L42.4 53.4 z" fill="#e11d2a"/></svg>
-      <span className="spp-tag is-inset"><img src={F('sgp-pin')} alt=""/><b>{unit.code}</b></span>
-      {onPlan && <span className="spp-zoomhint"><Expand size={12}/>Xem lớn</span>}
+    <button type="button" ref={planBox} className="spp-plan" onClick={e => {if (tool !== 'pin' && onPlan) {e.stopPropagation(); onPlan();}}} aria-label="Xem mặt bằng lớn">
+      <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} draggable={false} style={{left: PIN_X + '%', top: PIN_Y + '%', width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>
+      <span className={'spp-mark' + (onPlanPoint ? ' is-drag' : '')} style={{left: `calc(${PIN_X}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${PIN_Y}% + ${(ghost?.dy || 0) * 100}%)`}}
+        onPointerDown={onPlanPoint ? e => dragPlan(e, planBox.current!) : undefined} onClick={onPlanPoint ? e => e.stopPropagation() : undefined}>
+        <img src={F('sgp-pin')} alt="" draggable={false}/><b>{unit.code}</b></span>
+      {onPlan && !onPlanPoint && <span className="spp-zoomhint"><Expand size={12}/>Xem lớn</span>}
     </button>
     <img className="spp-loc" src={F('sgp-loc-title')} alt="Sơ đồ vị trí"/>
-    <span className="spp-tag is-aerial" style={{left: `${pin.x}%`, top: `${pin.y}%`}}><img src={F('sgp-pin')} alt=""/><b>{unit.code}</b></span>
+    <span className={'spp-mark is-aerial' + (onPin ? ' is-drag' : '')} style={{left: `calc(${pin.x}% + ${(pinGhost?.dx || 0) * 100}%)`, top: `calc(${pin.y}% + ${(pinGhost?.dy || 0) * 100}%)`}}
+      onPointerDown={onPin ? e => dragPin(e, posterBox.current!) : undefined}><img src={F('sgp-pin')} alt="" draggable={false}/><b>{unit.code}</b></span>
     {status !== 'Còn hàng' && <span className="spp-sold">{status}</span>}
-    {tool === 'pin' && <span className="spp-hint">Bấm lên phối cảnh để đặt ghim {unit.code}</span>}
+    {tool === 'pin' && <span className="spp-hint">Bấm hoặc kéo ghim để đặt vị trí {unit.code} trên phối cảnh</span>}
+  </div>;
+}
+
+/** Big plan with zoom; click or drag the pin to place the unit. Same point as the small frame. */
+function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string; editable: boolean; onPoint: (x: number, y: number) => void}) {
+  const [zoom, setZoom] = useState(2), box = useRef<HTMLDivElement>(null), img = useRef<HTMLDivElement>(null);
+  const centre = () => {const b = box.current, i = img.current; if (b && i) b.scrollTo({left: i.offsetWidth * plan.x / 100 - b.clientWidth / 2, top: i.offsetHeight * plan.y / 100 - b.clientHeight / 2});};
+  useEffect(() => {const t = setTimeout(centre, 60); return () => clearTimeout(t);}, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null);
+  const drag = useDrag((fx, fy, done) => {if (!done) {setGhost({dx: fx, dy: fy}); return;} setGhost(null); if (fx || fy) onPoint(clamp(plan.x + fx * 100), clamp(plan.y + fy * 100));});
+  return <div className="spp-big">
+    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(8, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button></div>
+    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')} onWheel={e => {if (e.ctrlKey || e.metaKey) {e.preventDefault(); setZoom(z => Math.min(8, Math.max(1, z - Math.sign(e.deltaY) * .25)));}}}>
+      <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
+        <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
+        <span className={'spp-mark is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
+          onPointerDown={editable ? e => drag(e, img.current!) : undefined} onClick={e => e.stopPropagation()}><img src={F('sgp-pin')} alt="" draggable={false}/><b>{code}</b></span>
+      </div>
+    </div>
   </div>;
 }
 
@@ -89,6 +141,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 
+  const startEdit = () => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);}};
   const setPlan = (p: Partial<CardSpot>) => setDraft(d => ({...d, plan: {...data.plan, ...p}}));
   const setImage = (slot: Slot, url: string) => slot === 'house' ? setDraft(d => ({...d, perspective: url})) : setPlan({src: url});
   async function post(body: object, ok: string) {
@@ -145,6 +198,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
     </div>}
 
     <div ref={posterRef}><PosterArt unit={unit} status={status} data={data} tool={edit ? tool : null}
+      onPlanPoint={isAdmin && edit ? (x, y) => setPlan({x, y}) : undefined} onPin={isAdmin && edit ? (x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}})) : undefined}
       onPoster={(x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}}))} onPlan={() => setView('plan')} onHouse={() => setView('house')}/></div>
 
     {isAdmin && edit && <div className="uc-form">
@@ -161,16 +215,12 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
             <button type="button" className="uc-btn" onClick={() => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} setPick(view);}}><Images size={14}/>Thư viện</button>
             {edit && <button type="button" className="uc-btn is-dark" disabled={!!busy} onClick={saveUnit}><Save size={14}/>Lưu</button>}</span>}
           <button type="button" className="spp-close" onClick={() => setView(null)} aria-label="Đóng"><X size={20}/></button></header>
-        {view === 'plan' ? <>
-          <div className={'spp-light-map' + (isAdmin ? ' is-edit' : '')} onClick={e => {
-            if (!isAdmin) return;
-            if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);}
-            const r = e.currentTarget.getBoundingClientRect(); setPlan({x: Math.round((e.clientX - r.left) / r.width * 1000) / 10, y: Math.round((e.clientY - r.top) / r.height * 1000) / 10});
-          }}><img src={sized(data.plan.src, 2560)} alt=""/><span style={{left: `${data.plan.x}%`, top: `${data.plan.y}%`}}><b>{unit.code}</b></span></div>
-          {isAdmin && <div className="spp-light-tools"><span>Bấm lên mặt bằng để chỉ đúng lô {unit.code}</span>
-            <label className="uc-zoom"><span>Zoom khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={2} max={20} step={0.5} value={data.plan.zoom} onChange={e => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} setPlan({zoom: Number(e.target.value)});}}/></label>
-            <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data}/></div></div>}
-        </> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}
+        {view === 'plan' ? <div className={'spp-light-body' + (isAdmin ? ' has-side' : '')}>
+          <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
+          {isAdmin && <div className="spp-light-side"><p>Bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim ngay trên poster bên dưới – hai nơi luôn cùng một vị trí.</p>
+            <label className="uc-zoom"><span>Độ phóng khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={2} max={20} step={0.5} value={data.plan.zoom} onChange={e => {startEdit(); setPlan({zoom: Number(e.target.value)});}}/></label>
+            <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}}));}}/></div></div>}
+        </div> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}
       </div>
     </div>}
     <input ref={fileInput} type="file" accept="image/*" hidden onChange={async e => {

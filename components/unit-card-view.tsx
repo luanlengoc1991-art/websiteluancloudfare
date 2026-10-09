@@ -25,7 +25,7 @@ async function upload(file: File, projectId: string) {
 /** Zoomed crop: point (x,y) of the image sits in the middle of the frame. */
 function Crop({spot, code}: {spot: CardSpot; code: string}) {
   return <div className="uc-crop">
-    <img src={sized(spot.src, 2560)} alt={`Mặt bằng chỉ căn ${code}`} style={{width: `${spot.zoom * 100}%`, transform: `translate(-${spot.x}%, -${spot.y}%)`}}/>
+    <img src={spot.zoom > 1.6 ? spot.src : sized(spot.src, 2560)} alt={`Mặt bằng chỉ căn ${code}`} decoding="async" style={{width: `${spot.zoom * 100}%`, transform: `translate(-${spot.x}%, -${spot.y}%)`}}/>
     <span className="uc-crop-pin"><b>{code}</b><i/></span>
   </div>;
 }
@@ -42,9 +42,9 @@ function Pinned({spot, code, edit, onPin}: {spot: CardSpot; code: string; edit: 
   </div>;
 }
 
-export default function UnitCardView({project, unit, status, own, base, files, fallbackPin, defaultNearby, isAdmin, onSaved}: {
+export default function UnitCardView({project, unit, status, own, base, files, fallbackPin, defaultNearby, isAdmin, onSaved, autoPerspective}: {
   project: Project; unit: Unit; status: string; own?: UnitCard; base?: UnitCard; files: Asset[];
-  fallbackPin?: {x: number; y: number}; defaultNearby: string[]; isAdmin: boolean; onSaved: () => unknown;
+  fallbackPin?: {x: number; y: number}; defaultNearby: string[]; isAdmin: boolean; onSaved: () => unknown; autoPerspective?: string;
 }) {
   const saved = mergeCard(base, own);
   const [edit, setEdit] = useState(false), [busy, setBusy] = useState(false), [pickFor, setPickFor] = useState<Slot | null>(null);
@@ -53,7 +53,7 @@ export default function UnitCardView({project, unit, status, own, base, files, f
   const card = edit ? draft : saved;
   const f = card.fields || {};
   const plans = files.filter(a => a.projectId === project.id && a.kind === 'plan');
-  const perspective = card.perspective || unit.posterUrl || files.find(a => a.projectId === project.id && a.kind === 'model')?.url || project.image;
+  const perspective = (edit ? draft.perspective !== base?.perspective && draft.perspective : own?.perspective) || autoPerspective || card.perspective || unit.posterUrl || files.find(a => a.projectId === project.id && a.kind === 'model')?.url || project.image;
   const master: CardSpot = card.master || {src: project.image, x: fallbackPin?.x ?? 50, y: fallbackPin?.y ?? 50, zoom: 1};
   const plan: CardSpot | undefined = card.plan || (plans[0] ? {src: plans[0].url, x: 50, y: 50, zoom: 2.5} : undefined);
   const nearby = card.nearby?.length ? card.nearby : defaultNearby.map(name => ({name, distance: ''}));

@@ -2,6 +2,7 @@
 import UnitCardView from './unit-card-view';
 import {cardId, type UnitCard} from '@/lib/unit-card';
 import {projectProfiles} from '@/lib/project-profiles';
+import {SAIGON_PARK, saigonParkModelImage} from '@/lib/saigon-park-models';
 
 /* Public layouts modelled on the Spaciaz theme (demo2.wpopal.com/spaciaz), filled with
  * Alpha Hub's own projects, units, articles and About/AlphaHub copy. Styles: app/spaciaz.css. */
@@ -782,7 +783,7 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
             {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
               {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>
               : project && unit ? <UnitCardView key={unit.id} project={project} unit={unit} status={statusOf(unit)} own={cards[cardId(project.id, unit.code)]} base={cards[project.id + '|*']} files={files} isAdmin={isAdmin} onSaved={() => onReload?.()}
-                fallbackPin={pins.find(p => p.projectId === project.id && p.code.trim().toUpperCase() === unit.code.toUpperCase() && p.layer === 'map')} defaultNearby={(projectProfiles[project.id]?.amenities || []).map(a => a.title)}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
+                fallbackPin={pins.find(p => p.projectId === project.id && p.code.trim().toUpperCase() === unit.code.toUpperCase() && p.layer === 'map')} defaultNearby={(projectProfiles[project.id]?.amenities || []).map(a => a.title)} autoPerspective={project.id === SAIGON_PARK ? saigonParkModelImage(unit.model) : undefined}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
           </div>
           {!adminView && unit && <aside className="sz-up-info" key={unit.id}>
             <small><MapPin size={14}/>{unit.zone} · {project?.name}</small>

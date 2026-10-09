@@ -84,7 +84,7 @@ export default function SaigonParkPoster({project, unit, status, own, base, file
         {price ? <b>{price}<sup>TỶ</sup></b> : <b className="is-contact">LIÊN HỆ</b>}</div>
       <div className="spp-plan" onClick={e => {if (tool === 'plan') e.stopPropagation();}}>
         <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} style={{width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden><defs><marker id="spp-ah" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="#e11d2a"/></marker></defs><path d="M63 30 Q52 32 41 48" stroke="#e11d2a" strokeWidth="1.1" fill="none" vectorEffect="non-scaling-stroke" markerEnd="url(#spp-ah)"/></svg>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden><defs><marker id="spp-ah" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="#e11d2a"/></marker></defs><path d="M58 62 Q50 60 41.5 51" stroke="#e11d2a" strokeWidth="1.1" fill="none" vectorEffect="non-scaling-stroke" markerEnd="url(#spp-ah)"/></svg>
         <span className="spp-tag is-inset"><img src={F('sgp-pin')} alt=""/><b>{unit.code}</b></span>
       </div>
       <img className="spp-loc" src={F('sgp-loc-title')} alt="Sơ đồ vị trí"/>

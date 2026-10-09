@@ -2273,3 +2273,5 @@ button.sz-bento-photo{padding:0}
 .spp-map img{display:block;width:100%}
 .spp-map span{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#e11d48;border:3px solid #fff;box-shadow:0 0 0 6px #e11d4855}
 @media(prefers-reduced-motion:no-preference){.spp-tag img{animation:spp-bob 2.4s ease-in-out infinite}}
+.spp-plan .spp-tag.is-inset{position:absolute;left:55%;top:8%;transform:none;align-items:flex-end}
+.spp-plan .spp-tag.is-inset b{margin-bottom:1.6cqw}

@@ -1,4 +1,5 @@
 import type {Unit} from './catalog';
+/** Old studio address, only used to recognise legacy saved paths (never fetched). */
 export const VINH_TIEN_ORIGIN='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';
 export const VINH_TIEN_SHEET='https://docs.google.com/spreadsheets/d/1gUclOuSjDCIRifWv2NmYwBDf8uXUkOsyQhvcNTo2JuA/edit#gid=1343205496';
 export type DrawingSlot={src:string;x:number;y:number;zoom:number};
@@ -7,7 +8,7 @@ export type UnitDrawing={main:DrawingSlot;map:DrawingSlot;mainMarker:DrawingMark
 const numeric=(v:unknown)=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0;};
 const text=(v:unknown)=>typeof v==='string'?v.slice(0,500):'';
 const clamp=(v:unknown,min:number,max:number,fallback:number)=>typeof v==='number'&&Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
-function imageUrl(v:unknown){const t=text(v);if(/^\/api\/files\/[\w-]{8,64}$/.test(t))return t;try{const u=new URL(text(v),VINH_TIEN_ORIGIN);return u.origin===VINH_TIEN_ORIGIN?u.href:'';}catch{return '';}}
+function imageUrl(v:unknown){const t=text(v);if(/^\/api\/files\/[\w-]{8,64}$/.test(t))return t;try{const u=new URL(text(v),VINH_TIEN_ORIGIN);return u.origin===VINH_TIEN_ORIGIN?(u.pathname.startsWith('/api/vinh-tien/')?u.pathname:'/api/vinh-tien'+u.pathname):'';}catch{return '';}}
 function slot(v:any):DrawingSlot{return {src:imageUrl(v?.src),x:clamp(v?.x,0,100,50),y:clamp(v?.y,0,100,50),zoom:clamp(v?.zoom,.1,20,1)};}
 function marker(v:any):DrawingMarker{return {x:clamp(v?.x,0,100,50),y:clamp(v?.y,0,100,50),scale:clamp(v?.scale,.1,5,1)};}
 export function mapGreenParadise(sheet:any,state:any):Unit[]{

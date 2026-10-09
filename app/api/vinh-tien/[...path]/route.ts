@@ -47,7 +47,7 @@ async function relay(req:Request,context:{params:Promise<{path:string[]}>}){
   if(p==='api/assets')return await upload(req);
   if(p==='api/state'&&write){const d=await req.json() as {version?:number;units?:unknown[]};if(d.version!==2||!Array.isArray(d.units)||d.units.length>1000)return new Response('Invalid state',{status:400});return Response.json(await writeVinhTienState(d),{headers:{'Cache-Control':'no-store'}});}
   if(p==='api/state')return Response.json({...await readVinhTienState(),canEdit:!!await getCurrentUser()},{headers:{'Cache-Control':'private, no-store'}});
-  return Response.json(await readVinhTienSheet(new URL(req.url).search),{headers:{'Cache-Control':'no-store'}});
+  return Response.json(await readVinhTienSheet(),{headers:{'Cache-Control':'no-store'}});
  }catch(e){if(e instanceof MediaError)return mediaFailure(e);return Response.json({error:'Không thể tải dữ liệu Mặt bằng căn. Vui lòng thử lại.'},{status:502});}
 }
 export const GET=relay;export const PUT=relay;export const POST=relay;

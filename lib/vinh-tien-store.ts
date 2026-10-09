@@ -1,11 +1,13 @@
 import {bucket, database} from '@/db/store';
-import {VINH_TIEN_ORIGIN} from '@/lib/green-paradise';
+import {VINH_TIEN_SHEET} from '@/lib/green-paradise';
+import {parseCsv, sheetCsvUrl} from '@/lib/unit-sheet';
 import {purgeUnusedFiles} from '@/lib/media-storage';
 
 /* "Mặt bằng căn" (Vịnh Tiên poster studio) data lives on the owner's Cloudflare:
- * - editor state  → D1 records (kind 'vinh-tien', id 'state'); seeded once from the old chatgpt.site app,
- * - price sheet   → read from the old app (it proxies Google Sheets), last good copy kept in D1 (id 'sheet'),
- * - static images → mirrored into R2 under vinh-tien/<path> on first request. */
+ * - editor state  → D1 records (kind 'vinh-tien', id 'state'),
+ * - price sheet   → read straight from Google Sheets, last good copy kept in D1 (id 'sheet'),
+ * - static images → R2 under vinh-tien/<path>.
+ * Since 09/10/2026 nothing is read from the old chatgpt.site app any more. */
 const KIND = 'vinh-tien';
 async function readRecord<T>(id: string): Promise<T | null> {
   const row = await database().prepare("SELECT payload FROM records WHERE owner='admin' AND kind=? AND id=?").bind(KIND, id).first<{payload: string}>();
@@ -15,19 +17,12 @@ async function writeRecord(id: string, data: unknown) {
   await database().prepare('INSERT INTO records(owner,kind,id,payload,updated) VALUES(?,?,?,?,?) ON CONFLICT(owner,kind,id) DO UPDATE SET payload=excluded.payload,updated=excluded.updated')
     .bind('admin', KIND, id, JSON.stringify(data), Date.now()).run();
 }
-const fromOrigin = async (path: string) => {
-  const r = await fetch(VINH_TIEN_ORIGIN + path, {cache: 'no-store', signal: AbortSignal.timeout(15000)});
-  if (!r.ok) throw new Error('Source unavailable');
-  return r.json();
-};
 
 /** Saved editor state ({state, updatedAt}); imported from the old app the first time. */
 export async function readVinhTienState(): Promise<{state: unknown; updatedAt?: string}> {
   const saved = await readRecord<{state: unknown; updatedAt?: string}>('state');
   if (saved) return saved;
-  const imported = await fromOrigin('/api/state') as {state: unknown; updatedAt?: string};
-  await writeRecord('state', imported);
-  return imported;
+  return {state: {units: []}};
 }
 export async function writeVinhTienState(state: unknown) {
   const before = JSON.stringify(await readRecord('state') ?? '');
@@ -40,27 +35,50 @@ export async function writeVinhTienState(state: unknown) {
   return data;
 }
 
-/** Price sheet from Google Sheets (via the old app); falls back to the last copy saved in D1. */
-export async function readVinhTienSheet(search = ''): Promise<Record<string, unknown>> {
+/** Price sheet read straight from Google Sheets (same shape the old app produced); falls back to the last copy in D1.
+ *  Status and colour are not in the CSV export, so they are kept from the previous copy (default Còn hàng / white). */
+export async function readVinhTienSheet(): Promise<Record<string, unknown>> {
+  const saved = await readRecord<{units?: {unitCode: string; status?: string; color?: string; direction?: string; position?: string}[]}>('sheet');
   try {
-    const sheet = await fromOrigin('/api/sheet' + search) as Record<string, unknown>;
-    if (!search) await writeRecord('sheet', sheet).catch(() => {});
+    const r = await fetch(sheetCsvUrl(VINH_TIEN_SHEET), {redirect: 'follow', signal: AbortSignal.timeout(20000)});
+    const text = r.ok ? await r.text() : '';
+    if (!text || /^\s*<(!doctype|html)/i.test(text)) throw new Error('Sheet unavailable');
+    const rows = parseCsv(text), head = rows.findIndex(x => x.some(c => /^mã căn$/i.test(c.trim())));
+    if (head < 0) throw new Error('No unit column');
+    const col = (re: RegExp) => rows[head].findIndex(c => re.test(c.replace(/\s+/g, ' ').trim()));
+    const ic = {zone: col(/^khu$/i), code: col(/^mã căn$/i), type: col(/^loại hình/i), handover: col(/^tcbg/i), land: col(/^diện tích đất/i), built: col(/^diện tích xây/i), price: col(/^tổng giá/i), bank: col(/^stk$/i), date: col(/^ngày nhập/i), note: col(/^ghi chú/i), sign: col(/^ký cn/i), ten: col(/^tiền kq/i), tenDate: col(/^ngày kq/i), twenty: col(/^hđcn/i), ref: col(/^phiếu tính giá/i)};
+    const prev = new Map((saved?.units || []).map(u => [u.unitCode, u]));
+    const g = (row: string[], i: number) => i >= 0 ? (row[i] || '').trim() : '';
+    const seen = new Set<string>();
+    const units = rows.slice(head + 2).flatMap(row => {
+      const code = g(row, ic.code).toUpperCase();
+      if (!code || seen.has(code)) return [];
+      seen.add(code);
+      const p = ic.price, before = g(row, p), billions = Math.floor(Number(before.replace(/[^\d]/g, '')) / 1e7) / 100;
+      const old = prev.get(code);
+      return [{unitCode: code, productType: g(row, ic.type), handover: g(row, ic.handover), landArea: g(row, ic.land), builtArea: g(row, ic.built),
+        price: billions ? billions.toFixed(2).replace('.', ',') : '', color: old?.color || '#FFFFFF', status: old?.status || 'Còn hàng', zone: g(row, ic.zone) || 'Vịnh Tiên',
+        direction: old?.direction || '', position: old?.position || '', updatedAt: g(row, ic.date),
+        pricing: {priceBeforeVat: before, vat: g(row, p + 1), maintenanceFee: g(row, p + 2), totalPrice: g(row, p + 3),
+          constructionBeforeVat: g(row, p + 4), constructionVat: g(row, p + 5), constructionMaintenanceFee: g(row, p + 6), constructionTotal: g(row, p + 7),
+          landBeforeVat: g(row, p + 8), landVat: g(row, p + 9), landMaintenanceFee: g(row, p + 10), landTotal: g(row, p + 11),
+          bankAccount: g(row, ic.bank), inventoryDate: g(row, ic.date), note: g(row, ic.note), transferSigning: g(row, ic.sign), tenPercentAmount: g(row, ic.ten),
+          tenPercentDate: g(row, ic.tenDate), twentyPercentContract: g(row, ic.twenty), pricingReference: g(row, ic.ref) || code}}];
+    });
+    if (!units.length) throw new Error('Empty sheet');
+    const sheet = {units, syncedAt: new Date().toISOString(), stale: false};
+    await writeRecord('sheet', sheet).catch(() => {});
     return sheet;
   } catch (error) {
-    const saved = await readRecord<Record<string, unknown>>('sheet');
     if (saved) return {...saved, stale: true};
     throw error;
   }
 }
 
-/** Static studio image: R2 mirror first, otherwise fetch from the old app and keep a copy. */
+/** Static studio image, stored in R2 (all files were copied from the old app on 09/10/2026). */
 export async function vinhTienImage(path: string): Promise<{body: ReadableStream | ArrayBuffer; type: string} | null> {
   const key = 'vinh-tien/' + path;
   const object = await bucket().get(key);
   if (object) return {body: object.body as unknown as ReadableStream, type: object.httpMetadata?.contentType || 'image/jpeg'};
-  const r = await fetch(VINH_TIEN_ORIGIN + '/' + path, {signal: AbortSignal.timeout(25000)});
-  if (!r.ok) return null;
-  const bytes = await r.arrayBuffer(), type = r.headers.get('content-type') || 'image/jpeg';
-  if (bytes.byteLength > 0 && /^image\//.test(type)) await bucket().put(key, bytes, {httpMetadata: {contentType: type}});
-  return {body: bytes, type};
+  return null;
 }

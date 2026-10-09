@@ -725,7 +725,7 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
 /* ═══════════════════════════ Mặt bằng căn (standalone) ═══════════════════════════ */
 /** /mat-bang-can: the unit poster as a full page. Visitors see finished posters only, with a code strip,
  *  a sticky info card and related finished units; administrators get the full studio editor. */
-const viaProxy = (src?: string) => {if (!src) return ''; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname + '?w=640' : src;} catch {return src;}};
+const viaProxy = (src?: string) => {if (!src) return ''; if (/^\/api\/vinh-tien\/[^?]+\.(png|jpe?g)$/i.test(src)) return src + '?w=640'; try {const url = new URL(src); return url.hostname.endsWith('chatgpt.site') ? '/api/vinh-tien' + url.pathname + '?w=640' : src;} catch {return src;}};
 type PinLike = {projectId: string; code: string; layer?: string; x: number; y: number};
 const STUDIO = 'green-paradise';
 

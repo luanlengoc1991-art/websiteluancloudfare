@@ -2426,3 +2426,6 @@ button.sz-bento-photo{padding:0}
 .spp-light-map img{-webkit-user-drag:none}
 .spp-light-side{max-height:calc(100vh - 90px)}
 @media(max-width:900px){.spp-light-body.has-side{grid-template-columns:1fr}}
+.spp-light-body.has-side{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.spp-light-side .spp-light-preview{width:min(100%,calc((100vh - 200px) * 1512 / 2044));margin-inline:auto}
+@media(max-width:900px){.spp-light-body.has-side{grid-template-columns:1fr}}

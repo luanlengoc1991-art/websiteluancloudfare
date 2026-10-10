@@ -139,7 +139,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     .sort((a, b) => (pinOf.has(up(a.code)) ? 0 : 1) - (pinOf.has(up(b.code)) ? 0 : 1) || a.code.localeCompare(b.code, 'vi', {numeric: true}));
   const unplaced = units.filter(u => !pinOf.has(up(u.code))).length;
 
-  return <div className={'pm' + (edit ? ' is-edit' : '') + (placing ? ' is-placing' : '')}>
+  return <div className={'pm' + (edit ? ' is-edit' : '') + (placing ? ' is-placing' : '') + (showNotes ? ' is-notes' : '')}>
     <div ref={view} className="pm-view" onPointerDown={onDown} onClick={e => {
       if (moved.current || !edit || !placing) return;
       const p = toPct(e.clientX, e.clientY); place(placing, p.x, p.y); toast.success(`Đã đặt ${placing}.`); setPlacing('');
@@ -149,8 +149,13 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         {mid.map(({r, c}) => <img key={'m' + r + c} className="pm-tile" src={sized(`${cfg.tilePrefix}${r}${c}`, hw)} alt="" decoding="async" draggable={false} style={cell(r, c, cfg.grid)}/>)}
         {fine.map(({r, c}) => <img key={'f' + r + '-' + c} className="pm-tile" src={fineSrc(r, c)} alt="" decoding="async" draggable={false} style={cell(r, c, n2)}/>)}
         {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-          <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fde047"/></marker></defs>
-          {local.filter(p => p.callout).map(p => <line key={p.code} x1={p.callout!.x * W / 100} y1={p.callout!.y * H / 100} x2={p.x * W / 100} y2={p.y * H / 100} markerEnd="url(#pm-arrow)"/>)}
+          <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fde047"/></marker></defs>
+          {local.filter(p => p.callout).map(p => {
+            const x1 = p.callout!.x * W / 100, y1 = p.callout!.y * H / 100, cx = p.x * W / 100, cy = p.y * H / 100 - 14;
+            // stop where the line meets the tag box (half size 24 × 15 incl. a 2 px gap)
+            const dx = x1 - cx, dy = y1 - cy, f = Math.min(Math.abs(dx) > 1e-6 ? 24 / Math.abs(dx) : Infinity, Math.abs(dy) > 1e-6 ? 15 / Math.abs(dy) : Infinity, 1);
+            return <line key={p.code} x1={x1} y1={y1} x2={cx + dx * f} y2={cy + dy * f} markerEnd="url(#pm-arrow)"/>;
+          })}
         </svg>}
         {showNotes && local.filter(p => p.callout).map(p => {
           const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
@@ -168,12 +173,11 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
           const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
           const st = statusOf(u), code = up(p.code);
           if (only && st !== only) return null;
-          return <a key={code} href={edit ? undefined : unitPlanPath(u)} className={'pm-tag' + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held') + (flash === code || hover === code ? ' is-hot' : '')}
+          return <a key={code} href={edit || showNotes ? undefined : unitPlanPath(u)} className={'pm-tag' + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held') + (flash === code || hover === code ? ' is-hot' : '')}
             style={{left: p.x + '%', top: p.y + '%', transform: 'translate(-50%,-100%) scale(var(--k,1))'}}
-            onPointerDown={e => {if (edit) dragPin(e, code); else e.stopPropagation();}} onClick={e => {e.stopPropagation(); if (edit) e.preventDefault();}}
+            onPointerDown={e => {if (edit) dragPin(e, code); else if (showNotes) dragCallout(e, code); else e.stopPropagation();}} onClick={e => {e.stopPropagation(); if (edit || showNotes) e.preventDefault();}}
             onMouseEnter={() => setHover(code)} onMouseLeave={() => setHover(h => h === code ? '' : h)}>
             <b>{tag(u.price)}</b>
-            {showNotes && <span className="pm-tag-arrow" role="button" title="Kéo ra thẻ thông tin đầy đủ" onPointerDown={e => dragCallout(e, code)} onClick={e => {e.stopPropagation(); e.preventDefault();}}>↗</span>}
             {(hover === code || flash === code) && <span className="pm-tip"><strong>{u.code}</strong><em>{u.type} · {u.area ? fmt(u.area) + ' m²' : '—'}</em><em>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'} · {st}</em>{!edit && <i>Bấm để xem mặt bằng căn</i>}</span>}
           </a>;
         })}
@@ -194,8 +198,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       {canManage && admin && <div className="pm-admin">
         <button type="button" className={edit ? 'is-on' : ''} onClick={() => {setEdit(!edit); setPlacing('');}}>{edit ? <><Check size={14}/>Xong chỉnh vị trí</> : <><Pencil size={14}/>Chỉnh vị trí căn</>}</button>
         <span>{local.length}/{units.length} căn đã gắn{unplaced ? ` · ${unplaced} chưa gắn` : ''}</span>
-        <button type="button" className={notes ? 'is-on' : ''} onClick={() => setNotes(!notes)} title="Kéo mũi tên ↗ từ tag ra để hiện thẻ thông tin đầy đủ của căn">{notes ? 'Thẻ thông tin: Bật' : 'Thẻ thông tin: Tắt'} · {local.filter(p => p.callout).length}</button>
-        {notes && <p>Kéo mũi tên ↗ ở tag giá ra vị trí tuỳ ý để hiện thẻ thông tin; kéo thẻ để dời, ✕ để gỡ.</p>}
+        <button type="button" className={notes ? 'is-on' : ''} onClick={() => setNotes(!notes)} title="Kéo tag giá ra để hiện thẻ thông tin đầy đủ của căn">{notes ? 'Thẻ thông tin: Bật' : 'Thẻ thông tin: Tắt'} · {local.filter(p => p.callout).length}</button>
+        {notes && <p>Kéo tag giá ra vị trí tuỳ ý để hiện thẻ thông tin (mũi tên tự nối về căn); kéo thẻ để dời, ✕ để gỡ.{edit ? ' Đang bật "Chỉnh vị trí căn": tắt nó để kéo thẻ.' : ''}</p>}
         {edit && <p>{placing ? `Bấm lên mặt bằng để đặt ${placing}` : 'Chọn mã căn bên dưới rồi bấm lên mặt bằng. Kéo tag để dời vị trí.'}</p>}
       </div>}
       <div className="pm-list">{list.map(u => {

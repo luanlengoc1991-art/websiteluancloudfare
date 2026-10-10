@@ -19,8 +19,8 @@ const MAP = SGP_MAP;
 const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2});
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-/** Small frame shows ~1/28 of the plan width: 5–6 rows of lots around the unit with street names readable. */
-const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 28};
+/** Small frame shows ~1/22 of the plan width: 5–6 rows of lots around the unit with street names readable. */
+const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 22};
 const defaultPin: CardSpot = {src: F('sgp-aerial-v2'), x: 43.3, y: 82.3, zoom: 1};
 type Slot = 'house' | 'plan';
 /** Where the unit point sits inside the small plan frame (% of the frame). */

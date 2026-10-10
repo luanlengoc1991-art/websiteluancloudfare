@@ -2381,3 +2381,27 @@ button.sz-bento-photo{padding:0}
 .spp-light-map .spp-mark b{position:static}
 .spp-light{z-index:1000}
 .uc-picker{z-index:1010}
+
+/* Saigon Park v4 – owner's separate elements assembled like the test poster (1512 × 2044) */
+.spp-aerial2{left:0;bottom:0;width:100%;height:auto}
+.spp-house{left:0;top:0;width:100%;height:36%;overflow:hidden}
+.spp-strip2{left:-5%;top:24%;width:110%;height:36%;pointer-events:none}
+.spp-script{top:24.4%;left:5.6%;font-size:4.6cqw}
+.spp-code{top:27.4%;left:4.3%;font-size:10.3cqw;line-height:1.05}
+.spp-fact{width:27.9%;height:2.75%}
+.spp-fact.is-0{left:3.7%;top:36.2%}.spp-fact.is-1{left:32.6%;top:36.2%}.spp-fact.is-2{left:3.7%;top:40.5%}.spp-fact.is-3{left:32.6%;top:40.5%}
+.spp-fact em{background:linear-gradient(180deg,#0b7a63,#05594d)}
+.spp-price{left:63.5%;top:32%;width:33.8%;height:11.5%}
+.spp-plan{left:4.6%;top:44.8%;width:92.9%;height:21.5%;border-radius:1.6cqw;box-shadow:0 1.4cqw 3cqw -1cqw #000a}
+.spm{position:absolute;z-index:3;width:21.16cqw;aspect-ratio:320/193;transform:translate(-14.7%,-89%);pointer-events:none}
+.spm img{display:block;width:100%;height:100%;filter:drop-shadow(0 .5cqw .8cqw #0008)}
+.spm b{position:absolute;left:33%;right:4%;top:45%;transform:translateY(-50%);text-align:center;font-family:'UTM Trajan Pro',Georgia,serif;font-size:2.45cqw;font-weight:700;line-height:1;color:#f5d271;white-space:nowrap;letter-spacing:.02em}
+.spm.is-drag{pointer-events:auto;cursor:grab;touch-action:none}
+.spm.is-drag:active{cursor:grabbing}
+.spm.is-drag img{outline:.25cqw dashed #fde68a;outline-offset:.2cqw;border-radius:2cqw}
+.spm.is-big{width:190px}
+.spm.is-big b{font-size:15px}
+.spm.is-big.is-drag img{outline-width:2px;border-radius:16px}
+.sgf-admin{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:10px;border-radius:12px;background:#fde68a26;border:1px dashed #fde68a88}
+.sgf-admin b{font-size:12px;color:#fde68a}.sgf-admin span{font-size:11.5px;color:#fef3c7}.sgf-admin select{grid-column:1/-1}
+.sgf-done{margin-left:6px;display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#10b981;color:#fff;font-size:10px;vertical-align:1px}

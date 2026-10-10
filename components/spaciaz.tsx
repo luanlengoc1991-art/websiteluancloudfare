@@ -780,7 +780,7 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
           {projectId !== SAIGON_PARK && <div className="sz-up-codes">{strip.map(u => <button key={u.id} type="button" className={u.code === unit?.code ? 'is-on' : ''} onClick={() => pick(u.code)}><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span></button>)}{!strip.length && <p>Không có mã phù hợp.</p>}</div>}
         </div>
         <div className={'sz-up-main' + (adminView ? ' is-admin' : '') + (projectId === SAIGON_PARK ? ' is-sgp' : '')}>
-          {projectId === SAIGON_PARK && <SgpFilter units={done} code={unit?.code} onPick={c => pick(c)} statusOf={statusOf}/>}
+          {projectId === SAIGON_PARK && <SgpFilter units={done} code={unit?.code} onPick={c => pick(c)} statusOf={statusOf} edited={isAdmin ? Object.fromEntries(Object.entries(cards).filter(([k, c]) => k.startsWith(SAIGON_PARK + '|') && !k.endsWith('|*') && c.updatedAt).map(([k, c]) => [k.split('|')[1], c.updatedAt as number])) : undefined}/>}
           <div className="sz-up-poster">
             {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
               {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>

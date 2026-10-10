@@ -16,10 +16,13 @@ const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2})
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
 const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 9};
-const defaultPin: CardSpot = {src: F('sgp-aerial-2026'), x: 49, y: 68, zoom: 1};
+const defaultPin: CardSpot = {src: F('sgp-aerial-v2'), x: 43.3, y: 82.3, zoom: 1};
 type Slot = 'house' | 'plan';
 /** Where the unit point sits inside the small plan frame (% of the frame). */
-const PIN_X = 50, PIN_Y = 62;
+const PIN_X = 43.3, PIN_Y = 88;
+/** Locator icon (owner's file): the label is filled with the unit code; the pin tip marks the spot. */
+const Marker = ({code, className = '', style, onPointerDown, onClick}: {code: string; className?: string; style?: React.CSSProperties; onPointerDown?: React.PointerEventHandler; onClick?: React.MouseEventHandler}) =>
+  <span className={'spm ' + className} style={style} onPointerDown={onPointerDown} onClick={onClick}><img src={F('sgp-marker-v2')} alt="" draggable={false}/><b>{code}</b></span>;
 const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)) * 100) / 100;
 
 /** Resolved poster content for one unit. */
@@ -77,11 +80,9 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
     const r = e.currentTarget.getBoundingClientRect();
     onPoster(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);
   }}>
-    <img className="spp-bg" src={sized(F('sgp-poster-bg'), 1600)} alt=""/>
-    <div className="spp-aerial"><img src={sized(F('sgp-aerial-2026'), 2000)} alt="Phối cảnh tổng Vinhomes Saigon Park"/></div>
+    <img className="spp-aerial2" src={F('sgp-aerial-v2')} alt="Phối cảnh tổng Vinhomes Saigon Park"/>
     <button type="button" className="spp-house" onClick={e => {if (tool !== 'pin' && onHouse) {e.stopPropagation(); onHouse();}}} aria-label="Xem ảnh nhà lớn"><img src={sized(house, 1520)} alt={`Mẫu nhà ${unit.model || ''}`}/></button>
-    <img className="spp-strip" src={F('sgp-strip')} alt=""/>
-    <img className="spp-logo" src={F('sgp-logo')} alt="Vinhomes Saigon Park"/>
+    <img className="spp-strip2" src={F('sgp-strip-v2')} alt=""/>
     <span className="spp-script">{f.title || 'Mã căn'}</span>
     <b className="spp-code">{unit.code}</b>
     {facts.map(([k, v], i) => <span key={k} className={'spp-fact is-' + i}><i>{k}</i><em>{v || 'Đang cập nhật'}</em></span>)}
@@ -89,14 +90,12 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
       {price ? <b>{price}<sup>TỶ</sup></b> : <b className="is-contact">LIÊN HỆ</b>}</div>
     <button type="button" ref={planBox} className="spp-plan" onClick={e => {if (tool !== 'pin' && onPlan) {e.stopPropagation(); onPlan();}}} aria-label="Xem mặt bằng lớn">
       <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} draggable={false} style={{left: PIN_X + '%', top: PIN_Y + '%', width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>
-      <span className={'spp-mark' + (onPlanPoint ? ' is-drag' : '')} style={{left: `calc(${PIN_X}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${PIN_Y}% + ${(ghost?.dy || 0) * 100}%)`}}
-        onPointerDown={onPlanPoint ? e => dragPlan(e, planBox.current!) : undefined} onClick={onPlanPoint ? e => e.stopPropagation() : undefined}>
-        <img src={F('sgp-pin')} alt="" draggable={false}/><b>{unit.code}</b></span>
+      <Marker code={unit.code} className={'is-inset' + (onPlanPoint ? ' is-drag' : '')} style={{left: `calc(${PIN_X}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${PIN_Y}% + ${(ghost?.dy || 0) * 100}%)`}}
+        onPointerDown={onPlanPoint ? e => dragPlan(e as React.PointerEvent<HTMLElement>, planBox.current!) : undefined} onClick={onPlanPoint ? e => e.stopPropagation() : undefined}/>
       {onPlan && !onPlanPoint && <span className="spp-zoomhint"><Expand size={12}/>Xem lớn</span>}
     </button>
-    <img className="spp-loc" src={F('sgp-loc-title')} alt="Sơ đồ vị trí"/>
-    <span className={'spp-mark is-aerial' + (onPin ? ' is-drag' : '')} style={{left: `calc(${pin.x}% + ${(pinGhost?.dx || 0) * 100}%)`, top: `calc(${pin.y}% + ${(pinGhost?.dy || 0) * 100}%)`}}
-      onPointerDown={onPin ? e => dragPin(e, posterBox.current!) : undefined}><img src={F('sgp-pin')} alt="" draggable={false}/><b>{unit.code}</b></span>
+    <Marker code={unit.code} className={'is-aerial' + (onPin ? ' is-drag' : '')} style={{left: `calc(${pin.x}% + ${(pinGhost?.dx || 0) * 100}%)`, top: `calc(${pin.y}% + ${(pinGhost?.dy || 0) * 100}%)`}}
+      onPointerDown={onPin ? e => dragPin(e as React.PointerEvent<HTMLElement>, posterBox.current!) : undefined}/>
     {status !== 'Còn hàng' && <span className="spp-sold">{status}</span>}
     {tool === 'pin' && <span className="spp-hint">Bấm hoặc kéo ghim để đặt vị trí {unit.code} trên phối cảnh</span>}
   </div>;
@@ -114,8 +113,8 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
     <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')} onWheel={e => {if (e.ctrlKey || e.metaKey) {e.preventDefault(); setZoom(z => Math.min(8, Math.max(1, z - Math.sign(e.deltaY) * .25)));}}}>
       <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
         <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
-        <span className={'spp-mark is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
-          onPointerDown={editable ? e => drag(e, img.current!) : undefined} onClick={e => e.stopPropagation()}><img src={F('sgp-pin')} alt="" draggable={false}/><b>{code}</b></span>
+        <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
+          onPointerDown={editable ? e => drag(e as React.PointerEvent<HTMLElement>, img.current!) : undefined} onClick={e => e.stopPropagation()}/>
       </div>
     </div>
   </div>;
@@ -199,8 +198,8 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
     </div>}
 
     <div ref={posterRef}><PosterArt unit={unit} status={status} data={data} tool={edit ? tool : null}
-      onPlanPoint={isAdmin && edit ? (x, y) => setPlan({x, y}) : undefined} onPin={isAdmin && edit ? (x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}})) : undefined}
-      onPoster={(x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}}))} onPlan={() => setView('plan')} onHouse={() => setView('house')}/></div>
+      onPlanPoint={isAdmin && edit ? (x, y) => setPlan({x, y}) : undefined} onPin={isAdmin && edit ? (x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}})) : undefined}
+      onPoster={(x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}}))} onPlan={() => setView('plan')} onHouse={() => setView('house')}/></div>
 
     {isAdmin && edit && <div className="uc-form">
       {([['title', 'Dòng chữ'], ['type', 'Loại hình'], ['group', 'TCBG'], ['model', 'Mẫu nhà'], ['area', 'DT Đất'], ['builtArea', 'DTXD'], ['price', 'Giá (tỷ)'], ['note', 'Ghi chú']] as const).map(([k, l]) =>
@@ -220,7 +219,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
           <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
           {isAdmin && <div className="spp-light-side"><p>Bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim ngay trên poster bên dưới – hai nơi luôn cùng một vị trí.</p>
             <label className="uc-zoom"><span>Độ phóng khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={2} max={20} step={0.5} value={data.plan.zoom} onChange={e => {startEdit(); setPlan({zoom: Number(e.target.value)});}}/></label>
-            <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-2026'), x, y}}));}}/></div></div>}
+            <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}}));}}/></div></div>}
         </div> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}
       </div>
     </div>, document.body)}
@@ -241,8 +240,8 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
 }
 
 /** Left panel: the studio's unit list with filters (visible to everyone). */
-export function SgpFilter({units, code, onPick, statusOf}: {units: Unit[]; code?: string; onPick: (code: string) => void; statusOf: (u: Unit) => string}) {
-  const blank = {q: '', status: '', type: '', min: '', max: '', street: '', amin: '', amax: '', dir: '', sort: 'new'};
+export function SgpFilter({units, code, onPick, statusOf, edited}: {units: Unit[]; code?: string; onPick: (code: string) => void; statusOf: (u: Unit) => string; edited?: Record<string, number>}) {
+  const blank = {q: '', status: '', type: '', min: '', max: '', street: '', amin: '', amax: '', dir: '', sort: 'new', done: ''};
   const [v, setV] = useState(blank), [more, setMore] = useState(false);
   const set = (k: keyof typeof blank, x: string) => setV(s => ({...s, [k]: x}));
   const opt = (f: (u: Unit) => string | undefined) => [...new Set(units.map(f).filter((x): x is string => !!x && x !== 'Đang cập nhật'))].sort((a, b) => a.localeCompare(b, 'vi', {numeric: true}));
@@ -250,12 +249,13 @@ export function SgpFilter({units, code, onPick, statusOf}: {units: Unit[]; code?
     const n = (s: string) => s === '' ? NaN : Number(s.replace(',', '.'));
     const out = units.filter(u => (!v.q || u.code.toLowerCase().includes(v.q.trim().toLowerCase()))
       && (!v.status || statusOf(u) === v.status) && (!v.type || u.type === v.type) && (!v.street || u.tower === v.street) && (!v.dir || u.direction === v.dir)
-      && !(n(v.min) > u.price) && !(n(v.max) < u.price) && !(n(v.amin) > u.area) && !(n(v.amax) < u.area));
+      && (!v.done || !edited || (v.done === 'yes') === !!edited[u.code]) && !(n(v.min) > u.price) && !(n(v.max) < u.price) && !(n(v.amin) > u.area) && !(n(v.amax) < u.area));
     if (v.sort === 'asc') out.sort((a, b) => (a.price || 1e9) - (b.price || 1e9));
     if (v.sort === 'desc') out.sort((a, b) => b.price - a.price);
+    if (v.sort === 'edit' && edited) out.sort((a, b) => (edited[b.code] || 0) - (edited[a.code] || 0));
     if (v.sort === 'az') out.sort((a, b) => a.code.localeCompare(b.code, 'vi', {numeric: true}));
     return out;
-  }, [units, v, statusOf]);
+  }, [units, v, statusOf, edited]);
   const on = useRef<HTMLButtonElement>(null);
   useEffect(() => {on.current?.scrollIntoView({block: 'nearest'});}, [code]);
   return <aside className="sgf">
@@ -273,9 +273,11 @@ export function SgpFilter({units, code, onPick, statusOf}: {units: Unit[]; code?
       <label>Hướng<select value={v.dir} onChange={e => set('dir', e.target.value)}><option value="">Tất cả hướng</option>{opt(u => u.direction).map(t => <option key={t}>{t}</option>)}</select></label>
     </div>}
     <div className="sgf-count"><b>{list.length}</b><span>căn phù hợp</span><button type="button" onClick={() => setV(blank)}>Xoá lọc</button></div>
-    <select className="sgf-sort" value={v.sort} onChange={e => set('sort', e.target.value)} aria-label="Sắp xếp"><option value="new">Mới cập nhật</option><option value="asc">Giá thấp đến cao</option><option value="desc">Giá cao đến thấp</option><option value="az">Mã căn A-Z</option></select>
+    <select className="sgf-sort" value={v.sort} onChange={e => set('sort', e.target.value)} aria-label="Sắp xếp"><option value="new">Mới cập nhật</option><option value="asc">Giá thấp đến cao</option><option value="desc">Giá cao đến thấp</option><option value="az">Mã căn A-Z</option>{edited && <option value="edit">Vừa chỉnh sửa</option>}</select>
+    {edited && <div className="sgf-admin"><b>Chỉnh sửa (quản trị)</b><span>{Object.keys(edited).length}/{units.length} căn đã định vị</span>
+      <select value={v.done} onChange={e => set('done', e.target.value)} aria-label="Lọc theo định vị"><option value="">Tất cả mã</option><option value="yes">Đã định vị</option><option value="no">Chưa định vị</option></select></div>}
     <div className="sgf-list">{list.map(u => <button type="button" key={u.id} ref={u.code === code ? on : undefined} className={(u.code === code ? 'is-on' : '') + (statusOf(u) === 'Còn hàng' ? '' : ' is-sold')} onClick={() => onPick(u.code)}>
-      <i style={{background: saigonParkModelColor(u.model)}}/><b>{u.code}</b><span>{u.price ? vn(u.price) + ' tỷ' : 'Liên hệ'}</span><ChevronRight size={15}/></button>)}
+      <i style={{background: saigonParkModelColor(u.model)}}/><b>{u.code}{edited?.[u.code] ? <small className="sgf-done" title={'Lưu lần cuối ' + when(edited[u.code])}>✓</small> : null}</b><span>{u.price ? vn(u.price) + ' tỷ' : 'Liên hệ'}</span><ChevronRight size={15}/></button>)}
       {!list.length && <p>Không có căn phù hợp.</p>}</div>
   </aside>;
 }

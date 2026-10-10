@@ -30,23 +30,26 @@ export async function POST(req:Request){
   let text='';
   if(claudeKey){
    const model=process.env.ANTHROPIC_CHAT_MODEL||'claude-opus-5-5';
-   const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(60000),
-    headers:{'Content-Type':'application/json','x-api-key':claudeKey,'anthropic-version':'2023-06-01','anthropic-beta':'server-side-fallback-2026-07-01'},
-    body:JSON.stringify({model,max_tokens:4000,output_config:{effort:'low'},fallbacks:'default',
+   const call=(fallback:boolean)=>fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(60000),
+    headers:{'Content-Type':'application/json','x-api-key':claudeKey,'anthropic-version':'2023-06-01',...(fallback?{'anthropic-beta':'server-side-fallback-2026-07-01'}:{})},
+    body:JSON.stringify({model,max_tokens:4000,output_config:{effort:'low'},...(fallback?{fallbacks:'default'}:{}),
      system:[{type:'text',text:rules},{type:'text',text:context,cache_control:{type:'ephemeral'}}],
      messages:turns.map(t=>({role:t.role,content:t.text}))})});
+   let res=await call(true);if(res.status===400)res=await call(false);
    const payload:any=await res.json().catch(()=>null);
-   if(!res.ok){console.error('chat claude',res.status,payload?.error?.message);throw new Error('claude');}
+   if(!res.ok){console.error('chat claude',res.status,payload?.error?.message);throw new ProviderError(`claude ${res.status} ${payload?.error?.type||''}: ${String(payload?.error?.message||'').slice(0,160)}`);}
    if(payload?.stop_reason!=='refusal')text=(payload?.content||[]).filter((b:any)=>b.type==='text').map((b:any)=>b.text).join('').trim();
   }else{
    const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:AbortSignal.timeout(60000),
     headers:{'Content-Type':'application/json',Authorization:`Bearer ${openaiKey}`},
     body:JSON.stringify({model:process.env.OPENAI_CHAT_MODEL||'gpt-5-mini',max_completion_tokens:4000,messages:[{role:'system',content:rules+'\n\n'+context},...turns.map(t=>({role:t.role,content:t.text}))]})});
    const payload:any=await res.json().catch(()=>null);
-   if(!res.ok){console.error('chat openai',res.status,payload?.error?.message);throw new Error('openai');}
+   if(!res.ok){console.error('chat openai',res.status,payload?.error?.message);throw new ProviderError(`openai ${res.status} ${payload?.error?.code||''}: ${String(payload?.error?.message||'').slice(0,160)}`);}
    text=String(payload?.choices?.[0]?.message?.content||'').trim();
   }
   if(!text)return Response.json({error:'Trợ lý chưa trả lời được câu này.',offline:true},{status:502});
   return Response.json({answer:text.slice(0,4000)},{headers:{'Cache-Control':'no-store'}});
- }catch{return Response.json({error:'Trợ lý AI tạm thời gián đoạn.',offline:true},{status:502});}
+ }catch(e){return Response.json({error:'Trợ lý AI tạm thời gián đoạn.',offline:true,detail:e instanceof ProviderError?e.message:'timeout'},{status:502});}
 }
+/** Provider status + error type, safe to show (never contains the key). */
+class ProviderError extends Error{}

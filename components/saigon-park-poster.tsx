@@ -19,12 +19,13 @@ const MAP = SGP_MAP;
 const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2});
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-/** Small frame shows ~1/22 of the plan width: 5–6 rows of lots around the unit with street names readable. */
-const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 22};
+/** Small frame shows ~1/16 of the plan width: 5–6 rows of lots around the unit with street names readable. */
+const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 16};
 const defaultPin: CardSpot = {src: F('sgp-aerial-v2'), x: 43.3, y: 82.3, zoom: 1};
 type Slot = 'house' | 'plan';
 /** Where the unit point sits inside the small plan frame (% of the frame). */
-const PIN_X = 43.3, PIN_Y = 88;
+// Pin head (round icon) in the middle of the frame: the tip sits 51% of the marker height (≈44% of the frame) below it.
+const PIN_X = 50, PIN_Y = 72.4;
 /** Locator icon (owner's file): the label is filled with the unit code; the pin tip marks the spot. */
 const Marker = ({code, className = '', style, onPointerDown, onClick}: {code: string; className?: string; style?: React.CSSProperties; onPointerDown?: React.PointerEventHandler; onClick?: React.MouseEventHandler}) =>
   <span className={'spm ' + className} style={style} onPointerDown={onPointerDown} onClick={onClick}><img src={F('sgp-marker-v2')} alt="" draggable={false}/><b>{code}</b></span>;

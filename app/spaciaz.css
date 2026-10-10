@@ -2558,7 +2558,7 @@ button.sz-bento-photo{padding:0}
 
 /* Saigon Park poster text in the site font (Be Vietnam Pro) with a clear weight hierarchy (11/10/2026):
  * code + price = 700 large, fact values 700, fact labels 500, price note 500, locator labels 700. "Mã căn" keeps its script. */
-.spp-code{font-family:var(--font-sans);font-weight:700;letter-spacing:-.035em;font-size:9.4cqw;line-height:1.08;top:27.2%}
+.spp-code{font-family:var(--font-sans);font-weight:700;letter-spacing:-.035em;font-size:8.9cqw;line-height:1.08;top:28.1%}
 .spp-fact{font-family:var(--font-sans)}
 .spp-fact i{font-weight:500;letter-spacing:.005em}
 .spp-fact em{font-weight:700;letter-spacing:.01em}

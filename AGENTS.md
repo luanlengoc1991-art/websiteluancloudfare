@@ -112,6 +112,11 @@
 - Nền gradient trang công khai là lớp `body::before` cố định thay `background-attachment:fixed`.
 - `site-effects.tsx`: quét DOM sau thay đổi bằng requestIdleCallback, ảnh parallax được lưu sẵn, chỉ ghi style khi giá trị đổi. Hiệu ứng slide/reveal/đếm số/nút hút giữ nguyên.
 
+## Hết giật toàn site (11/10/2026)
+- Nguyên nhân đo được: ~100 quy tắc `:has()` do Tailwind sinh từ các file shadcn KHÔNG dùng (components/ui) bắt trình duyệt tính lại style toàn trang mỗi lần slide đổi class (50 ms/lần với CPU chậm). `app/globals.css` có danh sách `@source not` cho các file ui không dùng — khi bắt đầu dùng component nào thì xoá dòng của nó. Hạn chế viết thêm `:has()`.
+- Thanh tiến trình slide (sz-u-progress, sz-feat-timer, ph3-hero-nav i, ph3-about-tabs i, sz-deck-timer) chạy bằng scaleX (`sz-bar-x`), không animate width. Shimmer nền ảnh ph3 chỉ chạy 3 lượt.
+- Kết quả đo (CPU chậm 4×): cuộn trang chủ 54→1 khung trễ, /du-an 29→1; đổi thẻ 3D 0 khung trễ.
+
 ## Bỏ trang AlphaHub (08/10/2026)
 
 - Theo yêu cầu chủ dự án: mục menu AlphaHub được thay bằng "Tổng quan" trỏ về trang chủ `/` (cùng vị trí, đầu menu); `/alphahub` chuyển hướng vĩnh viễn về `/`; chân trang đổi link tương ứng. Các ghi chú cũ về giao diện `/alphahub` ở trên chỉ còn giá trị lịch sử (component AlphaHubLanding vẫn còn trong code nhưng không được dùng).

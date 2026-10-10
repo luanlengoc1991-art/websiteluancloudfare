@@ -2545,3 +2545,13 @@ button.sz-bento-photo{padding:0}
 .sz-deck-card.is-out{transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .45s!important}
 .sz-deck-timer{width:100%;transform-origin:0 50%;animation:sz-progress-x 4.5s linear forwards}
 @keyframes sz-progress-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Smoothness (11/10/2026): progress bars grow with transform (GPU) instead of width (layout every frame);
+ * the loading shimmer behind photos runs a few passes then stops instead of repainting large frames forever. */
+@keyframes sz-bar-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.sz-u-progress,.sz-feat-timer,.ph3-hero-nav button i,.ph3-about-tabs i{width:100%;transform:scaleX(0);transform-origin:0 50%}
+.sz-u-hero-list button.is-on .sz-u-progress,.sz-feat-timer{animation:sz-bar-x 5s linear forwards}
+.ph3-hero-nav button.is-on i{animation:sz-bar-x 6.5s linear both}
+.ph3-about-tabs button.is-on i{animation:sz-bar-x 9s linear both}
+@media(prefers-reduced-motion:reduce){.sz-u-hero-list button.is-on .sz-u-progress{animation:none;transform:none}}
+:is(.ph3-slide,.ph3-about-photo>div,.ph3-amen-grid figure,.ph3-prod-photo,.ph3-plans a,.ph3-posters a,.ph3-roads-photo,.ph3-video-frame,.ph3-acc>a,.ph3-zone-photo,.ph3-diff-photo){animation-iteration-count:3}

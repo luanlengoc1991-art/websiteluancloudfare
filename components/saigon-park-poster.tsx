@@ -1,7 +1,7 @@
 'use client';
 /* Vinhomes Saigon Park unit poster (1512 × 2044), the owner's former studio layout rebuilt natively: every layer is an R2 image
  * + live text from the Google Sheet. Everyone gets the filter list and JPEG download; only admins see the editing tools. */
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Check, ChevronRight, Clock, Download, Expand, FileArchive, ImagePlus, Images, MapPin, Pencil, RotateCcw, Save, Search, SlidersHorizontal, X} from 'lucide-react';
 import {toast} from 'sonner';
@@ -11,7 +11,8 @@ import {saigonParkModelColor, saigonParkModelImage} from '@/lib/saigon-park-mode
 import {sized} from '@/lib/img';
 
 const F = (id: string) => `/api/files/${id}`;
-const MAP = F('sgp-map-new');
+const MAP = F('sgp-map-v3');
+const OLD_MAP = F('sgp-map-new');
 const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2});
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
@@ -30,7 +31,7 @@ function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   const card = mergeCard(base, own), f = card.fields || {};
   return {
     card, f,
-    plan: {...defaultPlan, ...card.plan, src: card.plan?.src || MAP},
+    plan: card.plan?.src && card.plan.src !== OLD_MAP ? {...defaultPlan, ...card.plan} : {...defaultPlan, zoom: card.plan?.zoom || defaultPlan.zoom},
     pin: own?.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...own.master} : defaultPin,
     house: own?.perspective || saigonParkModelImage(f.model || unit.model) || card.perspective || F('sgp-model-16'),
   };
@@ -101,16 +102,32 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
   </div>;
 }
 
-/** Big plan with zoom; click or drag the pin to place the unit. Same point as the small frame. */
+/** Big plan: mouse wheel zooms around the cursor, buttons zoom around the unit; click or drag the pin to place it. */
 function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string; editable: boolean; onPoint: (x: number, y: number) => void}) {
   const [zoom, setZoom] = useState(2), box = useRef<HTMLDivElement>(null), img = useRef<HTMLDivElement>(null);
+  const anchor = useRef<{fx: number; fy: number; cx: number; cy: number} | null>(null);
   const centre = () => {const b = box.current, i = img.current; if (b && i) b.scrollTo({left: i.offsetWidth * plan.x / 100 - b.clientWidth / 2, top: i.offsetHeight * plan.y / 100 - b.clientHeight / 2});};
-  useEffect(() => {const t = setTimeout(centre, 60); return () => clearTimeout(t);}, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    const b = box.current, i = img.current, a = anchor.current;
+    if (!b || !i) return;
+    if (a) {b.scrollLeft = a.fx * i.offsetWidth - a.cx; b.scrollTop = a.fy * i.offsetHeight - a.cy; anchor.current = null;} else centre();
+  }, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const b = box.current; if (!b) return;
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const i = img.current!, r = b.getBoundingClientRect(), cx = e.clientX - r.left, cy = e.clientY - r.top;
+      anchor.current = {fx: (b.scrollLeft + cx) / i.offsetWidth, fy: (b.scrollTop + cy) / i.offsetHeight, cx, cy};
+      setZoom(z => Math.min(10, Math.max(1, Math.round(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15) * 100) / 100)));
+    };
+    b.addEventListener('wheel', wheel, {passive: false});
+    return () => b.removeEventListener('wheel', wheel);
+  }, []);
   const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null);
   const drag = useDrag((fx, fy, done) => {if (!done) {setGhost({dx: fx, dy: fy}); return;} setGhost(null); if (fx || fy) onPoint(clamp(plan.x + fx * 100), clamp(plan.y + fy * 100));});
   return <div className="spp-big">
-    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(8, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button></div>
-    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')} onWheel={e => {if (e.ctrlKey || e.metaKey) {e.preventDefault(); setZoom(z => Math.min(8, Math.max(1, z - Math.sign(e.deltaY) * .25)));}}}>
+    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button><small>Lăn chuột để phóng to / thu nhỏ</small></div>
+    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')}>
       <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
         <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
         <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
@@ -137,10 +154,12 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   const [view, setView] = useState<Slot | null>(null), [pick, setPick] = useState<Slot | null>(null);
   const [draft, setDraft] = useState<UnitCard>(mergeCard(base, own));
   useEffect(() => {if (!edit) setDraft(mergeCard(base, own));}, [own, base, edit, unit.id]);
-  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: {...defaultPlan, ...draft.plan, src: draft.plan?.src || MAP}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
+  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src && draft.plan.src !== OLD_MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, zoom: draft.plan?.zoom || defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 
+  /** Closing the big view saves the admin edits automatically. */
+  const closeView = () => {if (isAdmin && edit) saveUnit(); else setView(null);};
   const startEdit = () => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);}};
   const setPlan = (p: Partial<CardSpot>) => setDraft(d => ({...d, plan: {...data.plan, ...p}}));
   const setImage = (slot: Slot, url: string) => slot === 'house' ? setDraft(d => ({...d, perspective: url})) : setPlan({src: url});
@@ -207,14 +226,14 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
       <p>Ô để trống = lấy theo Google Sheet. Ảnh nhà tự lấy theo cột Mẫu nhà.</p>
     </div>}
 
-    {view && createPortal(<div className="spp-light" role="dialog" aria-label="Xem ảnh lớn" onClick={() => setView(null)}>
+    {view && createPortal(<div className="spp-light" role="dialog" aria-label="Xem ảnh lớn" onClick={closeView}>
       <div onClick={e => e.stopPropagation()}>
         <header><b>{view === 'plan' ? `Mặt bằng chỉ căn ${unit.code}` : `Ảnh nhà · ${unit.model || unit.code}`}</b>
           {isAdmin && <span>
             <button type="button" className="uc-btn" onClick={() => {uploadSlot.current = view; if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} fileInput.current?.click();}}><ImagePlus size={14}/>Thay ảnh</button>
             <button type="button" className="uc-btn" onClick={() => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} setPick(view);}}><Images size={14}/>Thư viện</button>
             {edit && <button type="button" className="uc-btn is-dark" disabled={!!busy} onClick={saveUnit}><Save size={14}/>Lưu</button>}</span>}
-          <button type="button" className="spp-close" onClick={() => setView(null)} aria-label="Đóng"><X size={20}/></button></header>
+          <button type="button" className="spp-close" onClick={closeView} aria-label="Đóng (tự lưu)"><X size={20}/></button></header>
         {view === 'plan' ? <div className={'spp-light-body' + (isAdmin ? ' has-side' : '')}>
           <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
           {isAdmin && <div className="spp-light-side"><p>Bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim ngay trên poster bên dưới – hai nơi luôn cùng một vị trí.</p>

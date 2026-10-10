@@ -21,7 +21,11 @@ const up = (s: string) => s.trim().toUpperCase();
 export default function PlanMap360({project, units, pins, statusOf, canManage, onSaved}: {
   project: Project; units: Unit[]; pins: UnitPin[]; statusOf: (u: Unit) => string; canManage: boolean; onSaved: () => unknown;
 }) {
-  const cfg = PLAN_MAPS[project.id];
+  // Projects without an HD plan config use their master perspective (project.image): a 2560 px copy first,
+  // the original only when zoomed in. Map-layer pins already placed on that image stay where they are.
+  const known = PLAN_MAPS[project.id];
+  const [shape, setShape] = useState(9 / 16);
+  const cfg = known || {image: sized(project.image, 2560), viewW: 2560, tilePrefix: '', grid: 0, tileW: 0, tileH: 0, width: 1000, height: 1000 * shape, title: project.name};
   const ratio = cfg.height / cfg.width;
   const view = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({w: 1200, h: 800});
@@ -60,7 +64,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     const ro = new ResizeObserver(() => setBox({w: el.clientWidth, h: el.clientHeight}));
     ro.observe(el); return () => ro.disconnect();
   }, []);
-  useEffect(fit, [box.w, box.h]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(fit, [box.w, box.h, ratio]); // eslint-disable-line react-hooks/exhaustive-deps
   const zoomAt = (k: number, cx: number, cy: number, now = false) => {
     const o = live.current, s = Math.min(14, Math.max(1, o.s * k)), f = s / o.s, n = {s, x: cx - (cx - o.x) * f, y: cy - (cy - o.y) * f};
     if (now) commit(n); else preview(n);
@@ -131,7 +135,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     return out;
   };
   const hw = Math.floor(cfg.tileW / 2), hh = Math.floor(cfg.tileH / 2), n2 = cfg.grid * 2;
-  const mid = need > cfg.viewW * 1.15 ? cells(cfg.grid) : [], fine = need > cfg.grid * hw * 1.15 ? cells(n2) : [];
+  const mid = known && need > cfg.viewW * 1.15 ? cells(cfg.grid) : [], fine = known && need > cfg.grid * hw * 1.15 ? cells(n2) : [];
+  const original = !known && need > cfg.viewW * 1.15 && cfg.image !== project.image;
   const fineSrc = (r: number, c: number) => `/api/img?v=4&w=${hw}&q=74&c=${(c % 2) * hw},${(r % 2) * hh},${hw},${hh}&src=${encodeURIComponent(cfg.tilePrefix + (r >> 1) + (c >> 1))}`;
   const cell = (r: number, c: number, n: number) => ({left: `${c * 100 / n}%`, top: `${r * 100 / n}%`, width: `${100 / n}%`, height: `${100 / n}%`});
   const free = units.filter(u => statusOf(u) === 'Còn hàng'), held = units.filter(u => statusOf(u) === 'Đang giữ chỗ'), sold = units.filter(u => statusOf(u) === 'Đã bán');
@@ -145,7 +150,9 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       const p = toPct(e.clientX, e.clientY); place(placing, p.x, p.y); toast.success(`Đã đặt ${placing}.`); setPlacing('');
     }}>
       <div ref={canvas} className="pm-canvas" style={{width: W, height: H}}>
-        <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}/>
+        <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}
+          onLoad={known ? undefined : e => {const i = e.currentTarget; if (i.naturalWidth) setShape(i.naturalHeight / i.naturalWidth);}}/>
+        {original && <img className="pm-tile" src={project.image} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
         {mid.map(({r, c}) => <img key={'m' + r + c} className="pm-tile" src={sized(`${cfg.tilePrefix}${r}${c}`, hw)} alt="" decoding="async" draggable={false} style={cell(r, c, cfg.grid)}/>)}
         {fine.map(({r, c}) => <img key={'f' + r + '-' + c} className="pm-tile" src={fineSrc(r, c)} alt="" decoding="async" draggable={false} style={cell(r, c, n2)}/>)}
         {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>

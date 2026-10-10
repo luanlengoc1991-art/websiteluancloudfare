@@ -205,9 +205,9 @@ async function snapshot(node: HTMLElement) {
 }
 const save = (url: string, name: string) => {const a = document.createElement('a'); a.href = url; a.download = name; a.click();};
 
-export default function SaigonParkPoster({project, unit, units, status, statusOf, cards, files, isAdmin, onSaved}: {
+export default function SaigonParkPoster({project, unit, units, status, statusOf, cards, files, isAdmin, onSaved, onEnableEdit}: {
   project: Project; unit: Unit; units: Unit[]; status: string; statusOf: (u: Unit) => string; cards: Record<string, UnitCard>;
-  files: Asset[]; isAdmin: boolean; onSaved: () => unknown;
+  files: Asset[]; isAdmin: boolean; onSaved: () => unknown; onEnableEdit?: () => void;
 }) {
   const base = cards[project.id + '|*'], own = cards[cardId(project.id, unit.code)];
   const [edit, setEdit] = useState(false), [busy, setBusy] = useState(''), [tool, setTool] = useState<'pin' | null>(null);
@@ -293,6 +293,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
             <button type="button" className="uc-btn" onClick={() => {uploadSlot.current = view; if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} fileInput.current?.click();}}><ImagePlus size={14}/>Thay ảnh</button>
             <button type="button" className="uc-btn" onClick={() => {if (!edit) {setDraft(mergeCard(base, own)); setEdit(true);} setPick(view);}}><Images size={14}/>Thư viện</button>
             {edit && <button type="button" className="uc-btn is-dark" disabled={!!busy} onClick={saveUnit}><Save size={14}/>Lưu</button>}</span>}
+          {!isAdmin && onEnableEdit && view === 'plan' && <button type="button" className="uc-btn is-gold" onClick={onEnableEdit} title="Hiện poster xem trước có phối cảnh 3D để kéo ghim định vị"><MapPin size={14}/>Bật định vị căn</button>}
           <button type="button" className="spp-close" onClick={closeView} aria-label="Đóng (tự lưu)"><X size={20}/></button></header>
         {view === 'plan' ? <div className={'spp-light-body' + (isAdmin ? ' has-side' : '')}>
           <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>

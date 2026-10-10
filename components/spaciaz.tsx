@@ -784,7 +784,7 @@ export function SpaciazUnitPlan({projects, units, files, pins, statusOf, contact
           <div className="sz-up-poster">
             {studio ? <>{admin === null && <div className="sz-up-loading">Đang tải bảng thông tin…</div>}
               {src && <iframe key={projectId + (editing ? 'edit' : 'view')} ref={frame} title="Mặt bằng căn" src={src} style={{height}} scrolling="no"/>}</>
-              : project && unit && project.id === SAIGON_PARK ? <SaigonParkPoster key={unit.id} project={project} unit={unit} units={done} status={statusOf(unit)} statusOf={statusOf} cards={cards} files={files} isAdmin={isAdmin && editing} onSaved={() => onReload?.()}/>
+              : project && unit && project.id === SAIGON_PARK ? <SaigonParkPoster key={unit.id} project={project} unit={unit} units={done} status={statusOf(unit)} statusOf={statusOf} cards={cards} files={files} isAdmin={isAdmin && editing} onSaved={() => onReload?.()} onEnableEdit={isAdmin && !editing ? () => setEditing(true) : undefined}/>
               : project && unit ? <UnitCardView key={unit.id} project={project} unit={unit} status={statusOf(unit)} own={cards[cardId(project.id, unit.code)]} base={cards[project.id + '|*']} files={files} isAdmin={isAdmin && editing} onSaved={() => onReload?.()}
                 fallbackPin={pins.find(p => p.projectId === project.id && p.code.trim().toUpperCase() === unit.code.toUpperCase() && p.layer === 'map')} defaultNearby={(projectProfiles[project.id]?.amenities || []).map(a => a.title)} autoPerspective={project.id === SAIGON_PARK ? saigonParkModelImage(unit.model) : undefined}/> : <div className="sz-empty"><h3>Dự án chưa có mã căn</h3></div>}
           </div>

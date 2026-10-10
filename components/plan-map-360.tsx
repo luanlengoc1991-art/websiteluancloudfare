@@ -103,7 +103,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       const p = toPct(e.clientX, e.clientY); place(placing, p.x, p.y); toast.success(`Đã đặt ${placing}.`); setPlacing('');
     }}>
       <div className="pm-canvas" style={{width: baseW, height: baseH, transform: `translate(${t.x}px,${t.y}px) scale(${t.s})`}}>
-        <img className="pm-img" src={sized(cfg.image, 2560)} alt={`Mặt bằng ${cfg.title}`} draggable={false}/>
+        <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} draggable={false}/>
         {tiles.map(({r, c}) => <img key={r + '-' + c} className="pm-tile" src={`${cfg.tilePrefix}${r}${c}`} alt="" draggable={false}
           style={{left: `${c * 100 / cfg.grid}%`, top: `${r * 100 / cfg.grid}%`, width: `${100 / cfg.grid}%`, height: `${100 / cfg.grid}%`}}/>)}
         {local.map(p => {

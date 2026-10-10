@@ -12,7 +12,7 @@ import {fundFromGroup, pinId, type UnitPin} from '@/lib/plan-funds';
 import {unitPlanPath} from '@/lib/project-routes';
 import {sized} from '@/lib/img';
 
-import {PLAN_MAPS} from '@/lib/plan-maps';
+import {PLAN_MAPS, planPieces, loadLots, lotOf} from '@/lib/plan-maps';
 
 const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
 const tag = (n: number) => n ? (Math.round(n * 10) / 10).toLocaleString('en-US', {minimumFractionDigits: 1}) : '—';
@@ -25,7 +25,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   // the original only when zoomed in. Map-layer pins already placed on that image stay where they are.
   const known = PLAN_MAPS[project.id];
   const [shape, setShape] = useState(9 / 16);
-  const cfg = known || {image: sized(project.image, 2560), viewW: 2560, tilePrefix: '', grid: 0, tileW: 0, tileH: 0, width: 1000, height: 1000 * shape, title: project.name};
+  const cfg = known || {image: sized(project.image, 2560), viewW: 2560, levels: [], width: 1000, height: 1000 * shape, title: project.name};
   const ratio = cfg.height / cfg.width;
   const view = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({w: 1200, h: 800});
@@ -50,8 +50,16 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   useEffect(() => setDpr(Math.min(window.devicePixelRatio || 1, 2)), []);
   // Zoom stops where one plan pixel meets one screen pixel (HD plans), so it never magnifies past the image.
   const maxZoom = useRef(14);
+  const [lotTable, setLotTable] = useState<Record<string, [number, number]> | null>(null);
+  useEffect(() => {if (known?.lots) loadLots().then(setLotTable);}, [known]);
+  const withLots = useMemo(() => {
+    if (!lotTable) return pins;
+    const have = new Set(pins.map(p => up(p.code)));
+    const auto = units.filter(u => !have.has(up(u.code))).flatMap((u): UnitPin[] => {const at = lotOf(u.code, lotTable); return at ? [{projectId: project.id, code: up(u.code), layer: 'map', x: at[0], y: at[1], fund: fundFromGroup(u.group)}] : [];});
+    return [...pins, ...auto];
+  }, [pins, lotTable, units, project.id]);
   const [local, setLocal] = useState<UnitPin[]>(pins);
-  useEffect(() => setLocal(pins), [pins]);
+  useEffect(() => setLocal(withLots), [withLots]);
   const [edit, setEdit] = useState(false), [placing, setPlacing] = useState(''), [q, setQ] = useState(''), [only, setOnly] = useState('');
   const [hover, setHover] = useState(''), [flash, setFlash] = useState('');
   // Two modes: visitors' view by default; the administrator switches to "Quản trị viên" to place tags.
@@ -132,16 +140,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   // Plan laid out at its real on-screen size; only the tiles of the needed sharpness inside the viewport are loaded.
   maxZoom.current = known && baseW ? Math.max(4, cfg.width / (baseW * dpr)) : 8;
   const W = baseW * t.s, H = baseH * t.s, need = W * dpr;
-  const cells = (n: number) => {
-    const out: {r: number; c: number}[] = [], cw = W / n, ch = H / n;
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {const lx = t.x + c * cw, ly = t.y + r * ch; if (lx < box.w && lx + cw > 0 && ly < box.h && ly + ch > 0) out.push({r, c});}
-    return out;
-  };
-  const hw = Math.floor(cfg.tileW / 2), hh = Math.floor(cfg.tileH / 2), n2 = cfg.grid * 2;
-  const mid = known && need > cfg.viewW * 1.15 ? cells(cfg.grid) : [], fine = known && need > cfg.grid * hw * 1.15 ? cells(n2) : [];
+  const pieces = known && W ? planPieces(cfg, need, {u0: -t.x / W, u1: (box.w - t.x) / W, v0: -t.y / H, v1: (box.h - t.y) / H}) : [];
   const original = !known && need > cfg.viewW * 1.15 && cfg.image !== project.image;
-  const fineSrc = (r: number, c: number) => `/api/img?v=4&w=${hw}&q=74&c=${(c % 2) * hw},${(r % 2) * hh},${hw},${hh}&src=${encodeURIComponent(cfg.tilePrefix + (r >> 1) + (c >> 1))}`;
-  const cell = (r: number, c: number, n: number) => ({left: `${c * 100 / n}%`, top: `${r * 100 / n}%`, width: `${100 / n}%`, height: `${100 / n}%`});
   const free = units.filter(u => statusOf(u) === 'Còn hàng'), held = units.filter(u => statusOf(u) === 'Đang giữ chỗ'), sold = units.filter(u => statusOf(u) === 'Đã bán');
   const list = units.filter(u => (!q.trim() || u.code.toLowerCase().includes(q.trim().toLowerCase())) && (!only || statusOf(u) === only))
     .sort((a, b) => (pinOf.has(up(a.code)) ? 0 : 1) - (pinOf.has(up(b.code)) ? 0 : 1) || a.code.localeCompare(b.code, 'vi', {numeric: true}));
@@ -156,8 +156,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}
           onLoad={known ? undefined : e => {const i = e.currentTarget; if (i.naturalWidth) setShape(i.naturalHeight / i.naturalWidth);}}/>
         {original && <img className="pm-tile" src={project.image} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
-        {mid.map(({r, c}) => <img key={'m' + r + c} className="pm-tile" src={sized(`${cfg.tilePrefix}${r}${c}`, hw)} alt="" decoding="async" draggable={false} style={cell(r, c, cfg.grid)}/>)}
-        {fine.map(({r, c}) => <img key={'f' + r + '-' + c} className="pm-tile" src={fineSrc(r, c)} alt="" decoding="async" draggable={false} style={cell(r, c, n2)}/>)}
+        {pieces.map(q => <img key={q.key} className="pm-tile" src={q.src} alt="" decoding="async" draggable={false} style={{left: q.left, top: q.top, width: q.width, height: q.height}}/>)}
         {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
           <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fde047"/></marker></defs>
           {local.filter(p => p.callout).map(p => {

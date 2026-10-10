@@ -10,10 +10,12 @@ import {type CardSpot, type UnitCard, cardId, mergeCard} from '@/lib/unit-card';
 import {saigonParkModelColor, saigonParkModelImage} from '@/lib/saigon-park-models';
 import {sized} from '@/lib/img';
 import {SAIGON_PARK_STREETS} from '@/lib/saigon-park-streets';
+import {PLAN_MAPS, SGP_MAP, SGP_MAP_W, SGP_MAP_H, planPieces, loadLots, lotsReady, lotOf, type PlanArea} from '@/lib/plan-maps';
 
 const F = (id: string) => `/api/files/${id}`;
-const MAP = F('sgp-map-v3');
-const OLD_MAP = F('sgp-map-new');
+/** Master plan sgp-map-v4 (owner's vector PDF). Spots saved on the older plans (sgp-map-new, sgp-map-v3) are replaced
+ *  by the lot position read from the PDF. */
+const MAP = SGP_MAP;
 const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2});
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
@@ -27,33 +29,24 @@ const Marker = ({code, className = '', style, onPointerDown, onClick}: {code: st
   <span className={'spm ' + className} style={style} onPointerDown={onPointerDown} onClick={onClick}><img src={F('sgp-marker-v2')} alt="" draggable={false}/><b>{code}</b></span>;
 const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)) * 100) / 100;
 
-/* sgp-map-v3 is drawn light: a 2560 px base, then only the tiles inside the visible area, at the sharpness the zoom needs
- * (16 half-size tiles, then 64 full-resolution 1916×1509 crops of the 4×4 HD tiles via /api/img) – same scheme as Quỹ căn 360°. */
-const MAP_RATIO = 12071 / 15331, HW = 1916, HH = 1509, TILE = F('sgp-map-v3-t');
-const MAP_BASE = '/api/img?v=4&w=2560&q=70&src=' + encodeURIComponent(MAP);
-type Area = {u0: number; u1: number; v0: number; v1: number};
+/* sgp-map-v4 is drawn light: a 2560 px base, then only the pieces inside the visible area at the sharpness the zoom
+ * needs (lib/plan-maps.ts planPieces) – the same pyramid as Quỹ căn 360°. */
+const MAP_RATIO = SGP_MAP_H / SGP_MAP_W, MAP_BASE = MAP, PYRAMID = PLAN_MAPS['saigon-park'];
+type Area = PlanArea;
 function MapTiles({area, need}: {area: Area; need: number}) {
-  const cells = (n: number) => {
-    const out: [number, number][] = [], m = .02;
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if ((c + 1) / n > area.u0 - m && c / n < area.u1 + m && (r + 1) / n > area.v0 - m && r / n < area.v1 + m) out.push([r, c]);
-    return out;
-  };
-  const at = (r: number, c: number, n: number) => ({left: `${c * 100 / n}%`, top: `${r * 100 / n}%`, width: `${100 / n}%`, height: `${100 / n}%`});
-  return <>
-    {need > 2560 * 1.15 && cells(4).map(([r, c]) => <img key={'m' + r + c} className="spp-tl" src={sized(TILE + r + c, HW)} alt="" decoding="async" draggable={false} style={at(r, c, 4)}/>)}
-    {need > 4 * HW * 1.15 && cells(8).map(([r, c]) => <img key={'f' + r + '-' + c} className="spp-tl" alt="" decoding="async" draggable={false} style={at(r, c, 8)}
-      src={`/api/img?v=4&w=${HW}&q=74&c=${(c % 2) * HW},${(r % 2) * HH},${HW},${HH}&src=${encodeURIComponent(TILE + (r >> 1) + (c >> 1))}`}/>)}
-  </>;
+  return <>{planPieces(PYRAMID, need, area).map(q => <img key={q.key} className="spp-tl" src={q.src} alt="" decoding="async" draggable={false} style={{left: q.left, top: q.top, width: q.width, height: q.height}}/>)}</>;
 }
 /** Small plan frame on the poster: 92.9% × 21.5% of a 1512 × 2044 poster. */
 const FRAME_W = .929 * 1512, FRAME_RATIO = (.215 * 2044) / FRAME_W;
+
+const auto = (code: string) => {const at = lotOf(code, lotsReady()); return at ? {x: at[0], y: at[1]} : {};};
 
 /** Resolved poster content for one unit. */
 function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   const card = mergeCard(base, own), f = card.fields || {};
   return {
     card, f,
-    plan: card.plan?.src && card.plan.src !== OLD_MAP ? {...defaultPlan, ...card.plan} : {...defaultPlan, zoom: card.plan?.zoom || defaultPlan.zoom},
+    plan: card.plan?.src === MAP && own?.plan ? {...defaultPlan, ...card.plan} : {...defaultPlan, ...auto(unit.code), zoom: card.plan?.zoom || defaultPlan.zoom},
     pin: own?.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...own.master} : defaultPin,
     house: own?.perspective || saigonParkModelImage(f.model || unit.model) || card.perspective || F('sgp-model-16'),
   };
@@ -142,7 +135,7 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
   const isMap = plan.src === MAP;
   const [size, setSize] = useState({w: 0, h: 0}), [dpr, setDpr] = useState(1), [shape, setShape] = useState(.75), [nat, setNat] = useState(2560);
   const ratio = isMap ? MAP_RATIO : shape, bw = size.w, bh = size.h;
-  const maxS = bw ? Math.max(2, (isMap ? 15331 : nat) / (bw * dpr)) : 10, maxRef = useRef(maxS); maxRef.current = maxS;
+  const maxS = bw ? Math.max(2, (isMap ? SGP_MAP_W : nat) / (bw * dpr)) : 10, maxRef = useRef(maxS); maxRef.current = maxS;
   const [t, setT] = useState<View>({s: 2, x: 0, y: 0});
   const live = useRef<View>(t), shown = useRef<View>(t), settle = useRef(0), frame = useRef(0), ready = useRef(false);
   shown.current = t;
@@ -227,12 +220,15 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   project: Project; unit: Unit; units: Unit[]; status: string; statusOf: (u: Unit) => string; cards: Record<string, UnitCard>;
   files: Asset[]; isAdmin: boolean; onSaved: () => unknown; onEnableEdit?: () => void;
 }) {
+  // Lot positions from the PDF place every unit on the plan; render again once they are loaded.
+  const [, setLotsLoaded] = useState(!!lotsReady());
+  useEffect(() => {if (!lotsReady()) loadLots().then(() => setLotsLoaded(true));}, []);
   const base = cards[project.id + '|*'], own = cards[cardId(project.id, unit.code)];
   const [edit, setEdit] = useState(false), [busy, setBusy] = useState(''), [tool, setTool] = useState<'pin' | null>(null);
   const [view, setView] = useState<Slot | null>(null), [pick, setPick] = useState<Slot | null>(null);
   const [draft, setDraft] = useState<UnitCard>(mergeCard(base, own));
   useEffect(() => {if (!edit) setDraft(mergeCard(base, own));}, [own, base, edit, unit.id]);
-  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src && draft.plan.src !== OLD_MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, zoom: draft.plan?.zoom || defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
+  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src === MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, ...auto(unit.code), zoom: draft.plan?.zoom || defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 

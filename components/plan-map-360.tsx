@@ -48,6 +48,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   useEffect(() => () => {window.clearTimeout(settle.current); cancelAnimationFrame(frame.current);}, []);
   const [dpr, setDpr] = useState(1);
   useEffect(() => setDpr(Math.min(window.devicePixelRatio || 1, 2)), []);
+  // Zoom stops where one plan pixel meets one screen pixel (HD plans), so it never magnifies past the image.
+  const maxZoom = useRef(14);
   const [local, setLocal] = useState<UnitPin[]>(pins);
   useEffect(() => setLocal(pins), [pins]);
   const [edit, setEdit] = useState(false), [placing, setPlacing] = useState(''), [q, setQ] = useState(''), [only, setOnly] = useState('');
@@ -66,7 +68,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   }, []);
   useEffect(fit, [box.w, box.h, ratio]); // eslint-disable-line react-hooks/exhaustive-deps
   const zoomAt = (k: number, cx: number, cy: number, now = false) => {
-    const o = live.current, s = Math.min(14, Math.max(1, o.s * k)), f = s / o.s, n = {s, x: cx - (cx - o.x) * f, y: cy - (cy - o.y) * f};
+    const o = live.current, s = Math.min(maxZoom.current, Math.max(1, o.s * k)), f = s / o.s, n = {s, x: cx - (cx - o.x) * f, y: cy - (cy - o.y) * f};
     if (now) commit(n); else preview(n);
   };
   useEffect(() => {
@@ -128,6 +130,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   };
 
   // Plan laid out at its real on-screen size; only the tiles of the needed sharpness inside the viewport are loaded.
+  maxZoom.current = known && baseW ? Math.max(4, cfg.width / (baseW * dpr)) : 8;
   const W = baseW * t.s, H = baseH * t.s, need = W * dpr;
   const cells = (n: number) => {
     const out: {r: number; c: number}[] = [], cw = W / n, ch = H / n;

@@ -2568,3 +2568,10 @@ button.sz-bento-photo{padding:0}
 .spp-price b sup{font-weight:600;letter-spacing:0;margin-left:.12em}
 .spp-price b.is-contact{font-size:5cqw;letter-spacing:-.01em;margin-top:5%}
 .spm b,.spp-tag b,.spp-mark b{font-family:var(--font-sans);font-weight:700;letter-spacing:-.01em}
+
+/* Big plan on the GPU (11/10/2026): the canvas is moved/scaled with transform, laid out at real size after gestures. */
+.spp-light-map.is-gpu{overflow:hidden;touch-action:none}
+.spp-light-map.is-gpu>.spp-big-canvas{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.spp-light-map.is-gpu>.spp-big-canvas>img.spp-big-base{position:absolute;inset:0;width:100%;height:100%}
+.spp-light-map.is-gpu .spm,.spp-light-map.is-gpu .spp-street-focus{transform-origin:14.7% 89%}
+.spp-big-zoom button:disabled{opacity:.4;cursor:default}

@@ -130,67 +130,85 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
 }
 
 /** Big plan: mouse wheel zooms around the cursor, buttons zoom around the unit; click or drag the pin to place it. */
+/** Big plan: wheel zooms around the cursor, buttons zoom around the centre; drag = pan; click or drag the pin to place it.
+ *  Gestures move the layer on the GPU and the plan is re-laid out at its real size ~140 ms after they stop (sharp, no
+ *  per-tick re-render). Zoom stops at the plan's native resolution, so it never magnifies past what the image holds. */
 function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string; editable: boolean; onPoint: (x: number, y: number) => void}) {
-  const [zoom, setZoom] = useState(2), box = useRef<HTMLDivElement>(null), img = useRef<HTMLDivElement>(null);
-  const anchor = useRef<{fx: number; fy: number; cx: number; cy: number} | null>(null), target = useRef<{x: number; y: number} | null>(null);
+  type View = {s: number; x: number; y: number};
+  const box = useRef<HTMLDivElement>(null), img = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState(''), [focus, setFocus] = useState<{x: number; y: number; name: string} | null>(null);
   const norm = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/^tl\s*(?=\d)/, 'tuong lai ').replace(/^as\s*(?=\d)/, 'anh sang ').replace(/^dlcv\s*(?=\d)/, 'dai lo cong vien ').replace(/\s+/g, ' ').trim();
   const hits = q.trim() ? SAIGON_PARK_STREETS.filter(st => (norm(st.name) + ' ').includes(norm(q) + (/\d$/.test(q.trim()) ? ' ' : ''))).slice(0, 12) : [];
-  const goTo = (st: {x: number; y: number; name: string}) => {target.current = st; setFocus(st); setQ(''); setZoom(z => z < 4 ? 4 : z + 0.0001); setTimeout(() => setFocus(f => f === st ? null : f), 4000);};
-  const centre = () => {const b = box.current, i = img.current; if (b && i) b.scrollTo({left: i.offsetWidth * plan.x / 100 - b.clientWidth / 2, top: i.offsetHeight * plan.y / 100 - b.clientHeight / 2});};
-  useLayoutEffect(() => {
-    const b = box.current, i = img.current, a = anchor.current;
-    if (!b || !i) return;
-    const t = target.current;
-    if (t) {b.scrollTo({left: i.offsetWidth * t.x / 100 - b.clientWidth / 2, top: i.offsetHeight * t.y / 100 - b.clientHeight / 2}); target.current = null;}
-    else if (a) {b.scrollLeft = a.fx * i.offsetWidth - a.cx; b.scrollTop = a.fy * i.offsetHeight - a.cy; anchor.current = null;} else centre();
-  }, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  const isMap = plan.src === MAP;
+  const [size, setSize] = useState({w: 0, h: 0}), [dpr, setDpr] = useState(1), [shape, setShape] = useState(.75), [nat, setNat] = useState(2560);
+  const ratio = isMap ? MAP_RATIO : shape, bw = size.w, bh = size.h;
+  const maxS = bw ? Math.max(2, (isMap ? 15331 : nat) / (bw * dpr)) : 10, maxRef = useRef(maxS); maxRef.current = maxS;
+  const [t, setT] = useState<View>({s: 2, x: 0, y: 0});
+  const live = useRef<View>(t), shown = useRef<View>(t), settle = useRef(0), frame = useRef(0), ready = useRef(false);
+  shown.current = t;
+  const commit = (n: View) => {live.current = n; window.clearTimeout(settle.current); setT(n);};
+  const preview = (n: View) => {
+    live.current = n;
+    if (!frame.current) frame.current = requestAnimationFrame(() => {
+      frame.current = 0; const el = img.current; if (!el) return;
+      const L = live.current, k = L.s / shown.current.s;
+      el.style.transform = `translate(${L.x}px,${L.y}px) scale(${k})`; el.style.setProperty('--k', String(1 / k));
+    });
+    window.clearTimeout(settle.current); settle.current = window.setTimeout(() => setT(live.current), 140);
+  };
+  useLayoutEffect(() => {const el = img.current; if (!el) return; el.style.transform = `translate(${t.x}px,${t.y}px)`; el.style.setProperty('--k', '1');}, [t]);
   useEffect(() => {
     const b = box.current; if (!b) return;
-    const wheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const i = img.current!, r = b.getBoundingClientRect(), cx = e.clientX - r.left, cy = e.clientY - r.top;
-      anchor.current = {fx: (b.scrollLeft + cx) / i.offsetWidth, fy: (b.scrollTop + cy) / i.offsetHeight, cx, cy};
-      setZoom(z => Math.min(10, Math.max(1, Math.round(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15) * 100) / 100)));
-    };
+    setDpr(Math.min(window.devicePixelRatio || 1, 2));
+    const ro = new ResizeObserver(() => setSize({w: b.clientWidth, h: b.clientHeight})); ro.observe(b);
+    return () => {ro.disconnect(); window.clearTimeout(settle.current); cancelAnimationFrame(frame.current);};
+  }, []);
+  /** View with the plan point (x, y in %) in the middle of the box at scale s. */
+  const around = (s: number, x: number, y: number): View => ({s, x: bw / 2 - x / 100 * bw * s, y: bh / 2 - y / 100 * bw * s * ratio});
+  useEffect(() => {if (bw && !ready.current) {ready.current = true; commit(around(Math.min(2, maxS), plan.x, plan.y));}}, [bw, bh]); // eslint-disable-line react-hooks/exhaustive-deps
+  const centre = () => commit(around(live.current.s, plan.x, plan.y));
+  const goTo = (st: {x: number; y: number; name: string}) => {setFocus(st); setQ(''); commit(around(Math.min(maxS, Math.max(4, live.current.s)), st.x, st.y)); setTimeout(() => setFocus(f => f === st ? null : f), 4000);};
+  const zoomAt = (k: number, cx: number, cy: number, now = false) => {
+    const o = live.current, s = Math.min(maxRef.current, Math.max(1, o.s * k)), f = s / o.s, n = {s, x: cx - (cx - o.x) * f, y: cy - (cy - o.y) * f};
+    if (now) commit(n); else preview(n);
+  };
+  useEffect(() => {
+    const b = box.current; if (!b) return;
+    const wheel = (e: WheelEvent) => {e.preventDefault(); const r = b.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.18 : 1 / 1.18, e.clientX - r.left, e.clientY - r.top);};
     b.addEventListener('wheel', wheel, {passive: false});
     return () => b.removeEventListener('wheel', wheel);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null);
   const drag = useDrag((fx, fy, done) => {if (!done) {setGhost({dx: fx, dy: fy}); return;} setGhost(null); if (fx || fy) onPoint(clamp(plan.x + fx * 100), clamp(plan.y + fy * 100));});
-  // Visible part of the plan (fractions) and its on-screen width, refreshed once per frame while scrolling.
-  const [view, setView] = useState<{area: Area; need: number}>({area: {u0: 0, u1: 1, v0: 0, v1: 1}, need: 0});
-  const frame = useRef(0);
-  const measure = () => {
-    if (frame.current) return;
-    frame.current = requestAnimationFrame(() => {
-      frame.current = 0; const b = box.current, i = img.current; if (!b || !i || !i.offsetWidth) return;
-      const W = i.offsetWidth, H = i.offsetHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
-      setView({need: W * dpr, area: {u0: b.scrollLeft / W, u1: (b.scrollLeft + b.clientWidth) / W, v0: b.scrollTop / H, v1: (b.scrollTop + b.clientHeight) / H}});
-    });
-  };
-  useEffect(() => {measure(); return () => cancelAnimationFrame(frame.current);}, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   // Hold and move = pan the map; a click without moving = place the unit.
   const moved = useRef(false), [panning, setPanning] = useState(false);
   const pan = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
-    const b = box.current!, x0 = e.clientX, y0 = e.clientY, l0 = b.scrollLeft, t0 = b.scrollTop;
+    const x0 = e.clientX, y0 = e.clientY, o = live.current;
     moved.current = false;
-    const move = (ev: PointerEvent) => {const dx = ev.clientX - x0, dy = ev.clientY - y0; if (!moved.current && Math.hypot(dx, dy) < 5) return; moved.current = true; setPanning(true); b.scrollLeft = l0 - dx; b.scrollTop = t0 - dy;};
+    const move = (ev: PointerEvent) => {const dx = ev.clientX - x0, dy = ev.clientY - y0; if (!moved.current && Math.hypot(dx, dy) < 5) return; if (!moved.current) setPanning(true); moved.current = true; preview({...o, x: o.x + dx, y: o.y + dy});};
     const up = () => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); setPanning(false);};
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
   };
+  const place = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!editable || moved.current || !bw) return;
+    const r = box.current!.getBoundingClientRect(), L = live.current;
+    onPoint(Math.round((e.clientX - r.left - L.x) / (bw * L.s) * 1000) / 10, Math.round((e.clientY - r.top - L.y) / (bw * L.s * ratio) * 1000) / 10);
+  };
+  const W = bw * t.s, H = W * ratio, need = W * dpr;
+  const area: Area = W ? {u0: -t.x / W, u1: (bw - t.x) / W, v0: -t.y / H, v1: (bh - t.y) / H} : {u0: 0, u1: 0, v0: 0, v1: 0};
   return <div className="spp-big">
-    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button>
+    <div className="spp-big-zoom"><button type="button" onClick={() => zoomAt(1 / 1.4, bw / 2, bh / 2, true)} aria-label="Thu nhỏ">−</button><span>{Math.round(t.s * 100)}%</span><button type="button" onClick={() => zoomAt(1.4, bw / 2, bh / 2, true)} aria-label="Phóng to" disabled={t.s >= maxS - .01}>+</button><button type="button" onClick={centre}>Về vị trí căn</button>
       <div className="spp-street"><Search size={14}/><input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => {if (e.key === 'Enter' && hits[0]) goTo(hits[0]);}} placeholder="Tìm tên đường… (VD: Tương Lai 12, AS57)" aria-label="Tìm tên đường"/>
         {hits.length > 0 && <ul>{hits.map((st, k) => <li key={k}><button type="button" onClick={() => goTo(st)}>{st.name}</button></li>)}</ul>}
         {q.trim() && !hits.length && <ul><li className="is-empty">Không thấy tên đường</li></ul>}</div><small>Lăn chuột: phóng to / thu nhỏ · Giữ chuột kéo: di chuyển bản đồ{editable ? ' · Bấm: đặt vị trí căn' : ''}</small></div>
-    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan} onScroll={measure}>
-      <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable || moved.current) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
-        {plan.src === MAP ? <><img src={MAP_BASE} alt="" draggable={false} onLoad={measure}/><MapTiles area={view.area} need={view.need}/></>
-          : <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>}
-        {focus && <span className="spp-street-focus" style={{left: focus.x + '%', top: focus.y + '%'}}><b>{focus.name}</b></span>}
-        <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
+    <div ref={box} className={'spp-light-map is-gpu' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan} onClick={place}>
+      <div ref={img} className="spp-big-canvas" style={{width: W, height: H}}>
+        {isMap ? <><img className="spp-big-base" src={MAP_BASE} alt="" draggable={false}/><MapTiles area={area} need={need}/></>
+          : <><img className="spp-big-base" src={sized(plan.src, 2560)} alt="" draggable={false} onLoad={e => {const i = e.currentTarget; if (i.naturalWidth) setShape(i.naturalHeight / i.naturalWidth);}}/>
+            {need > 2560 * 1.15 && <img className="spp-tl" src={plan.src} alt="" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}} onLoad={e => setNat(e.currentTarget.naturalWidth || 2560)}/>}</>}
+        {focus && <span className="spp-street-focus" style={{left: focus.x + '%', top: focus.y + '%', scale: 'var(--k,1)'}}><b>{focus.name}</b></span>}
+        <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`, scale: 'var(--k,1)'}}
           onPointerDown={editable ? e => drag(e as React.PointerEvent<HTMLElement>, img.current!) : undefined} onClick={e => e.stopPropagation()}/>
       </div>
     </div>

@@ -48,6 +48,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   useEffect(() => setLocal(pins), [pins]);
   const [edit, setEdit] = useState(false), [placing, setPlacing] = useState(''), [q, setQ] = useState(''), [only, setOnly] = useState('');
   const [hover, setHover] = useState(''), [flash, setFlash] = useState('');
+  // Two modes: visitors' view by default; the administrator switches to "Quản trị viên" to place tags.
+  const [admin, setAdmin] = useState(false);
   const pinOf = useMemo(() => new Map(local.map(p => [up(p.code), p])), [local]);
   // content size at scale 1 = image fitted inside the viewport
   const baseW = Math.min(box.w, box.h / ratio), baseH = baseW * ratio;
@@ -148,13 +150,16 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
 
     <aside className="pm-panel" onPointerDown={e => e.stopPropagation()}>
       <header><small>Quỹ căn 360°</small><h3>{cfg.title}</h3></header>
+      {canManage && <div className="pm-mode" role="group" aria-label="Chế độ xem">
+        <button type="button" className={admin ? '' : 'is-on'} onClick={() => {setAdmin(false); setEdit(false); setPlacing('');}}>Khách</button>
+        <button type="button" className={admin ? 'is-on' : ''} onClick={() => setAdmin(true)}><Pencil size={13}/>Quản trị viên</button></div>}
       <div className="pm-stats">
         <button type="button" className={only === 'Còn hàng' ? 'is-on' : ''} onClick={() => setOnly(only === 'Còn hàng' ? '' : 'Còn hàng')}><b>{free.length}</b><span>Còn hàng</span></button>
         <button type="button" className={only === 'Đang giữ chỗ' ? 'is-on' : ''} onClick={() => setOnly(only === 'Đang giữ chỗ' ? '' : 'Đang giữ chỗ')}><b>{held.length}</b><span>Giữ chỗ</span></button>
         <button type="button" className={only === 'Đã bán' ? 'is-on' : ''} onClick={() => setOnly(only === 'Đã bán' ? '' : 'Đã bán')}><b>{sold.length}</b><span>Đã bán</span></button>
       </div>
       <label className="pm-search"><Search size={15}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…"/></label>
-      {canManage && <div className="pm-admin">
+      {canManage && admin && <div className="pm-admin">
         <button type="button" className={edit ? 'is-on' : ''} onClick={() => {setEdit(!edit); setPlacing('');}}>{edit ? <><Check size={14}/>Xong chỉnh vị trí</> : <><Pencil size={14}/>Chỉnh vị trí căn</>}</button>
         <span>{local.length}/{units.length} căn đã gắn{unplaced ? ` · ${unplaced} chưa gắn` : ''}</span>
         {edit && <p>{placing ? `Bấm lên mặt bằng để đặt ${placing}` : 'Chọn mã căn bên dưới rồi bấm lên mặt bằng. Kéo tag để dời vị trí.'}</p>}
@@ -164,7 +169,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         return <div key={u.id} className={'pm-row' + (placing === code ? ' is-placing' : '') + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held')}
           onMouseEnter={() => setHover(code)} onMouseLeave={() => setHover(h => h === code ? '' : h)}>
           <button type="button" className="pm-row-main" onClick={() => {if (p) flyTo(p, code); else if (edit) setPlacing(code); else window.location.assign(unitPlanPath(u));}}>
-            <i/><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span>{p ? <Locate size={14}/> : <small>chưa gắn</small>}</button>
+            <i/><b>{u.code}</b><span>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</span>{p ? <Locate size={14}/> : admin ? <small>chưa gắn</small> : null}</button>
           {edit && <span className="pm-row-tools">
             <button type="button" title="Đặt / đặt lại vị trí" onClick={() => setPlacing(placing === code ? '' : code)}><Crosshair size={14}/></button>
             {p && <button type="button" title="Gỡ khỏi mặt bằng" onClick={() => remove(code)}><Trash2 size={14}/></button>}</span>}

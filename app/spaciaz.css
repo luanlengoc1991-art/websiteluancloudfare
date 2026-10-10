@@ -2499,3 +2499,11 @@ button.sz-bento-photo{padding:0}
 .spp-planmap>img{position:absolute;display:block;max-width:none}
 .spp-planmap>.spp-tl-base{inset:0;width:100%;height:100%}
 .spp-light-map img.spp-tl,.spp-planmap img.spp-tl{position:absolute;display:block;max-width:none;pointer-events:none}
+
+/* Quỹ căn 360°: unit list on the right, zoom on the left; Khách / Quản trị viên switch (admin only). */
+.pm-panel{left:auto;right:16px}
+.pm-zoom{right:auto;left:16px}
+.pm-mode{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:99px;background:#ffffff14}
+.pm-mode button{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px;border:0;border-radius:99px;background:none;color:#cfe9dd;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+.pm-mode button.is-on{background:#8ef0c4;color:#04261c}
+@media(max-width:800px){.pm-panel{left:8px;right:8px}.pm-zoom{left:auto;right:10px}}

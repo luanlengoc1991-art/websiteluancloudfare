@@ -2493,3 +2493,9 @@ button.sz-bento-photo{padding:0}
 .pm-cancel{position:absolute;z-index:6;left:50%;top:90px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:0;border-radius:99px;background:#fde68a;font:inherit;font-weight:800;cursor:pointer}
 @media(max-width:800px){.pm-panel{top:auto;bottom:110px;left:8px;right:8px;width:auto;max-height:42vh}.pm-zoom{bottom:auto;top:84px;right:10px}}
 .project-workspace:has(.pm) .workspace-side-tools{display:none!important}
+
+/* Saigon Park plan drawn from tiles (MapTiles): base + visible tiles only. */
+.spp-plan>.spp-planmap{position:absolute;max-width:none;aspect-ratio:15331/12071;pointer-events:none}
+.spp-planmap>img{position:absolute;display:block;max-width:none}
+.spp-planmap>.spp-tl-base{inset:0;width:100%;height:100%}
+.spp-light-map img.spp-tl,.spp-planmap img.spp-tl{position:absolute;display:block;max-width:none;pointer-events:none}

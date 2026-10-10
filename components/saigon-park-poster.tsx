@@ -27,6 +27,27 @@ const Marker = ({code, className = '', style, onPointerDown, onClick}: {code: st
   <span className={'spm ' + className} style={style} onPointerDown={onPointerDown} onClick={onClick}><img src={F('sgp-marker-v2')} alt="" draggable={false}/><b>{code}</b></span>;
 const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)) * 100) / 100;
 
+/* sgp-map-v3 is drawn light: a 2560 px base, then only the tiles inside the visible area, at the sharpness the zoom needs
+ * (16 half-size tiles, then 64 full-resolution 1916×1509 crops of the 4×4 HD tiles via /api/img) – same scheme as Quỹ căn 360°. */
+const MAP_RATIO = 12071 / 15331, HW = 1916, HH = 1509, TILE = F('sgp-map-v3-t');
+const MAP_BASE = '/api/img?v=4&w=2560&q=70&src=' + encodeURIComponent(MAP);
+type Area = {u0: number; u1: number; v0: number; v1: number};
+function MapTiles({area, need}: {area: Area; need: number}) {
+  const cells = (n: number) => {
+    const out: [number, number][] = [], m = .02;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if ((c + 1) / n > area.u0 - m && c / n < area.u1 + m && (r + 1) / n > area.v0 - m && r / n < area.v1 + m) out.push([r, c]);
+    return out;
+  };
+  const at = (r: number, c: number, n: number) => ({left: `${c * 100 / n}%`, top: `${r * 100 / n}%`, width: `${100 / n}%`, height: `${100 / n}%`});
+  return <>
+    {need > 2560 * 1.15 && cells(4).map(([r, c]) => <img key={'m' + r + c} className="spp-tl" src={sized(TILE + r + c, HW)} alt="" decoding="async" draggable={false} style={at(r, c, 4)}/>)}
+    {need > 4 * HW * 1.15 && cells(8).map(([r, c]) => <img key={'f' + r + '-' + c} className="spp-tl" alt="" decoding="async" draggable={false} style={at(r, c, 8)}
+      src={`/api/img?v=4&w=${HW}&q=74&c=${(c % 2) * HW},${(r % 2) * HH},${HW},${HH}&src=${encodeURIComponent(TILE + (r >> 1) + (c >> 1))}`}/>)}
+  </>;
+}
+/** Small plan frame on the poster: 92.9% × 21.5% of a 1512 × 2044 poster. */
+const FRAME_W = .929 * 1512, FRAME_RATIO = (.215 * 2044) / FRAME_W;
+
 /** Resolved poster content for one unit. */
 function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   const card = mergeCard(base, own), f = card.fields || {};
@@ -82,16 +103,21 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
     const r = e.currentTarget.getBoundingClientRect();
     onPoster(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);
   }}>
-    <img className="spp-aerial2" src={F('sgp-aerial-v2')} alt="Phối cảnh tổng Vinhomes Saigon Park"/>
+    <img className="spp-aerial2" src={sized(F('sgp-aerial-v2'), 1520)} alt="Phối cảnh tổng Vinhomes Saigon Park"/>
     <button type="button" className="spp-house" onClick={e => {if (tool !== 'pin' && onHouse) {e.stopPropagation(); onHouse();}}} aria-label="Xem ảnh nhà lớn"><img src={sized(house, 1520)} alt={`Mẫu nhà ${unit.model || ''}`}/></button>
-    <img className="spp-strip2" src={F('sgp-strip-v2')} alt=""/>
+    <img className="spp-strip2" src={sized(F('sgp-strip-v2'), 1520)} alt=""/>
     <span className="spp-script">{f.title || 'Mã căn'}</span>
     <b className="spp-code">{unit.code}</b>
     {facts.map(([k, v], i) => <span key={k} className={'spp-fact is-' + i}><i>{k}</i><em>{v || 'Đang cập nhật'}</em></span>)}
     <div className="spp-price"><img src={F('sgp-price-bg')} alt=""/><small>GIÁ BÁN<br/>(CHƯA VAT + KPBT)</small>
       {price ? <b>{price}<sup>TỶ</sup></b> : <b className="is-contact">LIÊN HỆ</b>}</div>
     <button type="button" ref={planBox} className="spp-plan" onClick={e => {if (tool !== 'pin' && onPlan) {e.stopPropagation(); onPlan();}}} aria-label="Xem mặt bằng lớn">
-      <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} draggable={false} style={{left: PIN_X + '%', top: PIN_Y + '%', width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>
+      {plan.src === MAP ? <div className="spp-planmap" style={{left: PIN_X + '%', top: PIN_Y + '%', width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}>
+        <img className="spp-tl-base" src={MAP_BASE} alt={`Mặt bằng chỉ căn ${unit.code}`} draggable={false}/>
+        <MapTiles need={plan.zoom * FRAME_W} area={{u0: plan.x / 100 - PIN_X / 100 / plan.zoom, u1: plan.x / 100 + (1 - PIN_X / 100) / plan.zoom,
+          v0: plan.y / 100 - PIN_Y / 100 * FRAME_RATIO / (plan.zoom * MAP_RATIO), v1: plan.y / 100 + (1 - PIN_Y / 100) * FRAME_RATIO / (plan.zoom * MAP_RATIO)}}/>
+      </div>
+      : <img src={plan.zoom > 1.6 ? plan.src : sized(plan.src, 2560)} alt={`Mặt bằng chỉ căn ${unit.code}`} draggable={false} style={{left: PIN_X + '%', top: PIN_Y + '%', width: `${plan.zoom * 100}%`, transform: `translate(-${plan.x}%, -${plan.y}%)`}}/>}
       <Marker code={unit.code} className={'is-inset' + (onPlanPoint ? ' is-drag' : '')} style={{left: `calc(${PIN_X}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${PIN_Y}% + ${(ghost?.dy || 0) * 100}%)`}}
         onPointerDown={onPlanPoint ? e => dragPlan(e as React.PointerEvent<HTMLElement>, planBox.current!) : undefined} onClick={onPlanPoint ? e => e.stopPropagation() : undefined}/>
       {onPlan && !onPlanPoint && <span className="spp-zoomhint"><Expand size={12}/>Xem lớn</span>}
@@ -132,6 +158,18 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
   }, []);
   const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null);
   const drag = useDrag((fx, fy, done) => {if (!done) {setGhost({dx: fx, dy: fy}); return;} setGhost(null); if (fx || fy) onPoint(clamp(plan.x + fx * 100), clamp(plan.y + fy * 100));});
+  // Visible part of the plan (fractions) and its on-screen width, refreshed once per frame while scrolling.
+  const [view, setView] = useState<{area: Area; need: number}>({area: {u0: 0, u1: 1, v0: 0, v1: 1}, need: 0});
+  const frame = useRef(0);
+  const measure = () => {
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0; const b = box.current, i = img.current; if (!b || !i || !i.offsetWidth) return;
+      const W = i.offsetWidth, H = i.offsetHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+      setView({need: W * dpr, area: {u0: b.scrollLeft / W, u1: (b.scrollLeft + b.clientWidth) / W, v0: b.scrollTop / H, v1: (b.scrollTop + b.clientHeight) / H}});
+    });
+  };
+  useEffect(() => {measure(); return () => cancelAnimationFrame(frame.current);}, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   // Hold and move = pan the map; a click without moving = place the unit.
   const moved = useRef(false), [panning, setPanning] = useState(false);
   const pan = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -147,10 +185,10 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
       <div className="spp-street"><Search size={14}/><input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => {if (e.key === 'Enter' && hits[0]) goTo(hits[0]);}} placeholder="Tìm tên đường… (VD: Tương Lai 12, AS57)" aria-label="Tìm tên đường"/>
         {hits.length > 0 && <ul>{hits.map((st, k) => <li key={k}><button type="button" onClick={() => goTo(st)}>{st.name}</button></li>)}</ul>}
         {q.trim() && !hits.length && <ul><li className="is-empty">Không thấy tên đường</li></ul>}</div><small>Lăn chuột: phóng to / thu nhỏ · Giữ chuột kéo: di chuyển bản đồ{editable ? ' · Bấm: đặt vị trí căn' : ''}</small></div>
-    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan}>
+    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan} onScroll={measure}>
       <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable || moved.current) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
-        <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
-        {plan.src === MAP && zoom >= 2.5 && <div className="spp-hd" aria-hidden>{[0, 1, 2, 3].flatMap(r => [0, 1, 2, 3].map(c => <img key={r + '-' + c} src={F('sgp-map-v3-t' + r + c)} alt="" loading="lazy" decoding="async" draggable={false}/>))}</div>}
+        {plan.src === MAP ? <><img src={MAP_BASE} alt="" draggable={false} onLoad={measure}/><MapTiles area={view.area} need={view.need}/></>
+          : <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>}
         {focus && <span className="spp-street-focus" style={{left: focus.x + '%', top: focus.y + '%'}}><b>{focus.name}</b></span>}
         <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
           onPointerDown={editable ? e => drag(e as React.PointerEvent<HTMLElement>, img.current!) : undefined} onClick={e => e.stopPropagation()}/>

@@ -2555,3 +2555,16 @@ button.sz-bento-photo{padding:0}
 .ph3-about-tabs button.is-on i{animation:sz-bar-x 9s linear both}
 @media(prefers-reduced-motion:reduce){.sz-u-hero-list button.is-on .sz-u-progress{animation:none;transform:none}}
 :is(.ph3-slide,.ph3-about-photo>div,.ph3-amen-grid figure,.ph3-prod-photo,.ph3-plans a,.ph3-posters a,.ph3-roads-photo,.ph3-video-frame,.ph3-acc>a,.ph3-zone-photo,.ph3-diff-photo){animation-iteration-count:3}
+
+/* Saigon Park poster text in the site font (Be Vietnam Pro) with a clear weight hierarchy (11/10/2026):
+ * code + price = 700 large, fact values 700, fact labels 500, price note 500, locator labels 700. "Mã căn" keeps its script. */
+.spp-code{font-family:var(--font-sans);font-weight:700;letter-spacing:-.035em;font-size:9.4cqw;line-height:1.08;top:27.2%}
+.spp-fact{font-family:var(--font-sans)}
+.spp-fact i{font-weight:500;letter-spacing:.005em}
+.spp-fact em{font-weight:700;letter-spacing:.01em}
+.spp-price{font-family:var(--font-sans)}
+.spp-price small{font-family:var(--font-sans);font-weight:500;letter-spacing:.02em}
+.spp-price b{font-weight:700;letter-spacing:-.04em}
+.spp-price b sup{font-weight:600;letter-spacing:0;margin-left:.12em}
+.spp-price b.is-contact{font-size:5cqw;letter-spacing:-.01em;margin-top:5%}
+.spm b,.spp-tag b,.spp-mark b{font-family:var(--font-sans);font-weight:700;letter-spacing:-.01em}

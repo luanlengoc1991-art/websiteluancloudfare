@@ -9,6 +9,7 @@ import type {Asset, Project, Unit} from '@/lib/catalog';
 import {type CardSpot, type UnitCard, cardId, mergeCard} from '@/lib/unit-card';
 import {saigonParkModelColor, saigonParkModelImage} from '@/lib/saigon-park-models';
 import {sized} from '@/lib/img';
+import {SAIGON_PARK_STREETS} from '@/lib/saigon-park-streets';
 
 const F = (id: string) => `/api/files/${id}`;
 const MAP = F('sgp-map-v3');
@@ -105,12 +106,18 @@ function PosterArt({unit, status, data, tool, onPoster, onPlan, onHouse, onPlanP
 /** Big plan: mouse wheel zooms around the cursor, buttons zoom around the unit; click or drag the pin to place it. */
 function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string; editable: boolean; onPoint: (x: number, y: number) => void}) {
   const [zoom, setZoom] = useState(2), box = useRef<HTMLDivElement>(null), img = useRef<HTMLDivElement>(null);
-  const anchor = useRef<{fx: number; fy: number; cx: number; cy: number} | null>(null);
+  const anchor = useRef<{fx: number; fy: number; cx: number; cy: number} | null>(null), target = useRef<{x: number; y: number} | null>(null);
+  const [q, setQ] = useState(''), [focus, setFocus] = useState<{x: number; y: number; name: string} | null>(null);
+  const norm = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/^tl\s*(?=\d)/, 'tuong lai ').replace(/^as\s*(?=\d)/, 'anh sang ').replace(/^dlcv\s*(?=\d)/, 'dai lo cong vien ').replace(/\s+/g, ' ').trim();
+  const hits = q.trim() ? SAIGON_PARK_STREETS.filter(st => (norm(st.name) + ' ').includes(norm(q) + (/\d$/.test(q.trim()) ? ' ' : ''))).slice(0, 12) : [];
+  const goTo = (st: {x: number; y: number; name: string}) => {target.current = st; setFocus(st); setQ(''); setZoom(z => z < 4 ? 4 : z + 0.0001); setTimeout(() => setFocus(f => f === st ? null : f), 4000);};
   const centre = () => {const b = box.current, i = img.current; if (b && i) b.scrollTo({left: i.offsetWidth * plan.x / 100 - b.clientWidth / 2, top: i.offsetHeight * plan.y / 100 - b.clientHeight / 2});};
   useLayoutEffect(() => {
     const b = box.current, i = img.current, a = anchor.current;
     if (!b || !i) return;
-    if (a) {b.scrollLeft = a.fx * i.offsetWidth - a.cx; b.scrollTop = a.fy * i.offsetHeight - a.cy; anchor.current = null;} else centre();
+    const t = target.current;
+    if (t) {b.scrollTo({left: i.offsetWidth * t.x / 100 - b.clientWidth / 2, top: i.offsetHeight * t.y / 100 - b.clientHeight / 2}); target.current = null;}
+    else if (a) {b.scrollLeft = a.fx * i.offsetWidth - a.cx; b.scrollTop = a.fy * i.offsetHeight - a.cy; anchor.current = null;} else centre();
   }, [zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const b = box.current; if (!b) return;
@@ -136,11 +143,15 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
   };
   return <div className="spp-big">
-    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button><small>Lăn chuột: phóng to / thu nhỏ · Giữ chuột kéo: di chuyển bản đồ{editable ? ' · Bấm: đặt vị trí căn' : ''}</small></div>
+    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button>
+      <div className="spp-street"><Search size={14}/><input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => {if (e.key === 'Enter' && hits[0]) goTo(hits[0]);}} placeholder="Tìm tên đường… (VD: Tương Lai 12, AS57)" aria-label="Tìm tên đường"/>
+        {hits.length > 0 && <ul>{hits.map((st, k) => <li key={k}><button type="button" onClick={() => goTo(st)}>{st.name}</button></li>)}</ul>}
+        {q.trim() && !hits.length && <ul><li className="is-empty">Không thấy tên đường</li></ul>}</div><small>Lăn chuột: phóng to / thu nhỏ · Giữ chuột kéo: di chuyển bản đồ{editable ? ' · Bấm: đặt vị trí căn' : ''}</small></div>
     <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan}>
       <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable || moved.current) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
         <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
         {plan.src === MAP && zoom >= 2.5 && <div className="spp-hd" aria-hidden>{[0, 1, 2, 3].flatMap(r => [0, 1, 2, 3].map(c => <img key={r + '-' + c} src={F('sgp-map-v3-t' + r + c)} alt="" loading="lazy" decoding="async" draggable={false}/>))}</div>}
+        {focus && <span className="spp-street-focus" style={{left: focus.x + '%', top: focus.y + '%'}}><b>{focus.name}</b></span>}
         <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
           onPointerDown={editable ? e => drag(e as React.PointerEvent<HTMLElement>, img.current!) : undefined} onClick={e => e.stopPropagation()}/>
       </div>

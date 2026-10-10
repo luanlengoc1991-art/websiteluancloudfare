@@ -130,6 +130,7 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
     <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')}>
       <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
         <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
+        {plan.src === MAP && zoom >= 2.5 && <div className="spp-hd" aria-hidden>{[0, 1, 2, 3].flatMap(r => [0, 1, 2, 3].map(c => <img key={r + '-' + c} src={F('sgp-map-v3-t' + r + c)} alt="" loading="lazy" decoding="async" draggable={false}/>))}</div>}
         <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}
           onPointerDown={editable ? e => drag(e as React.PointerEvent<HTMLElement>, img.current!) : undefined} onClick={e => e.stopPropagation()}/>
       </div>
@@ -251,7 +252,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
     }}/>
     {pick && createPortal(<div className="uc-picker" role="dialog" onClick={() => setPick(null)}><div onClick={e => e.stopPropagation()}>
       <header><b>Chọn {pick === 'plan' ? 'ảnh mặt bằng' : 'ảnh nhà'}</b><button type="button" onClick={() => setPick(null)} aria-label="Đóng"><X size={18}/></button></header>
-      <div className="uc-picker-grid">{files.filter(a => a.projectId === project.id && ['model', 'gallery', 'image', 'plan'].includes(a.kind) && !/sgp-(pin|strip|loc|price|logo|marker)/.test(a.url)).map(a =>
+      <div className="uc-picker-grid">{files.filter(a => a.projectId === project.id && ['model', 'gallery', 'image', 'plan'].includes(a.kind) && !/sgp-(pin|strip|loc|price|logo|marker|map-v3-t)/.test(a.url)).map(a =>
         <button type="button" key={a.url} onClick={() => {setImage(pick, a.url); setPick(null);}}><img src={sized(a.url, 360)} alt="" loading="lazy"/><span>{a.name}</span></button>)}</div>
     </div></div>, document.body)}
     {batch && <div className="spp-offscreen" ref={batchRef} aria-hidden><PosterArt unit={batch} status={statusOf(batch)} data={resolve(batch, base, cards[cardId(project.id, batch.code)])}/></div>}

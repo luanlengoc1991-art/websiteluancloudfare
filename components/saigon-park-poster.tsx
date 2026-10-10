@@ -31,7 +31,7 @@ function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   return {
     card, f,
     plan: {...defaultPlan, ...card.plan, src: card.plan?.src || MAP},
-    pin: card.master?.src?.includes('sgp-aerial') ? {...defaultPin, ...card.master} : defaultPin,
+    pin: own?.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...own.master} : defaultPin,
     house: own?.perspective || saigonParkModelImage(f.model || unit.model) || card.perspective || F('sgp-model-16'),
   };
 }
@@ -137,7 +137,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   const [view, setView] = useState<Slot | null>(null), [pick, setPick] = useState<Slot | null>(null);
   const [draft, setDraft] = useState<UnitCard>(mergeCard(base, own));
   useEffect(() => {if (!edit) setDraft(mergeCard(base, own));}, [own, base, edit, unit.id]);
-  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: {...defaultPlan, ...draft.plan, src: draft.plan?.src || MAP}, pin: draft.master?.src?.includes('sgp-aerial') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
+  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: {...defaultPlan, ...draft.plan, src: draft.plan?.src || MAP}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 

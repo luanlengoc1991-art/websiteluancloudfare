@@ -5,7 +5,7 @@
 export type PlanMapConfig = {image: string; viewW: number; tilePrefix: string; grid: number; tileW: number; tileH: number; width: number; height: number; title: string; cardSrc?: string};
 export const PLAN_MAPS: Record<string, PlanMapConfig> = {
   'green-paradise': {image: '/api/files/gp-map-view', viewW: 3000, tilePrefix: '/api/files/gp-map-t', grid: 4, tileW: 3750, tileH: 2652, width: 15000, height: 10610, title: 'The Haven Bay – Vịnh Tiên'},
-  'saigon-park': {image: '/api/img?v=4&w=2560&src=%2Fapi%2Ffiles%2Fsgp-map-v3', viewW: 2560, tilePrefix: '/api/files/sgp-map-v3-t', grid: 4, tileW: 3832, tileH: 3018, width: 15332, height: 12072, title: 'Vinhomes Sài Gòn Park', cardSrc: '/api/files/sgp-map-v3'},
+  'saigon-park': {image: '/api/img?v=4&w=2560&q=70&src=%2Fapi%2Ffiles%2Fsgp-map-v3', viewW: 2560, tilePrefix: '/api/files/sgp-map-v3-t', grid: 4, tileW: 3832, tileH: 3018, width: 15332, height: 12072, title: 'Vinhomes Sài Gòn Park', cardSrc: '/api/files/sgp-map-v3'},
 };
 
 import {fundFromGroup, type UnitPin} from './plan-funds';

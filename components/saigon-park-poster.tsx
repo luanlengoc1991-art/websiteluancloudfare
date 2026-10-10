@@ -19,7 +19,8 @@ const MAP = SGP_MAP;
 const fmt = (n: number) => n.toLocaleString('en-US', {maximumFractionDigits: 2});
 const vn = (n: number) => n.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const when = (t?: number) => t ? new Date(t).toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 9};
+/** Small frame shows ~1/28 of the plan width: 5–6 rows of lots around the unit with street names readable. */
+const defaultPlan: CardSpot = {src: MAP, x: 50, y: 50, zoom: 28};
 const defaultPin: CardSpot = {src: F('sgp-aerial-v2'), x: 43.3, y: 82.3, zoom: 1};
 type Slot = 'house' | 'plan';
 /** Where the unit point sits inside the small plan frame (% of the frame). */
@@ -46,7 +47,7 @@ function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   const card = mergeCard(base, own), f = card.fields || {};
   return {
     card, f,
-    plan: card.plan?.src === MAP && own?.plan ? {...defaultPlan, ...card.plan} : {...defaultPlan, ...auto(unit.code), zoom: card.plan?.zoom || defaultPlan.zoom},
+    plan: card.plan?.src === MAP && own?.plan ? {...defaultPlan, ...card.plan} : {...defaultPlan, ...auto(unit.code), zoom: card.plan?.src === MAP && card.plan.zoom ? card.plan.zoom : defaultPlan.zoom},
     pin: own?.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...own.master} : defaultPin,
     house: own?.perspective || saigonParkModelImage(f.model || unit.model) || card.perspective || F('sgp-model-16'),
   };
@@ -228,7 +229,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   const [view, setView] = useState<Slot | null>(null), [pick, setPick] = useState<Slot | null>(null);
   const [draft, setDraft] = useState<UnitCard>(mergeCard(base, own));
   useEffect(() => {if (!edit) setDraft(mergeCard(base, own));}, [own, base, edit, unit.id]);
-  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src === MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, ...auto(unit.code), zoom: draft.plan?.zoom || defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
+  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src === MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, ...auto(unit.code), zoom: draft.plan?.src === MAP && draft.plan.zoom ? draft.plan.zoom : defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 
@@ -249,7 +250,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
     const fields = Object.fromEntries(Object.entries(draft.fields || {}).filter(([, v]) => v?.trim()));
     if (await post({code: unit.code, card: {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined, plan: data.plan, master: data.pin, fields}}, `Đã lưu phiếu ${unit.code}.`)) {setEdit(false); setTool(null); setView(null);}
   };
-  const saveDefault = () => post({code: '*', card: {...base, plan: {...data.plan, x: base?.plan?.x ?? 50, y: base?.plan?.y ?? 50, src: base?.plan?.src || MAP}}}, 'Đã lưu độ zoom làm mặc định dự án.');
+  const saveDefault = () => post({code: '*', card: {...base, plan: {...data.plan, x: base?.plan?.x ?? 50, y: base?.plan?.y ?? 50, src: MAP}}}, 'Đã lưu độ zoom làm mặc định dự án.');
   const reset = async () => {if (confirm(`Xoá chỉnh sửa riêng của ${unit.code}?`) && await post({code: unit.code, card: null}, 'Đã khôi phục theo Sheet.')) setEdit(false);};
 
   async function downloadOne() {
@@ -312,7 +313,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
         {view === 'plan' ? <div className={'spp-light-body' + (isAdmin ? ' has-side' : '')}>
           <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
           {isAdmin && <div className="spp-light-side"><p>Bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim ngay trên poster bên dưới – hai nơi luôn cùng một vị trí.</p>
-            <label className="uc-zoom"><span>Độ phóng khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={2} max={20} step={0.5} value={data.plan.zoom} onChange={e => {startEdit(); setPlan({zoom: Number(e.target.value)});}}/></label>
+            <label className="uc-zoom"><span>Độ phóng khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={8} max={60} step={1} value={data.plan.zoom} onChange={e => {startEdit(); setPlan({zoom: Number(e.target.value)});}}/></label>
             <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}}));}}/></div></div>}
         </div> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}
       </div>

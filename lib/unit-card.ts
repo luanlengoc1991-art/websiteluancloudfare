@@ -18,7 +18,7 @@ export const cardId = (projectId: string, code: string) => `${projectId}|${code.
 const img = (v: unknown) => typeof v === 'string' && (/^\/api\/files\/[\w-]{8,64}$/.test(v) || /^https:\/\/[^\s"'<>]{4,1900}$/.test(v)) ? v : '';
 const num = (v: unknown, min: number, max: number, d: number) => typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : d;
 const txt = (v: unknown, n = 200) => typeof v === 'string' ? v.replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, n) : '';
-const spot = (v: any): CardSpot | undefined => {const src = img(v?.src); return src ? {src, x: num(v?.x, 0, 100, 50), y: num(v?.y, 0, 100, 50), zoom: num(v?.zoom, 1, 8, 2.5)} : undefined;};
+const spot = (v: any): CardSpot | undefined => {const src = img(v?.src); return src ? {src, x: num(v?.x, 0, 100, 50), y: num(v?.y, 0, 100, 50), zoom: num(v?.zoom, 1, 80, 2.5)} : undefined;};
 
 /** Whitelist everything an admin can send. */
 export function cleanCard(v: any): UnitCard {

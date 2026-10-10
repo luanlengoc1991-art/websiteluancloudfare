@@ -49,7 +49,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const [edit, setEdit] = useState(false), [placing, setPlacing] = useState(''), [q, setQ] = useState(''), [only, setOnly] = useState('');
   const [hover, setHover] = useState(''), [flash, setFlash] = useState('');
   // Two modes: visitors' view by default; the administrator switches to "Quản trị viên" to place tags.
-  const [admin, setAdmin] = useState(false);
+  const [admin, setAdmin] = useState(false), [notes, setNotes] = useState(false);
+  const showNotes = canManage && admin && notes;
   const pinOf = useMemo(() => new Map(local.map(p => [up(p.code), p])), [local]);
   // content size at scale 1 = image fitted inside the viewport
   const baseW = Math.min(box.w, box.h / ratio), baseH = baseW * ratio;
@@ -91,7 +92,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   }
   async function place(code: string, x: number, y: number) {
     const u = units.find(v => up(v.code) === code);
-    const pin: UnitPin = {projectId: project.id, code, layer: 'map', x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)), fund: pinOf.get(code)?.fund || fundFromGroup(u?.group)};
+    const pin: UnitPin = {projectId: project.id, code, layer: 'map', x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)), fund: pinOf.get(code)?.fund || fundFromGroup(u?.group), ...(pinOf.get(code)?.callout ? {callout: pinOf.get(code)!.callout} : {})};
     setLocal(l => [...l.filter(p => up(p.code) !== code), pin]);
     try {await send({action: 'save', kind: 'pin', id: pinId(project.id, code, 'map'), data: pin}); onSaved();} catch (e) {toast.error(e instanceof Error ? e.message : 'Không lưu được vị trí.');}
   }
@@ -99,6 +100,20 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     setLocal(l => l.filter(p => up(p.code) !== code));
     try {await send({action: 'delete', kind: 'pin', id: pinId(project.id, code, 'map')}); onSaved(); toast.success(`Đã gỡ ${code} khỏi mặt bằng.`);} catch (e) {toast.error(e instanceof Error ? e.message : 'Không gỡ được.');}
   }
+  // Info cards (admin): drag the arrow out of a tag, or drag a card to move it; saved with the unit's map pin.
+  async function saveCallout(code: string, c?: {x: number; y: number}) {
+    const p = pinOf.get(code); if (!p) return;
+    const {callout: _old, ...rest} = p; const next: UnitPin = {...rest, layer: 'map', ...(c ? {callout: c} : {})};
+    setLocal(l => l.map(v => up(v.code) === code ? next : v));
+    try {await send({action: 'save', kind: 'pin', id: pinId(project.id, code, 'map'), data: next}); onSaved();} catch (e) {toast.error(e instanceof Error ? e.message : 'Không lưu được thẻ thông tin.');}
+  }
+  const dragCallout = (e: React.PointerEvent, code: string) => {
+    e.stopPropagation(); e.preventDefault();
+    const x0 = e.clientX, y0 = e.clientY; let last = {x: x0, y: y0}, did = false;
+    const move = (ev: PointerEvent) => {last = {x: ev.clientX, y: ev.clientY}; if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 3) did = true; if (did) {const c = toPct(ev.clientX, ev.clientY); setLocal(l => l.map(v => up(v.code) === code ? {...v, callout: c} : v));}};
+    const upH = () => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', upH); if (did) {const c = toPct(last.x, last.y); saveCallout(code, {x: Math.min(100, Math.max(0, c.x)), y: Math.min(100, Math.max(0, c.y))});}};
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', upH);
+  };
   const dragPin = (e: React.PointerEvent, code: string) => {
     if (!edit) return;
     e.stopPropagation(); e.preventDefault();
@@ -133,6 +148,22 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}/>
         {mid.map(({r, c}) => <img key={'m' + r + c} className="pm-tile" src={sized(`${cfg.tilePrefix}${r}${c}`, hw)} alt="" decoding="async" draggable={false} style={cell(r, c, cfg.grid)}/>)}
         {fine.map(({r, c}) => <img key={'f' + r + '-' + c} className="pm-tile" src={fineSrc(r, c)} alt="" decoding="async" draggable={false} style={cell(r, c, n2)}/>)}
+        {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+          <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fde047"/></marker></defs>
+          {local.filter(p => p.callout).map(p => <line key={p.code} x1={p.callout!.x * W / 100} y1={p.callout!.y * H / 100} x2={p.x * W / 100} y2={p.y * H / 100} markerEnd="url(#pm-arrow)"/>)}
+        </svg>}
+        {showNotes && local.filter(p => p.callout).map(p => {
+          const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
+          const st = statusOf(u), code = up(p.code), known = (v?: string) => !!v && v !== 'Đang cập nhật';
+          const rows: [string, string | undefined][] = [['Loại hình', u.type], ['Phân khu', u.zone], ['DT đất', u.area ? fmt(u.area) + ' m²' : undefined], ['DTXD', u.builtArea ? fmt(u.builtArea) + ' m²' : undefined], ['Hướng', u.direction], ['TCBG', u.group]];
+          return <div key={'n' + code} className={'pm-note' + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held')} style={{left: p.callout!.x + '%', top: p.callout!.y + '%'}}
+            onPointerDown={e => dragCallout(e, code)} onClick={e => e.stopPropagation()}>
+            <button type="button" className="pm-note-x" title="Gỡ thẻ thông tin" onPointerDown={e => e.stopPropagation()} onClick={e => {e.stopPropagation(); saveCallout(code);}}><X size={12}/></button>
+            <strong>{u.code}</strong>
+            <dl>{rows.filter(([, v]) => known(v)).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+            <p><b>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</b><span>{st}</span></p>
+          </div>;
+        })}
         {local.map(p => {
           const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
           const st = statusOf(u), code = up(p.code);
@@ -142,6 +173,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
             onPointerDown={e => {if (edit) dragPin(e, code); else e.stopPropagation();}} onClick={e => {e.stopPropagation(); if (edit) e.preventDefault();}}
             onMouseEnter={() => setHover(code)} onMouseLeave={() => setHover(h => h === code ? '' : h)}>
             <b>{tag(u.price)}</b>
+            {showNotes && <span className="pm-tag-arrow" role="button" title="Kéo ra thẻ thông tin đầy đủ" onPointerDown={e => dragCallout(e, code)} onClick={e => {e.stopPropagation(); e.preventDefault();}}>↗</span>}
             {(hover === code || flash === code) && <span className="pm-tip"><strong>{u.code}</strong><em>{u.type} · {u.area ? fmt(u.area) + ' m²' : '—'}</em><em>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'} · {st}</em>{!edit && <i>Bấm để xem mặt bằng căn</i>}</span>}
           </a>;
         })}
@@ -162,6 +194,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       {canManage && admin && <div className="pm-admin">
         <button type="button" className={edit ? 'is-on' : ''} onClick={() => {setEdit(!edit); setPlacing('');}}>{edit ? <><Check size={14}/>Xong chỉnh vị trí</> : <><Pencil size={14}/>Chỉnh vị trí căn</>}</button>
         <span>{local.length}/{units.length} căn đã gắn{unplaced ? ` · ${unplaced} chưa gắn` : ''}</span>
+        <button type="button" className={notes ? 'is-on' : ''} onClick={() => setNotes(!notes)} title="Kéo mũi tên ↗ từ tag ra để hiện thẻ thông tin đầy đủ của căn">{notes ? 'Thẻ thông tin: Bật' : 'Thẻ thông tin: Tắt'} · {local.filter(p => p.callout).length}</button>
+        {notes && <p>Kéo mũi tên ↗ ở tag giá ra vị trí tuỳ ý để hiện thẻ thông tin; kéo thẻ để dời, ✕ để gỡ.</p>}
         {edit && <p>{placing ? `Bấm lên mặt bằng để đặt ${placing}` : 'Chọn mã căn bên dưới rồi bấm lên mặt bằng. Kéo tag để dời vị trí.'}</p>}
       </div>}
       <div className="pm-list">{list.map(u => {

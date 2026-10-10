@@ -18,7 +18,8 @@ export const isFundKey = (v: unknown): v is FundKey => typeof v === 'string' && 
 export type PinLayer = 'plan' | 'map';
 
 /** Lớp phủ vị trí + loại quỹ cho một mã căn, lưu trong records (kind='pin'). Thiếu layer = 'plan'. */
-export type UnitPin = {projectId: string; code: string; layer?: PinLayer; x: number; y: number; fund: FundKey};
+/** callout = where the admin dragged the unit's info card on the 360° plan (% of the plan); admin-only overlay. */
+export type UnitPin = {projectId: string; code: string; layer?: PinLayer; x: number; y: number; fund: FundKey; callout?: {x: number; y: number}};
 export const pinLayer = (p: {layer?: string}): PinLayer => p.layer === 'map' ? 'map' : 'plan';
 export const pinId = (projectId: string, code: string, layer: PinLayer = 'plan') => `${projectId}|${layer === 'map' ? 'map|' : ''}${code.trim().toUpperCase()}`;
 

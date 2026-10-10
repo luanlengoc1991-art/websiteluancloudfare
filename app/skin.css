@@ -12,7 +12,9 @@
   --font-display:var(--font-sans);--font-body:var(--font-sans);
   --hero-h:470px;
 }
-[data-skin=emerald] body{background:var(--sheet);background-attachment:fixed;color:var(--ink);font-family:var(--font-sans);letter-spacing:-.005em}
+[data-skin=emerald] body{background:var(--sheet);color:var(--ink);font-family:var(--font-sans);letter-spacing:-.005em}
+/* Fixed page gradient on its own layer: scrolling no longer repaints the whole page (was background-attachment:fixed). */
+:root[data-skin=emerald]:has(.public-site) body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--sheet);pointer-events:none}
 [data-skin=emerald] :is(h1,h2,h3,h4){font-family:var(--font-sans);letter-spacing:-.03em}
 [data-skin=emerald] ::selection{background:var(--em-200);color:var(--em-950)}
 

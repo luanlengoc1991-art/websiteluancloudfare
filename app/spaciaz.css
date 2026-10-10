@@ -842,7 +842,7 @@ button.sz-bento-photo{padding:0}
 .sz-site.inventory-market-site .sz-u-hero~.inventory-hero::before,.sz-site.inventory-market-site .catalog-inventory-results::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:radial-gradient(ellipse 70% 50% at 50% 0,#8ef0c414,transparent 70%),var(--qc-flow);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite;pointer-events:none}
 .sz-site.inventory-market-site .catalog-inventory-results{box-shadow:none!important;clip-path:none!important;width:100vw!important;max-width:none!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important;padding-inline:max(40px,calc((100vw - var(--sz-wrap)) / 2))!important}
 @keyframes qc-flow{0%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}100%{background-position:0 0,0% 50%}}
-.sz-u3d-stage::before{content:'';position:absolute;left:50%;top:50%;width:900px;height:620px;margin:-310px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c440,#10b98114 55%,transparent);filter:blur(10px);animation:qc-glow 7s ease-in-out infinite;pointer-events:none}
+.sz-u3d-stage::before{content:'';position:absolute;left:50%;top:50%;width:900px;height:620px;margin:-310px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c440,#10b98114 55%,transparent);filter:blur(10px);animation:qc-glow 7s ease-in-out infinite;will-change:transform,opacity;pointer-events:none}
 @keyframes qc-glow{0%,100%{transform:scale(.9) translateX(-40px);opacity:.7}50%{transform:scale(1.1) translateX(40px);opacity:1}}
 .sz-u3d-card.is-active{animation:qc-float 5s ease-in-out infinite}
 @keyframes qc-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
@@ -853,15 +853,19 @@ button.sz-bento-photo{padding:0}
 .sz-site.inventory-market-site .sz-u-hero~.inventory-hero,.sz-site.inventory-market-site .catalog-inventory-results{background:transparent!important}
 .sz-site.inventory-market-site .sz-u-hero~.inventory-hero::before,.sz-site.inventory-market-site .catalog-inventory-results::before{display:none}
 .sz-site.inventory-market-site{position:relative;isolation:isolate}
-.sz-site.inventory-market-site::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 45% at 50% 35%,#8ef0c412,transparent 70%),var(--qc-flow);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite;pointer-events:none}
+/* Moving green: a 400%-wide gradient slid with transform (GPU) – same motion as the old background-position
+ * animation without repainting the whole screen every frame. The soft glow stays still on ::after. */
+@keyframes qc-slide{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-75%,0,0)}}
+.sz-site.inventory-market-site::before{content:'';position:fixed;top:0;bottom:0;left:0;width:400%;z-index:-1;background:var(--qc-flow);animation:qc-slide 16s ease-in-out infinite;will-change:transform;pointer-events:none}
+.sz-site.inventory-market-site::after{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 45% at 50% 35%,#8ef0c412,transparent 70%);pointer-events:none}
 .sz-site.inventory-market-site .sz-u-hero{z-index:1}
 .sz-site.inventory-market-site .sz-inv6-outro{position:relative;background:#fff;padding-top:1px;border-radius:56px 56px 0 0;margin-top:-1px}
 
 /* ══ /du-an: dark moving band + 3D project ring ══ */
 .sz-ring-sheet{background:transparent!important;padding-top:0!important;margin-top:-64px!important;border-radius:0!important}
 .sz-ring-band{position:relative;isolation:isolate;overflow:hidden;border-radius:56px 56px 0 0;padding:110px 0 100px;color:#fff;--ring-w:min(540px,80vw)}
-.sz-ring-band::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 55% 40% at 50% 58%,#8ef0c41f,transparent 70%),linear-gradient(90deg,#02261d 0%,#04473a 18%,#0a6b52 34%,#03352a 50%,#0d5e4a 66%,#05402f 82%,#02261d 100%);background-size:100% 100%,400% 100%;animation:qc-flow 16s ease-in-out infinite reverse}
-.sz-ring-band::after{content:"";position:absolute;left:50%;top:58%;z-index:-1;width:1100px;height:520px;margin:-260px 0 0 -550px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c42e,transparent);filter:blur(20px);animation:qc-glow 8s ease-in-out infinite reverse;pointer-events:none}
+.sz-ring-band::before{content:"";position:absolute;top:0;bottom:0;left:0;width:400%;z-index:-1;background:linear-gradient(90deg,#02261d 0%,#04473a 18%,#0a6b52 34%,#03352a 50%,#0d5e4a 66%,#05402f 82%,#02261d 100%);animation:qc-slide 16s ease-in-out infinite reverse;will-change:transform}
+.sz-ring-band::after{content:"";position:absolute;left:50%;top:58%;z-index:-1;width:1100px;height:520px;margin:-260px 0 0 -550px;border-radius:50%;background:radial-gradient(closest-side,#8ef0c42e,transparent),radial-gradient(closest-side,#8ef0c41f,transparent);filter:blur(20px);animation:qc-glow 8s ease-in-out infinite reverse;will-change:transform,opacity;pointer-events:none}
 .sz-ring-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px}
 .sz-ring-head .sz-h2{color:#fff;margin-top:16px}
 .sz-ring-stats{display:flex;gap:46px;margin:0}
@@ -981,8 +985,8 @@ button.sz-bento-photo{padding:0}
 
 /* ══ /du-an v3: deck on a moving emerald band, portrait cards; scattered showcase ══ */
 .sz-deck-band{color:#fff}
-.sz-deck-band::before{background:radial-gradient(ellipse 50% 45% at 72% 55%,#8ef0c433,transparent 70%),linear-gradient(90deg,#03352a 0%,#06604a 18%,#0b7a5c 34%,#04473a 50%,#0f6e55 66%,#065a45 82%,#03352a 100%);background-size:100% 100%,400% 100%;animation:qc-flow 14s ease-in-out infinite}
-.sz-deck-band::after{content:"";position:absolute;left:62%;top:58%;z-index:-1;width:900px;height:560px;margin:-280px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,#a7f3d038,transparent);filter:blur(16px);animation:qc-glow 7s ease-in-out infinite;pointer-events:none}
+.sz-deck-band::before{inset:0 auto 0 0;width:400%;background:linear-gradient(90deg,#03352a 0%,#06604a 18%,#0b7a5c 34%,#04473a 50%,#0f6e55 66%,#065a45 82%,#03352a 100%);animation:qc-slide 14s ease-in-out infinite;will-change:transform}
+.sz-deck-band::after{content:"";position:absolute;left:62%;top:58%;z-index:-1;width:900px;height:560px;margin:-280px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,#a7f3d038,transparent),radial-gradient(closest-side,#8ef0c433,transparent);filter:blur(16px);animation:qc-glow 7s ease-in-out infinite;will-change:transform,opacity;pointer-events:none}
 .sz-deck-band .sz-eyebrow{background:#ffffff14;color:#e9fff5;border-color:#8ef0c470}
 .sz-deck-band .sz-ring-head .sz-h2,.sz-deck-band .sz-ring-stats dd,.sz-deck-info h3,.sz-deck-info dd{color:#fff}
 .sz-deck-band .sz-ring-stats>div{border-left-color:#ffffff33}

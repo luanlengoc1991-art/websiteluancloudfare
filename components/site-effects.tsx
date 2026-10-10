@@ -73,25 +73,26 @@ export default function SiteEffects() {
       requestAnimationFrame(step);
     }
 
-    let pending = 0;
-    const mo = new MutationObserver(() => {
-      if (pending) return;
-      pending = window.setTimeout(() => {pending = 0; tag();}, 120);
-    });
-    tag();
+    // Re-scan after DOM changes (slides, tabs) when the browser is idle, never in the middle of a scroll frame.
+    let pending = 0, photos: HTMLElement[] = [];
+    const hasIdle = typeof window.requestIdleCallback === 'function';
+    const idle = (fn: () => void) => hasIdle ? window.requestIdleCallback(fn, {timeout: 400}) : setTimeout(fn, 120) as unknown as number;
+    const scan = () => {pending = 0; tag(); photos = Array.from(document.querySelectorAll<HTMLElement>('.site-atmosphere-photo,.sz-h6-hero-img'));};
+    const mo = new MutationObserver(() => {if (!pending) pending = idle(scan);});
+    scan();
     mo.observe(document.body, {childList: true, subtree: true});
 
-    // Header state and hero parallax share one rAF per scroll frame.
-    let ticking = false;
-    const photos = () => document.querySelectorAll<HTMLElement>('.site-atmosphere-photo,.sz-h6-hero-img');
+    // Header state and hero parallax share one rAF per scroll frame; only changed values are written.
+    let ticking = false, scrolled: boolean | null = null, shift = -1;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
         const y = window.scrollY;
-        root.classList.toggle('is-scrolled', y > 24);
-        if (y < 900) photos().forEach(p => p.style.setProperty('--parallax', `${Math.round(y * .28)}px`));
+        if (scrolled !== y > 24) {scrolled = y > 24; root.classList.toggle('is-scrolled', scrolled);}
+        const next = Math.round(Math.min(y, 900) * .28);
+        if (next !== shift) {shift = next; photos.forEach(p => p.style.setProperty('--parallax', `${next}px`));}
       });
     };
     onScroll();
@@ -116,7 +117,7 @@ export default function SiteEffects() {
     return () => {
       io.disconnect();
       mo.disconnect();
-      window.clearTimeout(pending);
+      if (pending) {if (hasIdle) window.cancelIdleCallback(pending); else clearTimeout(pending);}
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerleave', release);

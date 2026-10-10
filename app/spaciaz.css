@@ -2523,3 +2523,25 @@ button.sz-bento-photo{padding:0}
 .pm-note-x{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:20px;height:20px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;cursor:pointer}
 
 .pm.is-notes .pm-tag{cursor:grab}
+
+/* Project menu (drawer): quicker slide, readable links, light hover cues. */
+[data-slot=sheet-content][data-state=open]{animation-duration:.32s}
+[data-slot=sheet-content][data-state=closed]{animation-duration:.22s}
+.workspace-menu-links a{position:relative;color:#1f3b31;transition:background-color .18s,color .18s}
+.workspace-menu-links a svg{transition:transform .18s,color .18s;color:#5b7a6e}
+.workspace-menu-links a:hover{background:#eef8f3;color:#047857}
+.workspace-menu-links a:hover svg{color:#059669}
+.workspace-menu-links a:hover>svg:first-child{transform:scale(1.12)}
+.workspace-menu-links a:hover>svg:last-child{transform:translateX(4px)}
+.workspace-menu-links a::before{content:"";position:absolute;left:4px;top:50%;width:3px;height:0;border-radius:3px;background:#10b981;transform:translateY(-50%);transition:height .18s}
+.workspace-menu-links a:hover::before,.workspace-menu-links a.active::before{height:60%}
+.workspace-menu-links a.active{color:#065f46;font-weight:700}
+.workspace-menu-links a.active svg{color:#059669}
+.workspace-menu-links a:focus-visible{outline:2px solid #10b981;outline-offset:2px}
+
+/* /du-an 3D deck: same motion, lighter – shadows and colour filters no longer animate every frame (they swap at once
+ * while the card flies), cards keep their own GPU layer, the timer grows with transform instead of width. */
+.sz-deck-stack>.sz-deck-card{transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity .7s;will-change:transform,opacity;backface-visibility:hidden}
+.sz-deck-card.is-out{transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .45s!important}
+.sz-deck-timer{width:100%;transform-origin:0 50%;animation:sz-progress-x 4.5s linear forwards}
+@keyframes sz-progress-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}

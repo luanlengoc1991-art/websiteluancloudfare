@@ -114,7 +114,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     return out;
   };
   const hw = Math.floor(cfg.tileW / 2), hh = Math.floor(cfg.tileH / 2), n2 = cfg.grid * 2;
-  const mid = need > 3400 ? cells(cfg.grid) : [], fine = need > 8600 ? cells(n2) : [];
+  const mid = need > cfg.viewW * 1.15 ? cells(cfg.grid) : [], fine = need > cfg.grid * hw * 1.15 ? cells(n2) : [];
   const fineSrc = (r: number, c: number) => `/api/img?v=4&w=${hw}&q=74&c=${(c % 2) * hw},${(r % 2) * hh},${hw},${hh}&src=${encodeURIComponent(cfg.tilePrefix + (r >> 1) + (c >> 1))}`;
   const cell = (r: number, c: number, n: number) => ({left: `${c * 100 / n}%`, top: `${r * 100 / n}%`, width: `${100 / n}%`, height: `${100 / n}%`});
   const free = units.filter(u => statusOf(u) === 'Còn hàng'), held = units.filter(u => statusOf(u) === 'Đang giữ chỗ'), sold = units.filter(u => statusOf(u) === 'Đã bán');

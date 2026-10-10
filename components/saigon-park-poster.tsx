@@ -125,10 +125,20 @@ function BigPlan({plan, code, editable, onPoint}: {plan: CardSpot; code: string;
   }, []);
   const [ghost, setGhost] = useState<{dx: number; dy: number} | null>(null);
   const drag = useDrag((fx, fy, done) => {if (!done) {setGhost({dx: fx, dy: fy}); return;} setGhost(null); if (fx || fy) onPoint(clamp(plan.x + fx * 100), clamp(plan.y + fy * 100));});
+  // Hold and move = pan the map; a click without moving = place the unit.
+  const moved = useRef(false), [panning, setPanning] = useState(false);
+  const pan = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const b = box.current!, x0 = e.clientX, y0 = e.clientY, l0 = b.scrollLeft, t0 = b.scrollTop;
+    moved.current = false;
+    const move = (ev: PointerEvent) => {const dx = ev.clientX - x0, dy = ev.clientY - y0; if (!moved.current && Math.hypot(dx, dy) < 5) return; moved.current = true; setPanning(true); b.scrollLeft = l0 - dx; b.scrollTop = t0 - dy;};
+    const up = () => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); setPanning(false);};
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
   return <div className="spp-big">
-    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button><small>Lăn chuột để phóng to / thu nhỏ</small></div>
-    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '')}>
-      <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
+    <div className="spp-big-zoom"><button type="button" onClick={() => setZoom(z => Math.max(1, z - .5))} aria-label="Thu nhỏ">−</button><span>{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(z => Math.min(10, z + .5))} aria-label="Phóng to">+</button><button type="button" onClick={centre}>Về vị trí căn</button><small>Lăn chuột: phóng to / thu nhỏ · Giữ chuột kéo: di chuyển bản đồ{editable ? ' · Bấm: đặt vị trí căn' : ''}</small></div>
+    <div ref={box} className={'spp-light-map' + (editable ? ' is-edit' : '') + (panning ? ' is-panning' : '')} onPointerDown={pan}>
+      <div ref={img} style={{width: `${zoom * 100}%`}} onClick={e => {if (!editable || moved.current) return; const r = e.currentTarget.getBoundingClientRect(); onPoint(Math.round((e.clientX - r.left) / r.width * 1000) / 10, Math.round((e.clientY - r.top) / r.height * 1000) / 10);}}>
         <img src={zoom > 1.5 ? plan.src : sized(plan.src, 2560)} alt="" draggable={false}/>
         {plan.src === MAP && zoom >= 2.5 && <div className="spp-hd" aria-hidden>{[0, 1, 2, 3].flatMap(r => [0, 1, 2, 3].map(c => <img key={r + '-' + c} src={F('sgp-map-v3-t' + r + c)} alt="" loading="lazy" decoding="async" draggable={false}/>))}</div>}
         <Marker code={code} className={'is-big' + (editable ? ' is-drag' : '')} style={{left: `calc(${plan.x}% + ${(ghost?.dx || 0) * 100}%)`, top: `calc(${plan.y}% + ${(ghost?.dy || 0) * 100}%)`}}

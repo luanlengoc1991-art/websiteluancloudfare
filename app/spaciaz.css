@@ -2415,3 +2415,14 @@ button.sz-bento-photo{padding:0}
 .spp-light-map{overscroll-behavior:contain}
 .spp-hd{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);pointer-events:none}
 .spp-hd img{display:block;width:100%!important;height:100%!important;object-fit:fill}
+/* lightbox full page, plan 2:1, drag to pan */
+.spp-light{padding:0;background:#021a14}
+.spp-light>div{width:100vw;height:100vh;max-height:none;border-radius:0;padding:14px 18px}
+.spp-light-body.has-side{grid-template-columns:minmax(0,1fr) 320px;align-items:start}
+.spp-big{grid-template-rows:auto auto}
+.spp-light-map{height:auto;aspect-ratio:2/1;max-height:calc(100vh - 120px);cursor:grab;user-select:none;-webkit-user-select:none;scrollbar-width:thin}
+.spp-light-map.is-edit{cursor:crosshair}
+.spp-light-map.is-panning,.spp-light-map.is-panning *{cursor:grabbing!important}
+.spp-light-map img{-webkit-user-drag:none}
+.spp-light-side{max-height:calc(100vh - 90px)}
+@media(max-width:900px){.spp-light-body.has-side{grid-template-columns:1fr}}

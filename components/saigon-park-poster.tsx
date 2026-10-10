@@ -47,7 +47,7 @@ function resolve(unit: Unit, base?: UnitCard, own?: UnitCard) {
   const card = mergeCard(base, own), f = card.fields || {};
   return {
     card, f,
-    plan: card.plan?.src === MAP && own?.plan ? {...defaultPlan, ...card.plan} : {...defaultPlan, ...auto(unit.code), zoom: card.plan?.src === MAP && card.plan.zoom ? card.plan.zoom : defaultPlan.zoom},
+    plan: {...defaultPlan, ...(card.plan?.src === MAP && own?.plan ? card.plan : {zoom: card.plan?.src === MAP && card.plan.zoom ? card.plan.zoom : defaultPlan.zoom}), ...auto(unit.code)},
     pin: own?.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...own.master} : defaultPin,
     house: own?.perspective || saigonParkModelImage(f.model || unit.model) || card.perspective || F('sgp-model-16'),
   };
@@ -224,12 +224,13 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
   // Lot positions from the PDF place every unit on the plan; render again once they are loaded.
   const [, setLotsLoaded] = useState(!!lotsReady());
   useEffect(() => {if (!lotsReady()) loadLots().then(() => setLotsLoaded(true));}, []);
+  const autoPinned = auto(unit.code).x !== undefined;
   const base = cards[project.id + '|*'], own = cards[cardId(project.id, unit.code)];
   const [edit, setEdit] = useState(false), [busy, setBusy] = useState(''), [tool, setTool] = useState<'pin' | null>(null);
   const [view, setView] = useState<Slot | null>(null), [pick, setPick] = useState<Slot | null>(null);
   const [draft, setDraft] = useState<UnitCard>(mergeCard(base, own));
   useEffect(() => {if (!edit) setDraft(mergeCard(base, own));}, [own, base, edit, unit.id]);
-  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: draft.plan?.src === MAP ? {...defaultPlan, ...draft.plan} : {...defaultPlan, ...auto(unit.code), zoom: draft.plan?.src === MAP && draft.plan.zoom ? draft.plan.zoom : defaultPlan.zoom}, pin: draft.master?.src?.includes('sgp-aerial-v2') ? {...defaultPin, ...draft.master} : d.pin};})() : resolve(unit, base, own);
+  const data = edit ? (() => {const d = resolve(unit, undefined, {...draft, perspective: draft.perspective !== base?.perspective ? draft.perspective : undefined}); return {...d, plan: {...defaultPlan, ...(draft.plan?.src === MAP ? draft.plan : {zoom: draft.plan?.src === MAP && draft.plan.zoom ? draft.plan.zoom : defaultPlan.zoom}), ...auto(unit.code)}};})() : resolve(unit, base, own);
   const posterRef = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), uploadSlot = useRef<Slot>('house');
   const [batch, setBatch] = useState<Unit | null>(null), batchRef = useRef<HTMLDivElement>(null);
 
@@ -292,7 +293,7 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
     </div>}
 
     <div ref={posterRef}><PosterArt unit={unit} status={status} data={data} tool={edit ? tool : null}
-      onPlanPoint={isAdmin && edit ? (x, y) => setPlan({x, y}) : undefined} onPin={isAdmin && edit ? (x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}})) : undefined}
+      onPlanPoint={isAdmin && edit && !autoPinned ? (x, y) => setPlan({x, y}) : undefined} onPin={isAdmin && edit ? (x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}})) : undefined}
       onPoster={(x, y) => setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}}))} onPlan={() => setView('plan')} onHouse={() => setView('house')}/></div>
 
     {isAdmin && edit && <div className="uc-form">
@@ -311,8 +312,8 @@ export default function SaigonParkPoster({project, unit, units, status, statusOf
           {!isAdmin && onEnableEdit && view === 'plan' && <button type="button" className="uc-btn is-gold" onClick={onEnableEdit} title="Hiện poster xem trước có phối cảnh 3D để kéo ghim định vị"><MapPin size={14}/>Bật định vị căn</button>}
           <button type="button" className="spp-close" onClick={closeView} aria-label="Đóng (tự lưu)"><X size={20}/></button></header>
         {view === 'plan' ? <div className={'spp-light-body' + (isAdmin ? ' has-side' : '')}>
-          <BigPlan plan={data.plan} code={unit.code} editable={isAdmin} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
-          {isAdmin && <div className="spp-light-side"><p>Bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim ngay trên poster bên dưới – hai nơi luôn cùng một vị trí.</p>
+          <BigPlan plan={data.plan} code={unit.code} editable={isAdmin && !autoPinned} onPoint={(x, y) => {startEdit(); setPlan({x, y});}}/>
+          {isAdmin && <div className="spp-light-side"><p>{autoPinned ? `Ghim tự động: ${unit.code} được định vị theo đúng lô trên mặt bằng (đọc từ file PDF), không cần đặt tay. Chỉnh độ phóng khung nhỏ bên dưới.` : 'Mã căn này không có trên mặt bằng PDF – bấm hoặc kéo ghim trên mặt bằng lớn, hoặc kéo ghim trên poster để đặt vị trí.'}</p>
             <label className="uc-zoom"><span>Độ phóng khung nhỏ {data.plan.zoom.toFixed(1)}×</span><input type="range" min={8} max={60} step={1} value={data.plan.zoom} onChange={e => {startEdit(); setPlan({zoom: Number(e.target.value)});}}/></label>
             <div className="spp-light-preview"><PosterArt unit={unit} status={status} data={data} onPlanPoint={(x, y) => {startEdit(); setPlan({x, y});}} onPin={(x, y) => {startEdit(); setDraft(d => ({...d, master: {...data.pin, src: F('sgp-aerial-v2'), x, y}}));}}/></div></div>}
         </div> : <div className="spp-light-img"><img src={sized(data.house, 2560)} alt=""/></div>}

@@ -107,6 +107,11 @@
 - Phiếu Mặt bằng căn: ảnh nhỏ 1280 px, ảnh chính/map 2560 px; font Montserrat dùng WOFF2 tự host (public/fonts, OFL) thay 4 file TTF.
 - Không nạp news/projects/about/alphahub.css và AlphaHubLanding nữa; font Playfair/Mulish không preload. public/_headers: cache dài cho /fonts, /images.
 
+## Cuộn mượt (10/10/2026, giữ nguyên hiệu ứng)
+- Nền xanh chuyển màu (`/quy-hang` lớp cố định, `.sz-ring-band`, `.sz-deck-band`) chạy bằng lớp gradient rộng 400% trượt `transform` (keyframes `qc-slide`, GPU) thay cho animate `background-position` (vẽ lại cả màn hình mỗi khung hình). Quầng sáng tĩnh nằm ở `::after`. Không dùng lại background-position cho nền lớn chạy liên tục.
+- Nền gradient trang công khai là lớp `body::before` cố định thay `background-attachment:fixed`.
+- `site-effects.tsx`: quét DOM sau thay đổi bằng requestIdleCallback, ảnh parallax được lưu sẵn, chỉ ghi style khi giá trị đổi. Hiệu ứng slide/reveal/đếm số/nút hút giữ nguyên.
+
 ## Bỏ trang AlphaHub (08/10/2026)
 
 - Theo yêu cầu chủ dự án: mục menu AlphaHub được thay bằng "Tổng quan" trỏ về trang chủ `/` (cùng vị trí, đầu menu); `/alphahub` chuyển hướng vĩnh viễn về `/`; chân trang đổi link tương ứng. Các ghi chú cũ về giao diện `/alphahub` ở trên chỉ còn giá trị lịch sử (component AlphaHubLanding vẫn còn trong code nhưng không được dùng).

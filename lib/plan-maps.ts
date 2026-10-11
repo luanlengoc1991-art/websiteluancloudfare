@@ -27,7 +27,7 @@ export const SGP_MAP_W = 61440, SGP_MAP_H = 43456;
 export const PLAN_MAPS: Record<string, PlanMapConfig> = {
   // Green Paradise: owner's PDF "251005.File In - Crop - Khu A" rendered to 30720 × 21728 (same frame as the older plan, so
   // saved % pins stay put): view 2560, m 4×4 @1920 (7680), t 8×8 native 3840 × 2716.
-  'green-paradise': {image: '/api/files/gp-map-v3-view', viewW: 2560, width: 30720, height: 21728, title: 'The Haven Bay – Vịnh Tiên',
+  'green-paradise': {image: '/api/files/gp-map-v3-view', viewW: 2560, width: 30720, height: 21728, title: 'The Haven Bay – Vịnh Tiên', lots: true,
     levels: [files('/api/files/gp-map-v3-m', 4, 7680), resized('/api/files/gp-map-v3-t', 8, 1920), crops('/api/files/gp-map-v3-t', 8, 3840, 2716)]},
   'saigon-park': {image: SGP_MAP, viewW: 2560, width: SGP_MAP_W, height: SGP_MAP_H, title: 'Vinhomes Sài Gòn Park', cardSrc: SGP_MAP, lots: true,
     levels: [files('/api/files/sgp-map-v4-m', 4, 7680), resized('/api/files/sgp-map-v4-t', 16, 960, n2), resized('/api/files/sgp-map-v4-t', 16, 1920, n2), crops('/api/files/sgp-map-v4-t', 16, 3840, 2716, n2)]},
@@ -52,10 +52,12 @@ export function planPieces(cfg: Pick<PlanMapConfig, 'viewW' | 'levels'>, need: n
   return out;
 }
 
-/** Lot positions per project (Saigon Park: read from the PDF text), loaded once on demand. Codes are matched case-insensitively, D ≡ Đ. */
+/** Lot positions per project (Saigon Park: PDF text of the plan itself; Green Paradise: PDF text of "Khu A.pdf" fitted onto the
+ *  plan), loaded once on demand. Codes are matched case-insensitively, D ≡ Đ. */
 type Lots = Record<string, [number, number]>;
 const lotSources: Record<string, () => Promise<Lots>> = {
   'saigon-park': () => import('./saigon-park-lots').then(m => m.SAIGON_PARK_LOTS),
+  'green-paradise': () => import('./green-paradise-lots').then(m => m.GREEN_PARADISE_LOTS),
 };
 const lotCache: Record<string, Lots> = {}, lotLoading: Record<string, Promise<Lots>> = {};
 let lots: Lots | null = null;

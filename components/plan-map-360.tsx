@@ -54,6 +54,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   useEffect(() => {if (known?.lots) loadLots(project.id).then(setLotTable);}, [known, project.id]);
   const withLots = useMemo(() => {
     if (!lotTable) return pins;
+    // Codes printed on the plan are always pinned at their lot (a saved pin only keeps its info card / fund).
+    pins = pins.map(p => {const at = lotOf(p.code, lotTable); return at ? {...p, x: at[0], y: at[1]} : p;});
     const have = new Set(pins.map(p => up(p.code)));
     const auto = units.filter(u => !have.has(up(u.code))).flatMap((u): UnitPin[] => {const at = lotOf(u.code, lotTable); return at ? [{projectId: project.id, code: up(u.code), layer: 'map', x: at[0], y: at[1], fund: fundFromGroup(u.group)}] : [];});
     return [...pins, ...auto];

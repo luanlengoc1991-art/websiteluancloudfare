@@ -566,3 +566,5 @@ button { color:inherit; }
 .draggable-marker.is-dragging{filter:none}
 .draggable-marker .gp-pin-img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none}
 .draggable-marker b.gp-pin-code{position:absolute;left:31%;right:5%;top:47.5%;transform:translateY(-50%);margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;text-align:center;white-space:nowrap;font-family:'Be Vietnam Pro',Montserrat,Arial,sans-serif;font-size:2.35cqw;font-weight:800;letter-spacing:.01em;line-height:1;color:#ffe7a3}
+/* Code text: centred in the green label, tight spacing, gold gradient, no glow. */
+.draggable-marker b.gp-pin-code{left:30%;right:3.5%;min-width:0;top:47.5%;font-size:2.5cqw;font-weight:800;letter-spacing:-.02em;text-shadow:none;filter:none;color:#f6d77f;background:linear-gradient(180deg,#fff3c4 0%,#f6d77f 45%,#d9a53a 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}

@@ -585,10 +585,10 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
   const moveMarker = (event: React.PointerEvent<HTMLDivElement>) => {
     const start = dragRef.current;
     if (!start) return;
-    const minX = (start.markerWidth * .15 / start.width) * 100;
-    const maxX = 100 - (start.markerWidth * .85 / start.width) * 100;
-    const minY = (start.markerHeight * .76 / start.height) * 100;
-    const maxY = 100 - (start.markerHeight * .24 / start.height) * 100;
+    const minX = (start.markerWidth * .167 / start.width) * 100;
+    const maxX = 100 - (start.markerWidth * .833 / start.width) * 100;
+    const minY = (start.markerHeight * .97 / start.height) * 100;
+    const maxY = 100 - (start.markerHeight * .03 / start.height) * 100;
     const x = Math.min(maxX, Math.max(minX, start.x + ((event.clientX - start.pointerX) / start.width) * 100));
     const y = Math.min(maxY, Math.max(minY, start.y + ((event.clientY - start.pointerY) / start.height) * 100));
     positionRef.current = { ...positionRef.current, x, y };
@@ -610,7 +610,7 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
     <div
       ref={markerRef}
       className="draggable-marker"
-      style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(-15%,-76%) scale(${position.scale})` }}
+      style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(calc(-16.7% - .644cqw), calc(-97% + 2.011cqw)) scale(${position.scale})` }}
       onPointerDown={startDrag}
       onPointerMove={moveMarker}
       onPointerUp={stopMarker}
@@ -618,8 +618,9 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
       role="group"
       aria-label="Chỉ vị trí căn, kéo để di chuyển"
     >
-      <span className="marker-art"><img src="/api/vinh-tien/unit-marker.png" alt="" draggable={false} /></span>
-      <b>{unitCode}</b>
+      {/* Green Paradise locator (owner's artwork): the code is written in the label; the pin tip stays where the old one was. */}
+      <img className="gp-pin-img" src="/api/files/gp-marker-v2" alt="" draggable={false} />
+      <b className="gp-pin-code">{unitCode}</b>
       <div className="marker-scale-controls" aria-label="Thay đổi kích thước chỉ vị trí">
         <button type="button" onClick={() => onScale(clampMarkerScale(position.scale - .1))} aria-label="Thu nhỏ chỉ vị trí">−</button>
         <output>{Math.round(position.scale * 100)}%</output>

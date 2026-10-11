@@ -559,3 +559,10 @@ button { color:inherit; }
 .studio-app.is-embed{min-height:0!important}
 .studio-app.is-embed.is-viewer .studio-layout{padding:26px 26px 30px}
 .studio-app.is-embed .editor-panel{max-height:none;position:static}
+
+/* Green Paradise locator artwork (11/10/2026): one image (gp-marker-v2, 900×356, tip at 16.7 % / 97 %) with the unit code
+ * written in its green label – same idea as the Saigon Park marker. Scaling keeps the tip in place. */
+.draggable-marker{display:block;width:22cqw;filter:none;transform-origin:16.7% 97%}
+.draggable-marker.is-dragging{filter:drop-shadow(0 0 1cqw rgba(255,236,139,.7))}
+.draggable-marker .gp-pin-img{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
+.draggable-marker b.gp-pin-code{position:absolute;left:27%;right:6%;top:46%;transform:translateY(-50%);margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;text-align:center;white-space:nowrap;font-family:'Be Vietnam Pro',Montserrat,Arial,sans-serif;font-size:3.3cqw;font-weight:800;letter-spacing:.02em;line-height:1;color:#ffe7a3;text-shadow:0 .15cqw .4cqw rgba(0,0,0,.45)}

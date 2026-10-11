@@ -1,6 +1,33 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PLAN_MAPS, loadLots, lotOf } from "@/lib/plan-maps";
+
+/* Poster plan = the project's master plan (gp-map-v3, same image as Quỹ căn 360°). Every unit code printed on the plan
+ * is placed automatically: the frame is panned so the lot sits near the middle and the locator tip points at it.
+ * Frame 727.6 × 849.7 (measured), locator tip = marker position + (-0.99 %, +2.65 %) of the frame at scale 1. */
+const GP_PLAN = PLAN_MAPS["green-paradise"];
+const GP_ZOOM = 2.2, FRAME_H = 849.67 / 727.61, TIP_X = -0.99, TIP_Y = 2.65, AIM_X = 0.5, AIM_Y = 0.55;
+type AutoMap = { slot: ImageSlot; marker: MarkerState };
+function autoMap(code: string, lots: Record<string, [number, number]> | null): AutoMap | null {
+  const at = lotOf(code, lots);
+  if (!at || !GP_PLAN) return null;
+  const r = GP_PLAN.height / GP_PLAN.width, W = Math.max(1, FRAME_H / r) * GP_ZOOM, H = W * r;
+  const maxX = (W - 1) / 2, maxY = (H - FRAME_H) / 2, u = at[0] / 100, v = at[1] / 100;
+  const tX = Math.max(-maxX, Math.min(maxX, (AIM_X - .5) - (u - .5) * W));
+  const tY = Math.max(-maxY, Math.min(maxY, FRAME_H * (AIM_Y - .5) - (v - .5) * H));
+  const lx = 50 + (tX + (u - .5) * W) * 100, ly = 50 + (tY + (v - .5) * H) / FRAME_H * 100;
+  return {
+    slot: { src: GP_PLAN.image, x: maxX ? 50 - 50 * tX / maxX : 50, y: maxY ? 50 - 50 * tY / maxY : 50, zoom: GP_ZOOM },
+    marker: { x: lx - TIP_X, y: ly - TIP_Y, scale: 1 },
+  };
+}
+/** Lot table for Green Paradise, loaded once (shared by the live poster and the batch export). */
+function useGpLots() {
+  const [lots, setLots] = useState<Record<string, [number, number]> | null>(null);
+  useEffect(() => { loadLots("green-paradise").then(setLots).catch(() => {}); }, []);
+  return lots;
+}
 
 /** Proxied source images; large photos come back as resized WebP (w px wide) to keep the page light. */
 function sourceImage(src:string,w=2560){const origin='https://mat-bang-vinh-tien.lengocluan.chatgpt.site';const path=src.startsWith('/api/vinh-tien/')||src.startsWith('/api/files/')?src:src.startsWith('/')?'/api/vinh-tien'+src:src.startsWith(origin+'/')?'/api/vinh-tien'+src.slice(origin.length):src;return /^\/api\/vinh-tien\/((gallery-|villa-|amenity-)?perspectives\/[^?]+|poster-map)\.(png|jpe?g)$/i.test(path)?path+'?w='+w:path;}
@@ -605,7 +632,11 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
 
 function BatchExportPoster({ posterId, state }: { posterId: string; state: SavedEditorState }) {
   const noop = () => {};
-  const { content, images, mainMarker, mapMarker } = state;
+  const lots = useGpLots();
+  const auto = autoMap(state.content.unitCode, lots);
+  const { content, mainMarker } = state;
+  const images = auto ? { ...state.images, map: auto.slot } : state.images;
+  const mapMarker = auto ? auto.marker : state.mapMarker;
   return (
     <div className="poster is-exporting batch-poster" id={posterId}>
       <div className="poster-glow" />
@@ -794,6 +825,8 @@ export default function Home() {
   const [activeAmenityGallerySlot, setActiveAmenityGallerySlot] = useState<GallerySlotKey>("gallery1");
   const [mainMarker, setMainMarker] = useState<MarkerState>({ x: 68, y: 61, scale: 1 });
   const [mapMarker, setMapMarker] = useState<MarkerState>({ x: 64, y: 63, scale: 1 });
+  const gpLots = useGpLots();
+  const autoPlan = autoMap(content.unitCode, gpLots);
   const [exporting, setExporting] = useState(false);
   const [exportMode, setExportMode] = useState<"single" | "multiple">("single");
   const [selectedExportUnitIds, setSelectedExportUnitIds] = useState<string[]>([]);
@@ -1960,7 +1993,7 @@ export default function Home() {
               <section className="poster-map-section">
                 <DraggableImage
                   className="map-image"
-                  slot={images.map}
+                  slot={autoPlan ? autoPlan.slot : images.map}
                   label="Ảnh mặt bằng tổng thể"
                   enableZoom
                   preserveQuality
@@ -1969,9 +2002,9 @@ export default function Home() {
                   onUpload={(file) => replaceImageWithUpload("map", file)}
                 />
                 <DraggableMarker
-                  position={mapMarker}
+                  position={autoPlan ? autoPlan.marker : mapMarker}
                   unitCode={content.unitCode}
-                  onMove={(x, y) => setMapMarker((current) => ({ ...current, x, y }))}
+                  onMove={(x, y) => { if (!autoPlan) setMapMarker((current) => ({ ...current, x, y })); }}
                   onScale={(scale) => setMapMarker((current) => ({ ...current, scale }))}
                 />
               </section>

@@ -51,7 +51,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   // Zoom stops where one plan pixel meets one screen pixel (HD plans), so it never magnifies past the image.
   const maxZoom = useRef(14);
   const [lotTable, setLotTable] = useState<Record<string, [number, number]> | null>(null);
-  useEffect(() => {if (known?.lots) loadLots().then(setLotTable);}, [known]);
+  useEffect(() => {if (known?.lots) loadLots(project.id).then(setLotTable);}, [known, project.id]);
   const withLots = useMemo(() => {
     if (!lotTable) return pins;
     const have = new Set(pins.map(p => up(p.code)));

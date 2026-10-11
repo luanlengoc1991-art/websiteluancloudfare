@@ -25,8 +25,10 @@ export const SGP_MAP = '/api/files/sgp-map-v4-view';
 export const SGP_MAP_W = 61440, SGP_MAP_H = 43456;
 
 export const PLAN_MAPS: Record<string, PlanMapConfig> = {
-  'green-paradise': {image: '/api/files/gp-map-view', viewW: 3000, width: 15000, height: 10610, title: 'The Haven Bay – Vịnh Tiên',
-    levels: [resized('/api/files/gp-map-t', 4, 1875), crops('/api/files/gp-map-t', 4, 3750, 2652)]},
+  // Green Paradise: owner's PDF "251005.File In - Crop - Khu A" rendered to 30720 × 21728 (same frame as the older plan, so
+  // saved % pins stay put): view 2560, m 4×4 @1920 (7680), t 8×8 native 3840 × 2716.
+  'green-paradise': {image: '/api/files/gp-map-v3-view', viewW: 2560, width: 30720, height: 21728, title: 'The Haven Bay – Vịnh Tiên',
+    levels: [files('/api/files/gp-map-v3-m', 4, 7680), resized('/api/files/gp-map-v3-t', 8, 1920), crops('/api/files/gp-map-v3-t', 8, 3840, 2716)]},
   'saigon-park': {image: SGP_MAP, viewW: 2560, width: SGP_MAP_W, height: SGP_MAP_H, title: 'Vinhomes Sài Gòn Park', cardSrc: SGP_MAP, lots: true,
     levels: [files('/api/files/sgp-map-v4-m', 4, 7680), resized('/api/files/sgp-map-v4-t', 16, 960, n2), resized('/api/files/sgp-map-v4-t', 16, 1920, n2), crops('/api/files/sgp-map-v4-t', 16, 3840, 2716, n2)]},
 };
@@ -50,9 +52,15 @@ export function planPieces(cfg: Pick<PlanMapConfig, 'viewW' | 'levels'>, need: n
   return out;
 }
 
-/** Lot positions read from the PDF, loaded once on demand (≈ 120 KB). Codes are matched case-insensitively, D ≡ Đ. */
-let lots: Record<string, [number, number]> | null = null, loading: Promise<Record<string, [number, number]>> | null = null;
-export const loadLots = () => lots ? Promise.resolve(lots) : (loading ||= import('./saigon-park-lots').then(m => (lots = m.SAIGON_PARK_LOTS)));
+/** Lot positions per project (Saigon Park: read from the PDF text), loaded once on demand. Codes are matched case-insensitively, D ≡ Đ. */
+type Lots = Record<string, [number, number]>;
+const lotSources: Record<string, () => Promise<Lots>> = {
+  'saigon-park': () => import('./saigon-park-lots').then(m => m.SAIGON_PARK_LOTS),
+};
+const lotCache: Record<string, Lots> = {}, lotLoading: Record<string, Promise<Lots>> = {};
+let lots: Lots | null = null;
+export const loadLots = (projectId = 'saigon-park') => lotCache[projectId] ? Promise.resolve(lotCache[projectId])
+  : (lotLoading[projectId] ||= lotSources[projectId]().then(t => {lotCache[projectId] = t; if (projectId === 'saigon-park') lots = t; return t;}));
 export const lotsReady = () => lots;
 export function lotOf(code: string, table = lots): [number, number] | undefined {
   if (!table) return;

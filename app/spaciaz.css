@@ -2575,3 +2575,16 @@ button.sz-bento-photo{padding:0}
 .spp-light-map.is-gpu>.spp-big-canvas>img.spp-big-base{position:absolute;inset:0;width:100%;height:100%}
 .spp-light-map.is-gpu .spm,.spp-light-map.is-gpu .spp-street-focus{transform-origin:14.7% 89%}
 .spp-big-zoom button:disabled{opacity:.4;cursor:default}
+
+/* Saigon Park 360°: tags coloured by TCBG + filter chips (Tất cả / Thô / Giãn xây / Hoàn thiện, multi-select). */
+.pm-tag.is-tcbg-tho b{background:linear-gradient(180deg,#ef4444,#b91c1c);border-color:#fecaca}.pm-tag.is-tcbg-tho b::after{border-top-color:#b91c1c}
+.pm-tag.is-tcbg-hoan b{background:linear-gradient(180deg,#22c55e,#15803d);border-color:#bbf7d0}.pm-tag.is-tcbg-hoan b::after{border-top-color:#15803d}
+.pm-legend i.is-tho{background:#dc2626}.pm-legend i.is-hoan{background:#16a34a}
+.pm-tcbg small{display:block;margin-bottom:6px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a7e9cb}
+.pm-tcbg>div{display:flex;flex-wrap:wrap;gap:6px}
+.pm-tcbg button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border:1px solid #ffffff2e;border-radius:99px;background:#ffffff12;color:#e6f6ef;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.pm-tcbg button:hover{background:#ffffff22}
+.pm-tcbg button.is-on{background:#8ef0c4;border-color:#8ef0c4;color:#04261c}
+.pm-tcbg button i{width:10px;height:10px;border-radius:3px;background:#b88a2c}
+.pm-tcbg button.is-tho i{background:#dc2626}.pm-tcbg button.is-hoan i{background:#16a34a}
+.pm-tcbg button b{font-size:11px;opacity:.75}

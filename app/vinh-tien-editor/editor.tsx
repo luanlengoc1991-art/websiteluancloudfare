@@ -610,7 +610,7 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
     <div
       ref={markerRef}
       className="draggable-marker"
-      style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(calc(-16.7% - .644cqw), calc(-97% + 2.011cqw)) scale(${position.scale})` }}
+      style={{ left: `${position.x}%`, top: `${position.y}%`, transform: `translate(calc(-14.56% - .644cqw), calc(-99% + 2.011cqw)) scale(${position.scale})` }}
       onPointerDown={startDrag}
       onPointerMove={moveMarker}
       onPointerUp={stopMarker}
@@ -618,8 +618,9 @@ function DraggableMarker({ position, unitCode, onMove, onScale }: {
       role="group"
       aria-label="Chỉ vị trí căn, kéo để di chuyển"
     >
-      {/* Green Paradise locator (owner's artwork): the code is written in the label; the pin tip stays where the old one was. */}
-      <img className="gp-pin-img" src="/api/files/gp-marker-v2" alt="" draggable={false} />
+      {/* Green Paradise locator: owner's pin artwork (no glow) + a drawn label carrying the code; the pin tip stays where the old one was. */}
+      <span className="gp-pin-label" />
+      <img className="gp-pin-img" src="/api/files/gp-pin-v3" alt="" draggable={false} />
       <b className="gp-pin-code">{unitCode}</b>
       <div className="marker-scale-controls" aria-label="Thay đổi kích thước chỉ vị trí">
         <button type="button" onClick={() => onScale(clampMarkerScale(position.scale - .1))} aria-label="Thu nhỏ chỉ vị trí">−</button>

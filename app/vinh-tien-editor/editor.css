@@ -560,9 +560,10 @@ button { color:inherit; }
 .studio-app.is-embed.is-viewer .studio-layout{padding:26px 26px 30px}
 .studio-app.is-embed .editor-panel{max-height:none;position:static}
 
-/* Green Paradise locator artwork (11/10/2026): one image (gp-marker-v2, 900×356, tip at 16.7 % / 97 %) with the unit code
- * written in its green label – same idea as the Saigon Park marker. Scaling keeps the tip in place. */
-.draggable-marker{display:block;width:22cqw;filter:none;transform-origin:16.7% 97%}
-.draggable-marker.is-dragging{filter:drop-shadow(0 0 1cqw rgba(255,236,139,.7))}
-.draggable-marker .gp-pin-img{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
-.draggable-marker b.gp-pin-code{position:absolute;left:29%;right:8%;top:46%;transform:translateY(-50%);margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;text-align:center;white-space:nowrap;font-family:'Be Vietnam Pro',Montserrat,Arial,sans-serif;font-size:2.35cqw;font-weight:800;letter-spacing:.01em;line-height:1;color:#ffe7a3;text-shadow:0 .15cqw .4cqw rgba(0,0,0,.45)}
+/* Green Paradise locator (11/10/2026): pin artwork gp-pin-v3 (no glow) + label drawn in CSS with the unit code.
+ * Box 22cqw × 9.26cqw, pin tip at 14.56 % / 99 %; scaling keeps the tip in place. */
+.draggable-marker{display:block;width:22cqw;aspect-ratio:900/379;filter:none;transform-origin:14.56% 99%}
+.draggable-marker.is-dragging{filter:drop-shadow(0 0 .6cqw rgba(255,236,139,.6))}
+.draggable-marker .gp-pin-img{position:absolute;left:0;top:0;height:100%;width:auto;z-index:2;pointer-events:none;user-select:none;filter:drop-shadow(0 .3cqw .5cqw rgba(0,0,0,.35))}
+.draggable-marker .gp-pin-label{position:absolute;left:22.8%;right:2.9%;top:23.4%;height:46%;z-index:1;border-radius:999px;background:linear-gradient(180deg,#0c4d37,#06301f);border:.32cqw solid #e8b84a;box-shadow:inset 0 0 .5cqw rgba(0,0,0,.45),0 .3cqw .6cqw rgba(0,0,0,.35)}
+.draggable-marker b.gp-pin-code{position:absolute;left:29%;right:5%;top:46.4%;z-index:3;transform:translateY(-50%);margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;text-align:center;white-space:nowrap;font-family:'Be Vietnam Pro',Montserrat,Arial,sans-serif;font-size:2.35cqw;font-weight:800;letter-spacing:.01em;line-height:1;color:#ffe7a3;text-shadow:0 .15cqw .4cqw rgba(0,0,0,.45)}

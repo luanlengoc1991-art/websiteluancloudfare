@@ -14,10 +14,17 @@ import {sized} from '@/lib/img';
 
 import {PLAN_MAPS, planPieces, loadLots, lotOf} from '@/lib/plan-maps';
 
-/** Saigon Park only: colour and filter tags by handover standard (TCBG) – Thô red, Giãn xây default gold, Hoàn thiện green. */
-type Tcbg = 'tho' | 'gian' | 'hoan';
-const TCBG: [Tcbg, string][] = [['tho', 'Thô'], ['gian', 'Giãn xây'], ['hoan', 'Hoàn thiện']];
-const tcbgOf = (group?: string): Tcbg | null => {const g = (group || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase(); return g.startsWith('tho') ? 'tho' : g.startsWith('gian') ? 'gian' : g.startsWith('hoan') ? 'hoan' : null;};
+/** Per-project colour groups for the tags, with a multi-select filter (default: all).
+ *  Saigon Park: handover standard (TCBG) – Thô red, Giãn xây default gold, Hoàn thiện green.
+ *  Green Paradise: product type – Song lập green, Liền kề default gold, Đơn lập blue. */
+type Group = {key: string; label: string; tone: '' | 'red' | 'green' | 'blue'};
+const plain = (v?: string) => (v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().trim();
+const GROUPS: Record<string, {title: string; groups: Group[]; of: (u: Unit) => string | null}> = {
+  'saigon-park': {title: 'Tiêu chuẩn bàn giao', groups: [{key: 'tho', label: 'Thô', tone: 'red'}, {key: 'gian', label: 'Giãn xây', tone: ''}, {key: 'hoan', label: 'Hoàn thiện', tone: 'green'}],
+    of: u => {const g = plain(u.group); return g.startsWith('tho') ? 'tho' : g.startsWith('gian') ? 'gian' : g.startsWith('hoan') ? 'hoan' : null;}},
+  'green-paradise': {title: 'Loại hình sản phẩm', groups: [{key: 'sl', label: 'Song lập', tone: 'green'}, {key: 'lk', label: 'Liền kề', tone: ''}, {key: 'dl', label: 'Đơn lập', tone: 'blue'}],
+    of: u => {const t = plain(u.type).replace(/[^a-z ]/g, ' '); return /(btsl|sl)|song lap/.test(t) ? 'sl' : /(lk|nlk|shophouse)|lien ke/.test(t) ? 'lk' : /(btdl|dl)|don lap/.test(t) ? 'dl' : null;}},
+};
 const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
 const tag = (n: number) => n ? (Math.round(n * 10) / 10).toLocaleString('en-US', {minimumFractionDigits: 1}) : '—';
 const up = (s: string) => s.trim().toUpperCase();
@@ -69,9 +76,10 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const [edit, setEdit] = useState(false), [placing, setPlacing] = useState(''), [q, setQ] = useState(''), [only, setOnly] = useState('');
   const [hover, setHover] = useState(''), [flash, setFlash] = useState('');
   // Two modes: visitors' view by default; the administrator switches to "Quản trị viên" to place tags.
-  const byTcbg = project.id === 'saigon-park';
-  const [tcbg, setTcbg] = useState<Tcbg[]>(['tho', 'gian', 'hoan']);
-  const tcbgShown = (u: Unit) => {if (!byTcbg || tcbg.length === 3) return true; const k = tcbgOf(u.group); return !!k && tcbg.includes(k);};
+  const kinds = GROUPS[project.id], allKinds = kinds ? kinds.groups.map(g => g.key) : [];
+  const [picked, setPicked] = useState<string[]>(allKinds);
+  const kindShown = (u: Unit) => {if (!kinds || picked.length === allKinds.length) return true; const k = kinds.of(u); return !!k && picked.includes(k);};
+  const toneOf = (u: Unit) => {const k = kinds?.of(u); return kinds?.groups.find(g => g.key === k)?.tone || '';};
   const [admin, setAdmin] = useState(false), [notes, setNotes] = useState(false);
   const showNotes = canManage && admin && notes;
   const pinOf = useMemo(() => new Map(local.map(p => [up(p.code), p])), [local]);
@@ -152,7 +160,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const pieces = known && W ? planPieces(cfg, need, {u0: -t.x / W, u1: (box.w - t.x) / W, v0: -t.y / H, v1: (box.h - t.y) / H}) : [];
   const original = !known && need > cfg.viewW * 1.15 && cfg.image !== project.image;
   const free = units.filter(u => statusOf(u) === 'Còn hàng'), held = units.filter(u => statusOf(u) === 'Đang giữ chỗ'), sold = units.filter(u => statusOf(u) === 'Đã bán');
-  const list = units.filter(u => (!q.trim() || u.code.toLowerCase().includes(q.trim().toLowerCase())) && (!only || statusOf(u) === only) && tcbgShown(u))
+  const list = units.filter(u => (!q.trim() || u.code.toLowerCase().includes(q.trim().toLowerCase())) && (!only || statusOf(u) === only) && kindShown(u))
     .sort((a, b) => (pinOf.has(up(a.code)) ? 0 : 1) - (pinOf.has(up(b.code)) ? 0 : 1) || a.code.localeCompare(b.code, 'vi', {numeric: true}));
   const unplaced = units.filter(u => !pinOf.has(up(u.code))).length;
 
@@ -191,9 +199,9 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
           const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
           const st = statusOf(u), code = up(p.code);
           if (only && st !== only) return null;
-          if (!tcbgShown(u)) return null;
-          const tk = byTcbg ? tcbgOf(u.group) : null;
-          return <a key={code} href={edit || showNotes ? undefined : unitPlanPath(u)} className={'pm-tag' + (tk && st !== 'Đã bán' ? ' is-tcbg-' + tk : st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held') + (flash === code || hover === code ? ' is-hot' : '')}
+          if (!kindShown(u)) return null;
+          const tone = kinds ? toneOf(u) : null;
+          return <a key={code} href={edit || showNotes ? undefined : unitPlanPath(u)} className={'pm-tag' + (tone !== null && st !== 'Đã bán' ? (tone ? ' is-tone-' + tone : '') : st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held') + (flash === code || hover === code ? ' is-hot' : '')}
             style={{left: p.x + '%', top: p.y + '%', transform: 'translate(-50%,-100%) scale(var(--k,1))'}}
             onPointerDown={e => {if (edit) dragPin(e, code); else if (showNotes) dragCallout(e, code); else e.stopPropagation();}} onClick={e => {e.stopPropagation(); if (edit || showNotes) e.preventDefault();}}
             onMouseEnter={() => setHover(code)} onMouseLeave={() => setHover(h => h === code ? '' : h)}>
@@ -214,13 +222,13 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         <button type="button" className={only === 'Đang giữ chỗ' ? 'is-on' : ''} onClick={() => setOnly(only === 'Đang giữ chỗ' ? '' : 'Đang giữ chỗ')}><b>{held.length}</b><span>Giữ chỗ</span></button>
         <button type="button" className={only === 'Đã bán' ? 'is-on' : ''} onClick={() => setOnly(only === 'Đã bán' ? '' : 'Đã bán')}><b>{sold.length}</b><span>Đã bán</span></button>
       </div>
-      {byTcbg && <div className="pm-tcbg" role="group" aria-label="Lọc theo tiêu chuẩn bàn giao">
-        <small>Tiêu chuẩn bàn giao</small>
+      {kinds && <div className="pm-tcbg" role="group" aria-label={'Lọc theo ' + kinds.title.toLowerCase()}>
+        <small>{kinds.title}</small>
         <div>
-          <button type="button" className={tcbg.length === 3 ? 'is-on' : ''} onClick={() => setTcbg(['tho', 'gian', 'hoan'])}>Tất cả</button>
-          {TCBG.map(([k, l]) => <button key={k} type="button" className={'is-' + k + (tcbg.length < 3 && tcbg.includes(k) ? ' is-on' : '')}
-            onClick={() => setTcbg(t => t.length === 3 ? [k] : t.includes(k) ? (t.length === 1 ? ['tho', 'gian', 'hoan'] : t.filter(x => x !== k)) : [...t, k])}>
-            <i/>{l}<b>{units.filter(u => tcbgOf(u.group) === k).length}</b></button>)}
+          <button type="button" className={picked.length === allKinds.length ? 'is-on' : ''} onClick={() => setPicked(allKinds)}>Tất cả</button>
+          {kinds.groups.map(g => <button key={g.key} type="button" className={'is-tone-' + (g.tone || 'gold') + (picked.length < allKinds.length && picked.includes(g.key) ? ' is-on' : '')}
+            onClick={() => setPicked(t => t.length === allKinds.length ? [g.key] : t.includes(g.key) ? (t.length === 1 ? allKinds : t.filter(x => x !== g.key)) : [...t, g.key])}>
+            <i/>{g.label}<b>{units.filter(u => kinds.of(u) === g.key).length}</b></button>)}
         </div>
       </div>}
       <label className="pm-search"><Search size={15}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…"/></label>
@@ -242,7 +250,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
             {p && <button type="button" title="Gỡ khỏi mặt bằng" onClick={() => remove(code)}><Trash2 size={14}/></button>}</span>}
         </div>;
       })}{!list.length && <p className="pm-empty">Không có căn phù hợp.</p>}</div>
-      {byTcbg ? <div className="pm-legend"><span><i className="is-tho"/>Thô</span><span><i/>Giãn xây</span><span><i className="is-hoan"/>Hoàn thiện</span><span><i className="is-sold"/>Đã bán</span></div>
+      {kinds ? <div className="pm-legend">{kinds.groups.map(g => <span key={g.key}><i className={g.tone ? 'is-tone-' + g.tone : ''}/>{g.label}</span>)}<span><i className="is-sold"/>Đã bán</span></div>
         : <div className="pm-legend"><span><i/>Còn hàng</span><span><i className="is-held"/>Giữ chỗ</span><span><i className="is-sold"/>Đã bán</span></div>}
     </aside>
 

@@ -23,7 +23,7 @@ const GROUPS: Record<string, {title: string; groups: Group[]; of: (u: Unit) => s
   'saigon-park': {title: 'Tiêu chuẩn bàn giao', groups: [{key: 'tho', label: 'Thô', tone: 'red'}, {key: 'gian', label: 'Giãn xây', tone: ''}, {key: 'hoan', label: 'Hoàn thiện', tone: 'green'}],
     of: u => {const g = plain(u.group); return g.startsWith('tho') ? 'tho' : g.startsWith('gian') ? 'gian' : g.startsWith('hoan') ? 'hoan' : null;}},
   'green-paradise': {title: 'Loại hình sản phẩm', groups: [{key: 'sl', label: 'Song lập', tone: 'green'}, {key: 'lk', label: 'Liền kề', tone: ''}, {key: 'dl', label: 'Đơn lập', tone: 'blue'}],
-    of: u => {const t = plain(u.type).replace(/[^a-z ]/g, ' '); return /(btsl|sl)|song lap/.test(t) ? 'sl' : /(lk|nlk|shophouse)|lien ke/.test(t) ? 'lk' : /(btdl|dl)|don lap/.test(t) ? 'dl' : null;}},
+    of: u => {const t = ' ' + plain(u.type).replace(/[^a-z]+/g, ' ') + ' '; return / (btsl|sl) |song lap/.test(t) ? 'sl' : / (lk|nlk|shophouse) |lien ke/.test(t) ? 'lk' : / (btdl|dl) |don lap/.test(t) ? 'dl' : null;}},
 };
 const fmt = (n: number) => n.toLocaleString('vi-VN', {maximumFractionDigits: 2});
 const tag = (n: number) => n ? (Math.round(n * 10) / 10).toLocaleString('en-US', {minimumFractionDigits: 1}) : '—';

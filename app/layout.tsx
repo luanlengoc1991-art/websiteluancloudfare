@@ -49,11 +49,17 @@ const mulish = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Alpha Hub | Quỹ căn & Dự án",
+  title: "LUAN GROUP | Designer MKT",
   description: "Tra cứu quỹ căn, khám phá dự án và quản lý giao dịch bất động sản.",
   icons: {
-    icon: "/alpha-hub-logo.png",
-    shortcut: "/alpha-hub-logo.png",
+    icon: [
+      {url: "/favicon.ico", sizes: "16x16 32x32 48x48"},
+      {url: "/favicon-32x32.png", type: "image/png", sizes: "32x32"},
+      {url: "/favicon-48x48.png", type: "image/png", sizes: "48x48"},
+      {url: "/favicon.png", type: "image/png", sizes: "192x192"},
+    ],
+    shortcut: "/favicon.ico",
+    apple: {url: "/apple-touch-icon.png", sizes: "180x180"},
   },
 };
 

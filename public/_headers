@@ -7,3 +7,7 @@
   Cache-Control: public,max-age=2592000
 /alpha-hub-logo.png
   Cache-Control: public,max-age=604800
+/favicon*
+  Cache-Control: public,max-age=86400
+/apple-touch-icon.png
+  Cache-Control: public,max-age=86400

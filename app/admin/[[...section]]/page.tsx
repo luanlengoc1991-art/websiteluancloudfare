@@ -1,7 +1,7 @@
 import {redirect,notFound} from 'next/navigation';
 import {getSignedInUser} from '@/lib/auth';
 export const dynamic='force-dynamic';
-export const metadata={title:'Alpha HUB | Quản trị',robots:{index:false,follow:false}};
+export const metadata={title:'LUAN GROUP | Designer MKT',robots:{index:false,follow:false}};
 import {adminSections,editorSections} from '@/lib/site-navigation';
 export default async function AdminPage({params}:{params:Promise<{section?:string[]}>}){
  const {section=[]}=await params;

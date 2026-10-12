@@ -1,6 +1,6 @@
 import {redirect} from 'next/navigation';
 import {getSignedInUser} from '@/lib/auth';
-export const metadata={title:'Tài khoản của tôi | Alpha HUB'};
+export const metadata={title:'LUAN GROUP | Designer MKT'};
 export default async function Account(){
  const user=await getSignedInUser();if(!user)redirect('/dang-nhap?return_to=%2Ftai-khoan');
  const access=user.isAdmin?'Quản trị website':user.canEdit?'Được phép chỉnh sửa nội dung':'Thành viên · chỉ xem';

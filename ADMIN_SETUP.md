@@ -63,7 +63,7 @@ thì nút Google báo chưa khả dụng, còn đăng nhập quản trị và th
 và mật khẩu vẫn chạy hoàn toàn trên Cloudflare.
 
 1. Trong Google Auth Platform, tạo OAuth client loại Web. Chỉ cấp scope `openid`, email và profile.
-2. Authorized redirect URI: `https://luangroup.asia/auth/callback`, `https://www.luangroup.asia/auth/callback` và `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`.
+2. Authorized redirect URI: `https://luangroup.asia/auth/callback` và `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`. `www.luangroup.asia` chuyển hướng 301 về `luangroup.asia` bằng Redirect Rule của zone.
 3. Đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong Settings của Worker.
 4. Đặt `ALPHA_ADMIN_EMAIL` bằng email Google của chủ website. Không có cơ chế tự cấp quyền admin và không cấp theo tên miền Gmail.
 5. Nếu ứng dụng Google còn ở trạng thái Testing, thêm email quản trị vào danh sách test user.

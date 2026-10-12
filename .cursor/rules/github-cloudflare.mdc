@@ -9,6 +9,6 @@ alwaysApply: true
 - Trước khi sửa: `git fetch origin` rồi cập nhật `main` từ `origin/main`. Giữ thay đổi cục bộ chưa commit.
 - Sau công việc chủ dự án yêu cầu: commit, push `origin main`. Không đẩy sang `websiteluan` hay remote khác.
 - Push `main` chạy Cloudflare Workers Builds của Worker `websiteluancloudfare` (`npx opennextjs-cloudflare build` rồi `npx wrangler deploy`).
-- Chỉ nói đã xuất bản khi bản build Cloudflare thành công và website phản hồi.
+- Chỉ nói đã xuất bản khi bản build Cloudflare thành công và `https://luangroup.asia` phản hồi.
 - Không commit `.env.local`, mật khẩu, session, `data/`, file tải lên, hay bản ghi khách hàng.
 - Secret runtime nằm trong Settings của Worker trên Cloudflare, không ghi vào repo.

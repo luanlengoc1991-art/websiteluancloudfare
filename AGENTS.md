@@ -45,6 +45,7 @@
 - Tối ưu thao tác: đọc hướng dẫn hiện hành và fetch khi bắt đầu tác vụ; trước push fetch lại để bảo toàn công việc thiết bị khác. Trong cùng tác vụ, không hỏi lại quyền đã có, không đọc lại tài liệu hoặc chạy lại kiểm tra đã qua nếu không có thay đổi/lỗi/lo ngại mới. Chỉ yêu cầu đăng nhập khi thực sự thiếu quyền truy cập, hoặc hỏi khi thiếu thông tin thiết yếu không suy ra được.
 - Khi tiếp tục bằng Codex, Cursor hoặc Claude: lấy main mới nhất, dùng cùng Worker/DB/R2, không dựng kho media hoặc website riêng. Thay ảnh/nội dung trong admin cập nhật D1/R2 trực tiếp, không cần build/deploy mỗi ảnh. Không sửa palette/bố cục ngoài yêu cầu cụ thể.
 - Triển khai: push `main` → Cloudflare Workers Builds tự build và deploy Worker `websiteluancloudfare` (đã xác nhận 05/10/2026). Kiểm tra bằng check-run "Workers Builds: websiteluancloudfare" trên commit. Không cần wrangler login cho thay đổi code thường.
+- Tên miền chính: `https://luangroup.asia` (custom domain của Worker, khai báo trong `wrangler.jsonc`); `www.luangroup.asia` chuyển hướng 301 về tên miền chính bằng Redirect Rule của zone. Kiểm tra website sau deploy trên `luangroup.asia`; địa chỉ `workers.dev` vẫn chạy.
 
 ## Mặt bằng mã căn (05/10/2026)
 

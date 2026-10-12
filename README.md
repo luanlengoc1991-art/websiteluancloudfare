@@ -14,7 +14,7 @@ Admin sử dụng một tài khoản quản trị. Toàn bộ dữ liệu nằm 
 
 Ảnh/video lớn và media gốc lưu ở object storage, ưu tiên R2 hiện có. Repository chỉ giữ code cùng asset cần thiết cho giao diện/build (logo, icon, font, ảnh mẫu nhỏ); D1 giữ metadata và tham chiếu file. Không đưa kho media vào GitHub hoặc checkout Codex. `uploads/` và `media-originals/` được bỏ qua bởi Git. Giới hạn upload hiện tại vẫn là JPG/PNG/WEBP/PDF, 4 MiB/file; quy tắc lưu trữ này chưa bổ sung chức năng upload video.
 
-**Website chạy tại `https://websiteluancloudfare.luanlengoc1991.workers.dev`. Cập nhật mã nguồn trên GitHub; chủ dự án tự triển khai bằng Cursor. Binding và biến môi trường xem [ADMIN_SETUP.md](ADMIN_SETUP.md).**
+**Website chạy tại `https://luangroup.asia` (và `https://www.luangroup.asia`). Địa chỉ Worker `https://websiteluancloudfare.luanlengoc1991.workers.dev` vẫn mở được. Cập nhật mã nguồn trên GitHub; chủ dự án tự triển khai bằng Cursor. Binding và biến môi trường xem [ADMIN_SETUP.md](ADMIN_SETUP.md).**
 
 ## Chạy trên máy tính
 

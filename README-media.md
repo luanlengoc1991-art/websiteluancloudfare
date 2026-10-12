@@ -28,9 +28,9 @@ Quản trị → AI sửa website hỗ trợ đính kèm ảnh, chọn nơi cầ
 
 URL MCP sau triển khai:
 
-`https://websiteluancloudfare.luanlengoc1991.workers.dev/api/mcp`
+`https://luangroup.asia/api/mcp`
 
-Nếu dùng domain riêng, đặt `ALPHA_PUBLIC_ORIGIN` bằng HTTPS origin chính xác và dùng MCP URL trên domain đó.
+Địa chỉ `https://websiteluancloudfare.luanlengoc1991.workers.dev/api/mcp` vẫn dùng được. `ALPHA_PUBLIC_ORIGIN` chỉ cần khi tên miền công khai khác Host của request.
 
 1. **ChatGPT**: bật Developer mode trong Settings, thêm ứng dụng từ MCP URL, dùng OAuth và DCR (đăng ký client tự động). Đăng nhập bằng tài khoản quản trị Alpha HUB, đọc và cho phép quyền sửa ảnh. Bật ứng dụng Alpha HUB trong cuộc trò chuyện cần sửa website. Có thể gửi ảnh kèm lệnh: “Dùng Alpha HUB thay ảnh đại diện Vinhomes Green Paradise bằng ảnh đính kèm”. Tool `publish_chat_image` khai báo `openai/fileParams` để nhận file thật từ ChatGPT, tải nguyên bản sang R2 rồi cập nhật D1.
 2. **Claude**: Add custom connector với MCP URL, Sign in, OAuth client **Register automatically**. Kết nối bằng cùng tài khoản quản trị. Tool nhận ảnh qua link tải đính kèm hoặc `publish_image_base64` cho client đọc được byte file thật (ví dụ Claude Code). Claude web không luôn cung cấp URL/byte của ảnh trong chat cho remote MCP; nếu client không cung cấp, cần tải ảnh trong quản trị rồi ra lệnh dùng lại ID ảnh trong Thư viện. Không thể hứa tự chuyển mọi ảnh hiển thị trong mọi phiên Claude.

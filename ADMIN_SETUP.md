@@ -1,7 +1,7 @@
 # Alpha HUB Admin
 
 Trang quản trị: `/admin`. Production chạy trên Cloudflare Workers tại
-`https://websiteluancloudfare.luanlengoc1991.workers.dev`.
+`https://luangroup.asia`. Địa chỉ `https://websiteluancloudfare.luanlengoc1991.workers.dev` vẫn mở được.
 
 ## Những gì đã có
 
@@ -63,7 +63,7 @@ thì nút Google báo chưa khả dụng, còn đăng nhập quản trị và th
 và mật khẩu vẫn chạy hoàn toàn trên Cloudflare.
 
 1. Trong Google Auth Platform, tạo OAuth client loại Web. Chỉ cấp scope `openid`, email và profile.
-2. Authorized redirect URI: `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`. Thêm cả tên miền riêng nếu dùng.
+2. Authorized redirect URI: `https://luangroup.asia/auth/callback`, `https://www.luangroup.asia/auth/callback` và `https://websiteluancloudfare.luanlengoc1991.workers.dev/auth/callback`.
 3. Đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong Settings của Worker.
 4. Đặt `ALPHA_ADMIN_EMAIL` bằng email Google của chủ website. Không có cơ chế tự cấp quyền admin và không cấp theo tên miền Gmail.
 5. Nếu ứng dụng Google còn ở trạng thái Testing, thêm email quản trị vào danh sách test user.

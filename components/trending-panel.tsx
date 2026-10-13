@@ -17,14 +17,14 @@ export default function TrendingPanel({projects, units, statusOf}: {projects: Pr
   const ordered = [...projects.filter(p => TRENDING_FIRST.includes(p.id)).sort((a, b) => TRENDING_FIRST.indexOf(a.id) - TRENDING_FIRST.indexOf(b.id)), ...projects.filter(p => p.hot && !TRENDING_FIRST.includes(p.id))];
   const count = (id: string) => units.filter(u => u.projectId === id).length;
   const free = (id: string) => units.filter(u => u.projectId === id && statusOf(u) === 'Còn hàng').length;
-  const rank = new Map(ordered.map((p, i) => [p.id, i]));
-  // Quỹ căn: available units of the featured projects, featured projects first, cheapest first within a project.
-  const hotUnits = units.filter(u => rank.has(u.projectId) && statusOf(u) === 'Còn hàng')
-    .sort((a, b) => rank.get(a.projectId)! - rank.get(b.projectId)! || (a.price || 1e9) - (b.price || 1e9)).slice(0, 12);
+  // Quỹ căn: cheapest available units of each featured project, taken in turns so every project shows up.
+  const pools = ordered.map(p => units.filter(u => u.projectId === p.id && statusOf(u) === 'Còn hàng').sort((a, b) => (a.price || 1e9) - (b.price || 1e9)));
+  const hotUnits: Unit[] = [];
+  for (let i = 0; hotUnits.length < 12 && pools.some(q => q.length > i); i++) for (const q of pools) if (q[i] && hotUnits.length < 12) hotUnits.push(q[i]);
   const byId = new Map(projects.map(p => [p.id, p]));
   const rows = tab === 'unit'
     ? hotUnits.map(u => ({key: u.id, href: unitPlanPath(u), img: byId.get(u.projectId)?.image, name: u.code, sub: byId.get(u.projectId)?.name || '', badge: u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}))
-    : ordered.filter(p => tab === 'project' || count(p.id)).map(p => ({key: p.id, href: tab === 'project' ? projectPath(p.id) : '/mat-bang-can?project=' + encodeURIComponent(p.id), img: p.image, name: p.name, sub: p.location,
+    : ordered.filter(p => tab === 'project' || count(p.id)).map(p => ({key: p.id, href: tab === 'project' ? projectPath(p.id, 'overview') : '/mat-bang-can?project=' + encodeURIComponent(p.id), img: p.image, name: p.name, sub: p.location,
       badge: tab === 'project' ? `${free(p.id)}/${count(p.id)} còn hàng` : `${count(p.id)} mã căn`}));
   return <div className="trp">
     <div className="trp-tabs" role="tablist">

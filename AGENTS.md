@@ -210,3 +210,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Sài Gòn Park riêng (11/10/2026): tag màu theo TCBG (Thô đỏ, Giãn xây vàng mặc định, Hoàn thiện xanh lá; đã bán vẫn xám) + nhóm nút lọc "Tiêu chuẩn bàn giao" (Tất cả | Thô | Giãn xây | Hoàn thiện, chọn 1–3 hoặc tất cả, mặc định tất cả) lọc cả tag và danh sách. Dự án khác không đổi.
 - Green Paradise riêng (11/10/2026): tag màu theo loại hình (Song lập xanh lá, Liền kề vàng mặc định, Đơn lập xanh dương) + nút lọc "Loại hình sản phẩm" (Tất cả | Song lập | Liền kề | Đơn lập). Cấu hình chung `GROUPS` trong plan-map-360.tsx (theo project.id; hàm `of` phân nhóm từ unit.group hoặc unit.type).
 - Mỗi căn trong giỏ hàng = tag giá vàng nhỏ (đỏ giữ chỗ, xám đã bán), rê chuột xem thông tin, bấm → trang Mặt bằng căn. Bảng trái: số Còn hàng / Giữ chỗ / Đã bán (bấm để lọc), tìm mã, danh sách – bấm mã bay tới tag. Admin: "Chỉnh vị trí căn" – chọn mã rồi bấm mặt bằng để đặt, kéo tag để dời, nút gỡ; lưu records kind pin layer map (id green-paradise|map|CODE).
+
+## Logo LUAN GROUP (13/10/2026)
+- Logo ngang: `/api/files/logo-luangroup-color` (xanh, cho nền trắng) và `/api/files/logo-luangroup-white` (trắng, cho nền xanh), nằm trong Thư viện site-library. Header và footer đều nền trắng → mặc định logo xanh.
+- Quản trị → Cài đặt: Logo header / Logo footer chọn riêng (tải lên hoặc thư viện) + thanh độ rộng (settings.logoHeader, logoFooter, logoHeaderWidth mặc định 210px, logoFooterWidth mặc định 300px). `settings.logo` vẫn là biểu tượng vuông dùng ở trang dự án/đăng nhập. Favicon: public/favicon*.ico/png, apple-touch-icon.png.
+- Test `/api/auth/google` trả 403 (mong đợi 303) đã lỗi sẵn từ commit gắn tên miền luangroup.asia, chưa sửa.

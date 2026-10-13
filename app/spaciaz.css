@@ -2589,3 +2589,11 @@ button.sz-bento-photo{padding:0}
 .pm-tag.is-tone-green b{background:linear-gradient(180deg,#22c55e,#15803d);border-color:#bbf7d0}.pm-tag.is-tone-green b::after{border-top-color:#15803d}
 .pm-tag.is-tone-blue b{background:linear-gradient(180deg,#3b82f6,#1d4ed8);border-color:#bfdbfe}.pm-tag.is-tone-blue b::after{border-top-color:#1d4ed8}
 .pm-legend i.is-tone-red,.pm-tcbg button.is-tone-red i{background:#dc2626}.pm-legend i.is-tone-green,.pm-tcbg button.is-tone-green i{background:#16a34a}.pm-legend i.is-tone-blue,.pm-tcbg button.is-tone-blue i{background:#2563eb}
+
+/* LUAN GROUP horizontal logos (width set in Quản trị → Cài đặt) */
+.site-header .brand-logo.brand-logo-wide,.sz-site>.site-header .brand-logo.brand-logo-wide{height:auto!important;max-height:44px;max-width:min(42vw,420px);object-fit:contain;border-radius:0!important;background:none!important}
+.sz-site>.site-header .brand:has(.brand-logo-wide){height:48px}
+.sz-footer-brand img.sz-footer-logo{height:auto;max-width:100%;object-fit:contain}
+.logo-slots{grid-template-columns:1fr 1fr}
+.logo-slots>div{display:grid;gap:10px;padding:14px;border:1px solid #e2ece8;border-radius:14px}
+@media(max-width:800px){.site-header .brand-logo.brand-logo-wide{max-height:34px;max-width:46vw}.logo-slots{grid-template-columns:1fr}}

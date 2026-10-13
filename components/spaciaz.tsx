@@ -577,7 +577,7 @@ export function SpaciazContact({projects, contact, address}: {projects: Project[
 }
 
 /* ═══════════════════════════ Footer ═══════════════════════════ */
-export function SpaciazFooter({brand, contact, logo, address}: {brand: string; contact: PublicContact; logo: string; address: string}) {
+export function SpaciazFooter({brand, contact, logo, logoWidth, address}: {brand: string; contact: PublicContact; logo: string; logoWidth?: number; address: string}) {
   const t = useCopy();
   return <footer className="sz-footer">
     <div className="sz-footer-cta">
@@ -588,7 +588,7 @@ export function SpaciazFooter({brand, contact, logo, address}: {brand: string; c
     </div>
     <div className="sz-footer-card">
       <div className="sz-footer-grid">
-        <div className="sz-footer-brand"><Link href="/"><img src={logo} alt={brand}/></Link><p>{t('footer.tagline')}</p></div>
+        <div className="sz-footer-brand"><Link href="/"><img className="sz-footer-logo" src={logo} alt={brand} style={logoWidth ? {width: logoWidth} : undefined}/></Link><p>{t('footer.tagline')}</p></div>
         <nav aria-label="Liên kết chân trang"><Link href="/gioi-thieu">Giới thiệu</Link><Link href="/du-an">Dự án</Link><Link href="/quy-hang">Quỹ căn</Link><Link href="/">Tổng quan</Link><Link href="/yeu-thich">Yêu thích</Link></nav>
         <nav aria-label="Hỗ trợ"><Link href="/tin-tuc">Tin tức</Link><Link href="/huong-dan">Hướng dẫn</Link><Link href="/lien-he">Liên hệ</Link><Link href="/dang-nhap">Đăng nhập</Link></nav>
         <div className="sz-footer-contact"><a href={`tel:${contact.phone}`}>{contact.phone}</a><a href={`mailto:${contact.email}`}>{contact.email}</a>{address && <p>{address}</p>}

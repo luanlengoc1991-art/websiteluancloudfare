@@ -130,7 +130,7 @@ export default function UnitDetailSheet({immersive=false,open,unit,project,units
     if(!unit)return;
     navigator.clipboard.writeText(unit.code).then(()=>toast.success('Đã sao chép mã căn.')).catch(()=>toast.error('Không thể sao chép mã căn.'));
   };
-  const planHref=projectPath(project.id,'plan');
+  const planHref=projectPath(project.id,'vr');
   const vrHref=`${projectPath(project.id,'vr')}?product=${encodeURIComponent(unit?.code||'')}`;
   const zaloHref=contactPhone?`https://zalo.me/${contactPhone.replace(/\D/g,'')}`:'';
 

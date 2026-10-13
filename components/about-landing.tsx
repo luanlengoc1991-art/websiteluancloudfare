@@ -67,7 +67,6 @@ export default function AboutLanding({content, brand, projects, units, articles,
         <nav className="al-project-nav" aria-label={`Khám phá ${projectName}`}>{[
           {tab: 'overview', label: 'Tổng quan', Icon: Building2},
           {tab: 'location', label: 'Vị trí', Icon: MapPin},
-          {tab: 'plan', label: 'Mặt bằng', Icon: Layers},
           {tab: 'inventory', label: 'Bảng hàng', Icon: List},
           {tab: 'gallery', label: 'Thư viện', Icon: Images},
           {tab: 'document', label: 'Tài liệu', Icon: FileText},

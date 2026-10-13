@@ -26,7 +26,11 @@ const LOCKED = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta
 export function middleware(req: NextRequest) {
   const ua = req.headers.get('user-agent') || '';
   const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || '';
-  if (!ua || AI_AGENTS.test(ua) || fromAiNetwork(ip)) {
+  // Data APIs only answer the site's own scripts: opening them in a tab or calling them from another site is refused.
+  const dataApi = req.nextUrl.pathname.startsWith('/api/');
+  const site = req.headers.get('sec-fetch-site'), mode = req.headers.get('sec-fetch-mode');
+  const foreign = dataApi && (mode === 'navigate' || req.headers.get('sec-fetch-dest') === 'document' || (!!site && site !== 'same-origin'));
+  if (!ua || AI_AGENTS.test(ua) || fromAiNetwork(ip) || foreign) {
     return new NextResponse(LOCKED, {status: 403, headers: {'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex, noarchive, nosnippet, noai, noimageai', 'Cache-Control': 'no-store'}});
   }
   const res = NextResponse.next();

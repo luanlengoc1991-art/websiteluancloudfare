@@ -30,6 +30,7 @@ import PublicSidebar, {PublicContentLayout} from './public-sidebar';
 import {projectPath,resolveProject,resolveProjectTab,unitPlanPath} from '@/lib/project-routes';
 import {useRouter} from 'next/navigation';
 import {sized} from '@/lib/img';
+import {wireText} from '@/lib/wire';
 import {seedProjects,seedUnits,seedArticles,defaultSettings,type Unit,type Project,type Customer,type Article,type Settings,type Asset,type Reservation} from '@/lib/catalog';
 import {resolvePublicContact} from '@/lib/public-contact';
 import {PublicContactProvider} from './public-contact-provider';
@@ -82,7 +83,7 @@ useEffect(()=>{
     pending=true;
     try{
       const r=await fetch('/api/green-paradise',{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error();
-      const d=await r.json();if(controller.signal.aborted)return;
+      const d=JSON.parse(await wireText(r));if(controller.signal.aborted)return;
       const serialized=JSON.stringify(d.units);
       if(serialized!==lastUnits){lastUnits=serialized;setGreenUnits(d.units);}
       setGreenStatus(d.stale?'Nguồn đang dùng bản lưu gần nhất':`Đồng bộ Sheet · ${new Date(d.syncedAt).toLocaleTimeString('vi-VN')}`);
@@ -97,7 +98,7 @@ const reload=useCallback(()=>{
   if(stateRequest.current)return stateRequest.current;
   const request=(async()=>{
     try{
-      const r=await fetch('/api/state',{cache:'no-store'}),text=await r.text();
+      const r=await fetch('/api/state',{cache:'no-store'}),text=await wireText(r);
       if(!r.ok)throw Error(JSON.parse(text).error);
       if(text!==lastState.current){const data:State=JSON.parse(text);lastState.current=text;setState(data);}
       setLoadError('');

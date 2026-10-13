@@ -8,6 +8,7 @@ import {join} from 'node:path';
 import {mockGoogle} from './mock-google.mjs';
 import {verifyPublicContent} from './public-content-test-helper.mjs';
 import {verifyMediaAssistant} from './media-assistant-test-helper.mjs';
+import {wireText} from '../lib/wire.ts';
 
 /**
  * Runs the real Worker on a local Cloudflare runtime with a disposable D1
@@ -48,7 +49,9 @@ const run = (args) => new Promise((resolve, reject) => {
 });
 async function start() {
   logs = '';
-  const args = ['dev', '--local', '--ip', '127.0.0.1', '--port', String(port), '--persist-to', state];
+  // --local-upstream: since the luangroup.asia custom domain, wrangler dev otherwise rewrites Host to it and every
+  // same-origin check fails with 403.
+  const args = ['dev', '--local', '--ip', '127.0.0.1', '--port', String(port), '--local-upstream', `127.0.0.1:${port}`, '--persist-to', state];
   for (const [key, value] of Object.entries(vars)) args.push('--var', `${key}:${value}`);
   server = spawn(process.execPath, [wrangler, ...args], {stdio: ['ignore', 'pipe', 'pipe'], env: {...process.env, CI: '1'}});
   server.stdout.on('data', (b) => (logs += b));
@@ -73,7 +76,8 @@ const post = (path, data, extra = {}) => fetch(origin + path, {
   headers: {Origin: origin, 'Content-Type': 'application/json', ...(cookie ? {Cookie: cookie} : {}), ...extra},
   body: JSON.stringify(data)
 });
-const readState = (jar = cookie) => fetch(origin + '/api/state', {headers: jar ? {Cookie: jar} : {}}).then((r) => r.json());
+// /api/state answers in the scrambled wire format (lib/wire.ts); decode it like the browser does.
+const readState = (jar = cookie) => fetch(origin + '/api/state', {headers: jar ? {Cookie: jar} : {}}).then(wireText).then(JSON.parse);
 
 try {
   // OpenNext appends environment exports; discard the generated file before rebuilding.
@@ -130,7 +134,11 @@ try {
 
   // A spoofed identity header must never authenticate anyone.
   assert.equal((await readState('')).user, null);
-  assert.equal((await fetch(origin + '/api/state', {headers: {'oai-authenticated-user-email': adminEmail}}).then((r) => r.json())).user, null);
+  assert.equal((await fetch(origin + '/api/state', {headers: {'oai-authenticated-user-email': adminEmail}}).then(wireText).then(JSON.parse)).user, null);
+  // Data APIs refuse direct opening in a browser tab and calls from other sites.
+  assert.equal((await fetch(origin + '/api/state', {headers: {'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Dest': 'document'}})).status, 403);
+  assert.equal((await fetch(origin + '/api/state', {headers: {'Sec-Fetch-Site': 'cross-site', 'Sec-Fetch-Mode': 'cors'}})).status, 403);
+  assert.equal((await fetch(origin + '/api/state', {headers: {'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors'}})).status, 200);
   assert.equal((await post('/api/action', {action: 'save'})).status, 401);
 
   // Optional administrator password.
@@ -191,36 +199,35 @@ try {
   cookie = adminCookie;
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: true})).status, 200);
   cookie = memberCookie;
+  // Owner's rule (14/10/2026): only the administrator edits or uploads; can_edit no longer opens anything.
+  assert.equal((await readState()).member.canEdit, false);
   assert.equal((await post('/api/action', {action: 'save', kind: 'customer', id: 'unauthorized', data: {}})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: grantedProject})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: about})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: guide})).status, 403);
+  assert.equal((await post('/api/action', {action: 'save', kind: 'pin', id: 'green-paradise|map|X', data: {}})).status, 403);
+  assert.equal((await post('/api/upload', {})).status, 403);
+  for (const path of ['/admin/gioi-thieu', '/admin/huong-dan', '/admin/quan-ly-du-an']) {
+    const page = await fetch(origin + path, {headers: {Cookie: memberCookie}, redirect: 'manual'});
+    assert.equal((await page.text()).includes('admin-sidebar'), false, path);
+  }
+  cookie = adminCookie;
   assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: grantedProject})).status, 200);
   assert.equal((await readState('')).records.find((row) => row.id === grantedProject.id).data.name, grantedProject.name);
   assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: about})).status, 200);
   assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: guide})).status, 200);
   assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: hiddenGuide.id, data: hiddenGuide})).status, 200);
-  assert.equal((await post('/api/action', {action: 'save', kind: 'settings', id: 'main', data: {}})).status, 403);
   assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'other', data: about})).status, 400);
   assert.equal((await post('/api/action', {action: 'save', kind: 'about', id: 'main', data: {...about, featuredProjectId: 'missing-project'}})).status, 400);
   assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: guide.id, data: {...guide, order: -1}})).status, 400);
   assert.equal((await post('/api/action', {action: 'save', kind: 'guide', id: 'mismatch', data: guide})).status, 400);
-  assert.equal((await readState()).records.find(row => row.id === hiddenGuide.id).data.body, hiddenGuide.body, 'Editors can still edit hidden guides');
+  assert.equal((await readState()).records.find(row => row.id === hiddenGuide.id).data.body, hiddenGuide.body, 'The administrator still sees hidden guides');
+  assert.equal((await readState(memberCookie)).records.find(row => row.id === hiddenGuide.id).data.body, '', 'Members never see draft guides');
   const publicContent = await readState('');
   assert.equal(publicContent.records.find(row => row.kind === 'about').data.headline, about.headline);
   assert.equal(publicContent.records.find(row => row.id === hiddenGuide.id).data.body, '', 'Draft guide text is private');
-  for (const path of ['/admin/gioi-thieu', '/admin/huong-dan']) {
-    const page = await fetch(origin + path, {headers: {Cookie: memberCookie}});
-    assert.equal(page.status, 200, path);
-    const html = await page.text();
-    assert.match(html, /admin-sidebar/);
-    assert.equal(html.includes('id="al-title"'), false, 'Public About must not duplicate inside the admin editor');
-  }
-  const editorDirectory = await fetch(origin + '/admin/thanh-vien', {headers: {Cookie: memberCookie}, redirect: 'manual'});
-  const editorHtml = await editorDirectory.text();
-  if (editorDirectory.status === 307) assert.match(editorDirectory.headers.get('location') || '', /quan-ly-du-an/);
-  else assert.equal(editorHtml.includes('Tài khoản và phân quyền'), false, 'Thành viên được cấp quyền vẫn mở được danh sách tài khoản: ' + editorDirectory.status + ' ' + editorHtml.slice(0, 180));
-  const editorPage = await fetch(origin + '/admin/quan-ly-du-an', {headers: {Cookie: memberCookie}});
-  assert.equal(editorPage.status, 200);
-  assert.match(await editorPage.text(), /admin-sidebar/);
-  cookie = adminCookie;
+  const adminAbout = await fetch(origin + '/admin/gioi-thieu', {headers: {Cookie: adminCookie}});
+  assert.equal((await adminAbout.text()).includes('id="al-title"'), false, 'Public About must not duplicate inside the admin editor');
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: false})).status, 200);
   cookie = memberCookie;
   assert.equal((await post('/api/action', {action: 'save', kind: 'project', id: grantedProject.id, data: {...grantedProject, name: 'Không được sửa'}})).status, 403);
@@ -355,8 +362,8 @@ try {
   assert.equal(editorLogin.status, 200);
   const editorCookie = editorLogin.headers.getSetCookie().find(value => value.startsWith('alpha_session=')).split(';')[0];
   assert.equal((await fetch(origin + '/api/upload', {method: 'POST', headers: {Cookie: editorCookie, Origin: origin}, body: backgroundForm})).status, 403);
-  assert.ok((await readState(editorCookie)).files.some(file => file.id === fileId), 'Editor library must show the protected documents it can access');
-  assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 200);
+  assert.equal((await readState(editorCookie)).files.some(file => file.id === fileId), false, 'Members never see protected documents');
+  assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 404);
   assert.equal((await post('/api/admin/members', {id: emailAccount.id, canEdit: false})).status, 200);
   assert.equal((await fetch(origin + '/api/files/' + fileId, {headers: {Cookie: editorCookie}})).status, 404);
 

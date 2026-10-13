@@ -15,9 +15,10 @@ export async function getSignedInUser(){
  const isAdmin=row.owner==='admin'&&row.email.toLowerCase()===adminEmail();
  if(row.owner==='admin'&&!isAdmin)return null;
  if(isAdmin)return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin:true,canEdit:true};
- const member=await database().prepare('SELECT can_edit FROM members WHERE id=? AND email=?').bind(row.owner,row.email).first<{can_edit:number}>();
+ const member=await database().prepare('SELECT id FROM members WHERE id=? AND email=?').bind(row.owner,row.email).first();
  if(!member)return null;
- return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin:false,canEdit:member.can_edit===1};
+ // Owner's rule (14/10/2026): only the administrator uploads or edits; members are always view-only (can_edit is ignored).
+ return {userId:row.owner,email:row.email,displayName:row.full_name||row.email,fullName:row.full_name,isAdmin:false,canEdit:false};
 }
 /** Full administration stays on the allowlisted identity. A granted member is never an administrator. */
 export async function getCurrentUser(){const user=await getSignedInUser();return user?.isAdmin?user:null;}

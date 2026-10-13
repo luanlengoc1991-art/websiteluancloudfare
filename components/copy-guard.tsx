@@ -17,6 +17,8 @@ export default function CopyGuard() {
     if (off) return;
     const root = document.documentElement;
     root.classList.add('copy-guard');
+    // Browsers driven by automation (Playwright, Puppeteer, Selenium, AI browsing agents built on them) see no project content.
+    if (navigator.webdriver && /^\/du-an\/[^/]+/.test(path)) root.classList.add('bot-lock');
     const stop = (e: Event) => {if (!editable(e.target)) e.preventDefault();};
     const onCopy = (e: ClipboardEvent) => {
       if (editable(e.target)) return;
@@ -38,7 +40,7 @@ export default function CopyGuard() {
     document.addEventListener('cut', onCopy);
     document.addEventListener('keydown', onKey, true);
     return () => {
-      root.classList.remove('copy-guard');
+      root.classList.remove('copy-guard', 'bot-lock');
       document.removeEventListener('contextmenu', menu);
       document.removeEventListener('dragstart', stop);
       document.removeEventListener('selectstart', stop);
@@ -46,6 +48,6 @@ export default function CopyGuard() {
       document.removeEventListener('cut', onCopy);
       document.removeEventListener('keydown', onKey, true);
     };
-  }, [off]);
+  }, [off, path]);
   return null;
 }

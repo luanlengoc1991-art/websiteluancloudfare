@@ -2680,3 +2680,7 @@ button.sz-bento-photo{padding:0}
 html.copy-guard body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.copy-guard img{-webkit-user-drag:none;user-drag:none;pointer-events:auto}
 html.copy-guard :is(input,textarea,select,[contenteditable=true],.allow-copy){-webkit-user-select:text;user-select:text}
+/* Automated browsers (navigator.webdriver) on project pages: nothing is shown */
+html.bot-lock body>*{display:none!important}
+html.bot-lock body{min-height:100vh;display:grid;place-items:center;background:#04261c}
+html.bot-lock body::before{content:"LINK BỊ KHOÁ – KHÔNG THỂ SAO CHÉP";color:#fde047;font:700 24px system-ui;text-align:center;padding:32px}

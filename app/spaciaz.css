@@ -2650,3 +2650,23 @@ button.sz-bento-photo{padding:0}
 .trending-sheet .trp-body small{display:none}
 [data-slot=sheet-overlay]:has(+ .trending-sheet){background:#02261d14!important;backdrop-filter:none!important}
 @media(max-width:640px){[data-slot=sheet-content].trending-sheet{top:80px!important;right:10px!important}}
+
+/* Round CTA badge v2: rotating text ring + glowing core + pulse waves */
+.sz-round-cta{position:relative;isolation:isolate;display:grid;place-items:center;width:168px;height:168px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ffffff 0%,#ecfdf5 55%,#d1fae5 100%);color:var(--sz-deep);text-decoration:none;box-shadow:0 24px 50px -22px #047857cc,inset 0 0 0 1px #ffffffaa;transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s}
+.sz-round-cta:hover{transform:scale(1.07) rotate(0deg);box-shadow:0 34px 60px -22px #047857ee,inset 0 0 0 1px #fff}
+.sz-rc-ring{position:absolute;inset:0;width:100%;height:100%;animation:sz-rc-spin 16s linear infinite;pointer-events:none}
+.sz-round-cta:hover .sz-rc-ring{animation-duration:6s}
+.sz-rc-ring text{font-size:8.6px;font-weight:800;letter-spacing:.5px;fill:#047857;font-family:var(--font-sans),Arial,sans-serif}
+@keyframes sz-rc-spin{to{transform:rotate(360deg)}}
+.sz-rc-core{position:relative;display:grid;place-items:center;align-content:center;gap:3px;width:62%;height:62%;border-radius:50%;background:linear-gradient(145deg,#34d399,#059669 60%,#047857);color:#fff;text-align:center;box-shadow:0 10px 24px -10px #047857,inset 0 2px 0 #ffffff55}
+.sz-rc-core svg{color:#fde68a;animation:sz-rc-ring-icon 2.4s ease-in-out infinite}
+.sz-rc-core b{font-size:13px;line-height:1.15;font-weight:800}
+@keyframes sz-rc-ring-icon{0%,70%,100%{transform:rotate(0)}75%{transform:rotate(-14deg)}80%{transform:rotate(12deg)}85%{transform:rotate(-8deg)}90%{transform:rotate(6deg)}}
+.sz-rc-wave{position:absolute;inset:0;z-index:-1;border-radius:50%;border:2px solid #34d399;opacity:0;animation:sz-rc-wave 2.8s ease-out infinite}
+.sz-rc-wave.is-2{animation-delay:1.4s}
+@keyframes sz-rc-wave{0%{transform:scale(.92);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.sz-round-cta.is-dark{background:radial-gradient(circle at 30% 25%,#0b5a43 0%,#04392b 60%,#02261d 100%);color:#fff;border:1px solid #34d39955;backdrop-filter:none;box-shadow:0 24px 50px -20px #000a,0 0 40px -10px #10b98166,inset 0 0 0 1px #ffffff1a}
+.sz-round-cta.is-dark .sz-rc-ring text{fill:#a7f3d0}
+.sz-round-cta.is-dark .sz-rc-core{background:linear-gradient(145deg,#6ee7b7,#10b981 60%,#059669);color:#022c22}
+.sz-round-cta.is-dark .sz-rc-core svg{color:#022c22}
+@media(max-width:640px){.sz-round-cta{width:140px;height:140px}.sz-rc-core b{font-size:11.5px}}

@@ -91,6 +91,8 @@ export async function exportPlanImage(o: {
 }): Promise<Blob> {
   const PW = o.planPx, PH = Math.round(PW * o.ratio), u = PW / o.screenPlanW; // screen px → image px
   const cw = CARD_W * u, ch = CARD_H * u, pad = 30 * u;
+  // Tags and arrows on the plan stay small (like a zoomed-in view) so the lots underneath remain visible.
+  const v = Math.max(1, PW / 4200);
   let x0 = 0, y0 = 0, x1 = PW, y1 = PH;
   for (const c of o.cards) {const cx = c.pin.callout!.x / 100 * PW, cy = c.pin.callout!.y / 100 * PH; x0 = Math.min(x0, cx - cw / 2); x1 = Math.max(x1, cx + cw / 2); y0 = Math.min(y0, cy - ch / 2); y1 = Math.max(y1, cy + ch / 2);}
   x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
@@ -102,23 +104,23 @@ export async function exportPlanImage(o: {
   await Promise.all(jobs);
   const font = (w: number, px: number) => `${w} ${px * u}px Manrope, Mulish, Arial, sans-serif`;
   // arrows
-  c.strokeStyle = '#e11d2a'; c.fillStyle = '#e11d2a'; c.lineWidth = 2.2 * u; c.lineCap = 'round';
+  c.strokeStyle = '#e11d2a'; c.fillStyle = '#e11d2a'; c.lineWidth = 1.6 * v; c.lineCap = 'round';
   for (const d of o.cards) {
-    const ax = d.pin.callout!.x / 100 * PW, ay = d.pin.callout!.y / 100 * PH, tx = d.pin.x / 100 * PW, ty = d.pin.y / 100 * PH - 14 * u;
-    const s = edgePoint(ax, ay, tx, ty, cw / 2, ch / 2), e = edgePoint(tx, ty, ax, ay, 24 * u, 15 * u);
+    const ax = d.pin.callout!.x / 100 * PW, ay = d.pin.callout!.y / 100 * PH, tx = d.pin.x / 100 * PW, ty = d.pin.y / 100 * PH - 14 * v;
+    const s = edgePoint(ax, ay, tx, ty, cw / 2, ch / 2), e = edgePoint(tx, ty, ax, ay, 22 * v, 13 * v);
     c.beginPath(); c.moveTo(s.x, s.y); c.lineTo(e.x, e.y); c.stroke();
-    const ang = Math.atan2(e.y - s.y, e.x - s.x), L = 11 * u;
+    const ang = Math.atan2(e.y - s.y, e.x - s.x), L = 9 * v;
     c.beginPath(); c.moveTo(e.x, e.y); c.lineTo(e.x - L * Math.cos(ang - .45), e.y - L * Math.sin(ang - .45)); c.lineTo(e.x - L * Math.cos(ang + .45), e.y - L * Math.sin(ang + .45)); c.closePath(); c.fill();
   }
   // price tags
   for (const t of o.tags) {
-    const x = t.pin.x / 100 * PW, y = t.pin.y / 100 * PH; c.font = font(800, 12);
-    const w = c.measureText(t.price).width + 14 * u, h = 20 * u, [a, b] = TAG[t.tone];
-    const g = c.createLinearGradient(0, y - h - 6 * u, 0, y - 6 * u); g.addColorStop(0, a); g.addColorStop(1, b);
-    c.fillStyle = g; round(c, x - w / 2, y - h - 6 * u, w, h, 7 * u); c.fill();
-    c.strokeStyle = '#f4d78b'; c.lineWidth = 1.5 * u; c.stroke();
-    c.beginPath(); c.moveTo(x - 5 * u, y - 6 * u); c.lineTo(x + 5 * u, y - 6 * u); c.lineTo(x, y); c.closePath(); c.fillStyle = b; c.fill();
-    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t.price, x, y - 6 * u - h / 2);
+    const x = t.pin.x / 100 * PW, y = t.pin.y / 100 * PH; c.font = `800 ${12 * v}px Manrope, Mulish, Arial, sans-serif`;
+    const w = c.measureText(t.price).width + 14 * v, h = 20 * v, [a, b] = TAG[t.tone];
+    const g = c.createLinearGradient(0, y - h - 6 * v, 0, y - 6 * v); g.addColorStop(0, a); g.addColorStop(1, b);
+    c.fillStyle = g; round(c, x - w / 2, y - h - 6 * v, w, h, 7 * v); c.fill();
+    c.strokeStyle = '#f4d78b'; c.lineWidth = 1.5 * v; c.stroke();
+    c.beginPath(); c.moveTo(x - 5 * v, y - 6 * v); c.lineTo(x + 5 * v, y - 6 * v); c.lineTo(x, y); c.closePath(); c.fillStyle = b; c.fill();
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t.price, x, y - 6 * v - h / 2);
   }
   // cards
   for (const d of o.cards) {

@@ -180,7 +180,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       const shown = local.flatMap(p => {const u = units.find(v => up(v.code) === up(p.code)); return u && (!only || statusOf(u) === only) && kindShown(u) ? [{p, u}] : [];});
       const tone = (u: Unit) => {const st = statusOf(u); if (st === 'Đã bán') return 'sold' as const; if (kinds) return (toneOf(u) || '') as '' | 'red' | 'green' | 'blue'; return st === 'Còn hàng' ? '' as const : 'held' as const;};
       const known2 = (v?: string) => !!v && v !== 'Đang cập nhật';
-      const blob = await exportPlanImage({tiles: cfg.levels[0], ratio, planPx: 5120, screenPlanW: baseW, title: cfg.title,
+      const blob = await exportPlanImage({tiles: cfg.levels[0], ratio, planPx: 5120, screenPlanW: Math.min(box.w, box.h / ratio) * 0.62, title: cfg.title,
         tags: shown.map(({p, u}) => ({pin: p, unit: u, tone: tone(u), price: tag(u.price)})),
         cards: shown.filter(({p}) => p.callout).map(({p, u}) => ({pin: p, unit: u, price: u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ', status: statusOf(u),
           rows: ([['Loại hình', u.type], ['DT đất', u.area ? fmt(u.area) + ' m²' : undefined], ['DTXD', u.builtArea ? fmt(u.builtArea) + ' m²' : undefined], ['TCBG', u.group], ['Phân khu', u.zone]] as [string, string | undefined][]).filter(([, v]) => known2(v)) as [string, string][]}))});

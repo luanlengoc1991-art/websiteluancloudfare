@@ -454,5 +454,6 @@ try {
 } finally {
   await stop();
   await google.close();
-  rmSync(state, {recursive: true, force: true});
+  // Windows may still hold the local D1 files for a moment; a leftover temp folder is harmless.
+  try {rmSync(state, {recursive: true, force: true});} catch {}
 }

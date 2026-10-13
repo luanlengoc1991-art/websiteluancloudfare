@@ -31,6 +31,13 @@ export async function wireResponse(data: unknown, init: ResponseInit = {}) {
   return new Response(body, {...init, headers});
 }
 
+/** Client: base64 blob baked into the bundle by scripts/lots-loader.cjs (same format, nonce first) → JSON value. */
+export async function unpack<T>(b64: string): Promise<T> {
+  const body = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const packed = mask(body.slice(8), body.subarray(0, 8));
+  return JSON.parse(new TextDecoder().decode(await pipe(packed, new DecompressionStream('gzip'))));
+}
+
 /** Client: scrambled response → JSON text (errors come back as plain JSON and pass through unchanged). */
 export async function wireText(r: Response) {
   if (!(r.headers.get('content-type') || '').includes('octet-stream')) return r.text();

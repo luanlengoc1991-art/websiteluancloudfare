@@ -2598,3 +2598,13 @@ button.sz-bento-photo{padding:0}
 .logo-slots>div{display:grid;gap:10px;padding:14px;border:1px solid #e2ece8;border-radius:14px}
 @media(max-width:800px){.site-header .brand-logo.brand-logo-wide{max-height:34px;max-width:46vw}.logo-slots{grid-template-columns:1fr}}
 .site-header .brand-logo.brand-logo-wide,.sz-site>.site-header .brand-logo.brand-logo-wide{width:var(--logo-w,210px)!important}
+
+/* Saigon Park 360°: red arrows, fixed-size cards that may sit outside the plan, admin tools */
+.pm.is-out .pm-notes line{stroke:#e11d2a;stroke-width:2;stroke-dasharray:none;filter:drop-shadow(0 1px 1px #fff9)}
+.pm.is-out .pm-note{box-sizing:border-box;width:210px;min-width:0;height:150px;overflow:hidden;border-color:#e11d2a}
+.pm-out-tools{display:grid;gap:6px}
+.pm-out-tools button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;border:0;border-radius:99px;background:#ffffff1f;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.pm-out-tools button:last-child{background:#e11d2a}
+.pm-out-tools button:disabled{opacity:.6;cursor:wait}
+.pm-download{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;border:0;border-radius:99px;background:#e11d2a;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.pm-download:disabled{opacity:.6;cursor:wait}

@@ -5,7 +5,7 @@
  * area when zoomed. Pan/zoom gestures move the layer on the GPU; ~140 ms after the gesture the plan is re-laid out at
  * its real size, so codes are drawn at native resolution instead of a stretched bitmap. */
 import {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
-import {Check, Crosshair, Locate, MapPin, Minus, Pencil, Plus, Search, Trash2, X} from 'lucide-react';
+import {Check, Crosshair, Download, LayoutGrid, Locate, MapPin, Minus, Pencil, Plus, Search, Trash2, X} from 'lucide-react';
 import {toast} from 'sonner';
 import type {Project, Unit} from '@/lib/catalog';
 import {fundFromGroup, pinId, type UnitPin} from '@/lib/plan-funds';
@@ -13,6 +13,7 @@ import {unitPlanPath} from '@/lib/project-routes';
 import {sized} from '@/lib/img';
 
 import {PLAN_MAPS, planPieces, loadLots, lotOf} from '@/lib/plan-maps';
+import {CALLOUT_MAX, CALLOUT_MIN, CALLOUT_OUTSIDE, CARD_H, CARD_W, arrangeCallouts, edgePoint, exportPlanImage} from '@/lib/plan-callouts';
 
 /** Per-project colour groups for the tags, with a multi-select filter (default: all).
  *  Saigon Park: handover standard (TCBG) – Thô red, Giãn xây default gold, Hoàn thiện green.
@@ -82,16 +83,18 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const toneOf = (u: Unit) => {const k = kinds?.of(u); return kinds?.groups.find(g => g.key === k)?.tone || '';};
   const [admin, setAdmin] = useState(false), [notes, setNotes] = useState(false);
   const showNotes = canManage && admin && notes;
+  const out = CALLOUT_OUTSIDE.has(project.id), roomy = out && showNotes;
+  const [busy, setBusy] = useState('');
   const pinOf = useMemo(() => new Map(local.map(p => [up(p.code), p])), [local]);
   // content size at scale 1 = image fitted inside the viewport
-  const baseW = Math.min(box.w, box.h / ratio), baseH = baseW * ratio;
+  const baseW = Math.min(box.w, box.h / ratio) * (roomy ? 0.62 : 1), baseH = baseW * ratio;
   const fit = () => commit({s: 1, x: (box.w - baseW) / 2, y: (box.h - baseH) / 2});
   useEffect(() => {
     const el = view.current; if (!el) return;
     const ro = new ResizeObserver(() => setBox({w: el.clientWidth, h: el.clientHeight}));
     ro.observe(el); return () => ro.disconnect();
   }, []);
-  useEffect(fit, [box.w, box.h, ratio]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(fit, [box.w, box.h, ratio, roomy]); // eslint-disable-line react-hooks/exhaustive-deps
   const zoomAt = (k: number, cx: number, cy: number, now = false) => {
     const o = live.current, s = Math.min(maxZoom.current, Math.max(1, o.s * k)), f = s / o.s, n = {s, x: cx - (cx - o.x) * f, y: cy - (cy - o.y) * f};
     if (now) commit(n); else preview(n);
@@ -142,7 +145,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     e.stopPropagation(); e.preventDefault();
     const x0 = e.clientX, y0 = e.clientY; let last = {x: x0, y: y0}, did = false;
     const move = (ev: PointerEvent) => {last = {x: ev.clientX, y: ev.clientY}; if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 3) did = true; if (did) {const c = toPct(ev.clientX, ev.clientY); setLocal(l => l.map(v => up(v.code) === code ? {...v, callout: c} : v));}};
-    const upH = () => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', upH); if (did) {const c = toPct(last.x, last.y); saveCallout(code, {x: Math.min(100, Math.max(0, c.x)), y: Math.min(100, Math.max(0, c.y))});}};
+    const upH = () => {window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', upH); if (did) {const c = toPct(last.x, last.y); saveCallout(code, {x: Math.min(out ? CALLOUT_MAX : 100, Math.max(out ? CALLOUT_MIN : 0, c.x)), y: Math.min(out ? CALLOUT_MAX : 100, Math.max(out ? CALLOUT_MIN : 0, c.y))});}};
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', upH);
   };
   const dragPin = (e: React.PointerEvent, code: string) => {
@@ -154,6 +157,39 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', upH);
   };
 
+  /** Saigon Park: lay the cards around the plan (nearest side, in order) so arrows do not cross; saved per unit. */
+  async function arrange(all: boolean) {
+    const vis = new Set(list.map(u => up(u.code)));
+    const pts = local.filter(p => vis.has(up(p.code)) && (all || p.callout)).map(p => ({code: up(p.code), x: p.x, y: p.y}));
+    if (!pts.length) {toast.error(all ? 'Không có căn nào đang hiện trên mặt bằng.' : 'Chưa có thẻ thông tin nào – kéo tag giá ra hoặc bấm "Thẻ cho căn đang hiện".'); return;}
+    const layout = arrangeCallouts(pts, baseW, baseH);
+    setBusy('arrange');
+    const next = local.map(p => layout[up(p.code)] ? {...p, layer: 'map' as const, callout: layout[up(p.code)]} : p);
+    setLocal(next);
+    try {
+      const todo = next.filter(p => layout[up(p.code)]);
+      for (let i = 0; i < todo.length; i += 6) await Promise.all(todo.slice(i, i + 6).map(p => send({action: 'save', kind: 'pin', id: pinId(project.id, up(p.code), 'map'), data: p})));
+      onSaved(); toast.success(`Đã sắp xếp ${todo.length} thẻ quanh mặt bằng.`);
+    } catch (e) {toast.error(e instanceof Error ? e.message : 'Không lưu được thẻ.');} finally {setBusy('');}
+  }
+  /** Clean JPEG: plan + price tags + cards + red arrows only (no site menus / panels). */
+  async function download() {
+    if (!known) return;
+    setBusy('img'); const id = toast.loading('Đang tạo ảnh mặt bằng…');
+    try {
+      const shown = local.flatMap(p => {const u = units.find(v => up(v.code) === up(p.code)); return u && (!only || statusOf(u) === only) && kindShown(u) ? [{p, u}] : [];});
+      const tone = (u: Unit) => {const st = statusOf(u); if (st === 'Đã bán') return 'sold' as const; if (kinds) return (toneOf(u) || '') as '' | 'red' | 'green' | 'blue'; return st === 'Còn hàng' ? '' as const : 'held' as const;};
+      const known2 = (v?: string) => !!v && v !== 'Đang cập nhật';
+      const blob = await exportPlanImage({tiles: cfg.levels[0], ratio, planPx: 5120, screenPlanW: baseW, title: cfg.title,
+        tags: shown.map(({p, u}) => ({pin: p, unit: u, tone: tone(u), price: tag(u.price)})),
+        cards: shown.filter(({p}) => p.callout).map(({p, u}) => ({pin: p, unit: u, price: u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ', status: statusOf(u),
+          rows: ([['Loại hình', u.type], ['DT đất', u.area ? fmt(u.area) + ' m²' : undefined], ['DTXD', u.builtArea ? fmt(u.builtArea) + ' m²' : undefined], ['TCBG', u.group], ['Phân khu', u.zone]] as [string, string | undefined][]).filter(([, v]) => known2(v)) as [string, string][]}))});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Mat-bang-${project.id}-${new Date().toISOString().slice(0, 10)}.jpg`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast.success(`Đã tải ảnh (${Math.round(blob.size / 1024 / 1024 * 10) / 10} MB).`, {id});
+    } catch (e) {toast.error(e instanceof Error ? e.message : 'Không tạo được ảnh.', {id});} finally {setBusy('');}
+  }
+
   // Plan laid out at its real on-screen size; only the tiles of the needed sharpness inside the viewport are loaded.
   maxZoom.current = known && baseW ? Math.max(4, cfg.width / (baseW * dpr)) : 8;
   const W = baseW * t.s, H = baseH * t.s, need = W * dpr;
@@ -164,7 +200,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     .sort((a, b) => (pinOf.has(up(a.code)) ? 0 : 1) - (pinOf.has(up(b.code)) ? 0 : 1) || a.code.localeCompare(b.code, 'vi', {numeric: true}));
   const unplaced = units.filter(u => !pinOf.has(up(u.code))).length;
 
-  return <div className={'pm' + (edit ? ' is-edit' : '') + (placing ? ' is-placing' : '') + (showNotes ? ' is-notes' : '')}>
+  return <div className={'pm' + (out ? ' is-out' : '') + (edit ? ' is-edit' : '') + (placing ? ' is-placing' : '') + (showNotes ? ' is-notes' : '')}>
     <div ref={view} className="pm-view" onPointerDown={onDown} onClick={e => {
       if (moved.current || !edit || !placing) return;
       const p = toPct(e.clientX, e.clientY); place(placing, p.x, p.y); toast.success(`Đã đặt ${placing}.`); setPlacing('');
@@ -175,12 +211,13 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
         {original && <img className="pm-tile" src={project.image} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
         {pieces.map(q => <img key={q.key} className="pm-tile" src={q.src} alt="" decoding="async" draggable={false} style={{left: q.left, top: q.top, width: q.width, height: q.height}}/>)}
         {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-          <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fde047"/></marker></defs>
+          <defs><marker id="pm-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill={out ? '#e11d2a' : '#fde047'}/></marker></defs>
           {local.filter(p => p.callout).map(p => {
             const x1 = p.callout!.x * W / 100, y1 = p.callout!.y * H / 100, cx = p.x * W / 100, cy = p.y * H / 100 - 14;
             // stop where the line meets the tag box (half size 24 × 15 incl. a 2 px gap)
             const dx = x1 - cx, dy = y1 - cy, f = Math.min(Math.abs(dx) > 1e-6 ? 24 / Math.abs(dx) : Infinity, Math.abs(dy) > 1e-6 ? 15 / Math.abs(dy) : Infinity, 1);
-            return <line key={p.code} x1={x1} y1={y1} x2={cx + dx * f} y2={cy + dy * f} markerEnd="url(#pm-arrow)"/>;
+            const st = out ? edgePoint(x1, y1, cx, cy, CARD_W / 2, CARD_H / 2) : {x: x1, y: y1};
+            return <line key={p.code} x1={st.x} y1={st.y} x2={cx + dx * f} y2={cy + dy * f} markerEnd="url(#pm-arrow)"/>;
           })}
         </svg>}
         {showNotes && local.filter(p => p.callout).map(p => {
@@ -191,7 +228,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
             onPointerDown={e => dragCallout(e, code)} onClick={e => e.stopPropagation()}>
             <button type="button" className="pm-note-x" title="Gỡ thẻ thông tin" onPointerDown={e => e.stopPropagation()} onClick={e => {e.stopPropagation(); saveCallout(code);}}><X size={12}/></button>
             <strong>{u.code}</strong>
-            <dl>{rows.filter(([, v]) => known(v)).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+            <dl>{rows.filter(([, v]) => known(v)).slice(0, out ? 4 : 9).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
             <p><b>{u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ'}</b><span>{st}</span></p>
           </div>;
         })}
@@ -231,11 +268,15 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
             <i/>{g.label}<b>{units.filter(u => kinds.of(u) === g.key).length}</b></button>)}
         </div>
       </div>}
+      {out && known && <button type="button" className="pm-download" disabled={!!busy} onClick={download} title="Ảnh toàn mặt bằng kèm tag giá và thẻ thông tin, không có menu website"><Download size={15}/>{busy === 'img' ? 'Đang tạo ảnh…' : 'Tải ảnh mặt bằng'}</button>}
       <label className="pm-search"><Search size={15}/><input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm mã căn…"/></label>
       {canManage && admin && <div className="pm-admin">
         <button type="button" className={edit ? 'is-on' : ''} onClick={() => {setEdit(!edit); setPlacing('');}}>{edit ? <><Check size={14}/>Xong chỉnh vị trí</> : <><Pencil size={14}/>Chỉnh vị trí căn</>}</button>
         <span>{local.length}/{units.length} căn đã gắn{unplaced ? ` · ${unplaced} chưa gắn` : ''}</span>
         <button type="button" className={notes ? 'is-on' : ''} onClick={() => setNotes(!notes)} title="Kéo tag giá ra để hiện thẻ thông tin đầy đủ của căn">{notes ? 'Thẻ thông tin: Bật' : 'Thẻ thông tin: Tắt'} · {local.filter(p => p.callout).length}</button>
+        {notes && out && <div className="pm-out-tools">
+          <button type="button" disabled={!!busy} onClick={() => arrange(false)} title="Xếp các thẻ đang có ra quanh mặt bằng, mũi tên không cắt nhau"><LayoutGrid size={14}/>Tự sắp xếp thẻ</button>
+          <button type="button" disabled={!!busy} onClick={() => arrange(true)} title="Tạo thẻ cho mọi căn đang hiện (theo bộ lọc) rồi xếp quanh mặt bằng">Thẻ cho căn đang hiện</button></div>}
         {notes && <p>Kéo tag giá ra vị trí tuỳ ý để hiện thẻ thông tin (mũi tên tự nối về căn); kéo thẻ để dời, ✕ để gỡ.{edit ? ' Đang bật "Chỉnh vị trí căn": tắt nó để kéo thẻ.' : ''}</p>}
         {edit && <p>{placing ? `Bấm lên mặt bằng để đặt ${placing}` : 'Chọn mã căn bên dưới rồi bấm lên mặt bằng. Kéo tag để dời vị trí.'}</p>}
       </div>}

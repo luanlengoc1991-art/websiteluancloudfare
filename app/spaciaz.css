@@ -2597,3 +2597,4 @@ button.sz-bento-photo{padding:0}
 .logo-slots{grid-template-columns:1fr 1fr}
 .logo-slots>div{display:grid;gap:10px;padding:14px;border:1px solid #e2ece8;border-radius:14px}
 @media(max-width:800px){.site-header .brand-logo.brand-logo-wide{max-height:34px;max-width:46vw}.logo-slots{grid-template-columns:1fr}}
+.site-header .brand-logo.brand-logo-wide,.sz-site>.site-header .brand-logo.brand-logo-wide{width:var(--logo-w,210px)!important}

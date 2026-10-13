@@ -5,42 +5,67 @@ import type {UnitPin} from './plan-funds';
 
 /** Projects whose cards may be dragged outside the plan, with red arrows and the export button. */
 export const CALLOUT_OUTSIDE = new Set(['saigon-park']);
-export const CALLOUT_MIN = -60, CALLOUT_MAX = 160;
+export const CALLOUT_MIN = -80, CALLOUT_MAX = 180;
 /** On-screen card size (px) used for the layout. */
 export const CARD_W = 210, CARD_H = 150, GAP = 14;
 
+/** Reference plan width (px) the layout and the downloaded image are computed for: cards keep this proportion. */
+export const LAYOUT_W = 1800;
 type Pt = {code: string; x: number; y: number};
-/** Cards around the four sides of the plan. Each unit goes to its nearest side; cards on a side keep the order of their
- *  units along that side, so the arrows of one side never cross. Overflow opens a further column / row outward.
- *  planW / planH = plan size on screen (px) for which the cards should not overlap. Returns % of the plan. */
-export function arrangeCallouts(pts: Pt[], planW: number, planH: number): Record<string, {x: number; y: number}> {
-  const sides: Record<'l' | 'r' | 't' | 'b', Pt[]> = {l: [], r: [], t: [], b: []};
-  for (const p of pts) {
-    const d = {l: p.x, r: 100 - p.x, t: (p.y) * planH / planW, b: (100 - p.y) * planH / planW};
-    const s = (Object.keys(d) as (keyof typeof d)[]).reduce((a, b) => d[a] <= d[b] ? a : b);
-    sides[s].push(p);
+/** Cards on rings of slots around the plan. Units and slots are both sorted by their angle around the plan centre and
+ *  matched in that order (DP, least total arrow length), so neighbouring units get neighbouring cards and arrows do not
+ *  cross. A further ring opens only when the first one is full. Returns % of the plan. */
+export function arrangeCallouts(pts: Pt[], planW = LAYOUT_W, planH = LAYOUT_W * .7): Record<string, {x: number; y: number}> {
+  const W = planW, H = planH, cx = W / 2, cy = H / 2, slots: {x: number; y: number}[] = [];
+  for (let k = 0; slots.length < pts.length || k === 0; k++) {
+    const ox = GAP + CARD_W / 2 + k * (CARD_W + GAP), oy = GAP + CARD_H / 2 + k * (CARD_H + GAP);
+    const nx = Math.max(1, Math.floor((W + 2 * k * (CARD_W + GAP)) / (CARD_W + GAP))), ny = Math.max(1, Math.floor((H + 2 * k * (CARD_H + GAP)) / (CARD_H + GAP)));
+    const xs = (n: number) => Array.from({length: n}, (_, i) => -k * (CARD_W + GAP) + (i + .5) * (W + 2 * k * (CARD_W + GAP)) / n);
+    const ys = (n: number) => Array.from({length: n}, (_, i) => -k * (CARD_H + GAP) + (i + .5) * (H + 2 * k * (CARD_H + GAP)) / n);
+    for (const x of xs(nx)) slots.push({x, y: -oy}, {x, y: H + oy});
+    for (const y of ys(ny)) slots.push({x: -ox, y}, {x: W + ox, y});
+    for (const [sx, sy] of [[-ox, -oy], [W + ox, -oy], [-ox, H + oy], [W + ox, H + oy]]) slots.push({x: sx, y: sy});
+    if (k > 6) break;
+  }
+  const ang = (x: number, y: number) => Math.atan2(y - cy, x - cx);
+  const P = pts.map(p => ({...p, px: p.x / 100 * W, py: p.y / 100 * H})).map(p => ({...p, a: ang(p.px, p.py)}));
+  const S = slots.map(s => ({...s, a: ang(s.x, s.y)}));
+  // try every rotation of the slot circle and keep the cheapest order-preserving match
+  P.sort((a, b) => a.a - b.a); S.sort((a, b) => a.a - b.a);
+  const n = P.length, m = S.length, d = (i: number, j: number) => Math.hypot(P[i].px - S[j].x, P[i].py - S[j].y);
+  let best: number[] = [], bestCost = Infinity;
+  const steps = Math.min(m, 24);
+  for (let r = 0; r < steps; r++) {
+    const off = Math.round(r * m / steps), sj = (j: number) => (j + off) % m;
+    const dp = Array.from({length: n + 1}, () => new Float64Array(m + 1).fill(Infinity)), ch = Array.from({length: n + 1}, () => new Int8Array(m + 1));
+    for (let j = 0; j <= m; j++) dp[0][j] = 0;
+    for (let i = 1; i <= n; i++) for (let j = i; j <= m; j++) {
+      const skip = dp[i][j - 1], take = dp[i - 1][j - 1] + d(i - 1, sj(j - 1));
+      if (take <= skip) {dp[i][j] = take; ch[i][j] = 1;} else dp[i][j] = skip;
+    }
+    if (dp[n][m] < bestCost) {
+      bestCost = dp[n][m]; const pick: number[] = []; let i = n, j = m;
+      while (i > 0) {if (ch[i][j]) {pick[i - 1] = sj(j - 1); i--;} j--;}
+      best = pick;
+    }
+  }
+  // untangle: swap the cards of two arrows that cross whenever that lowers the number of crossings
+  const segOf = (i: number, j: number) => {const e = edgePoint(S[j].x, S[j].y, P[i].px, P[i].py, CARD_W / 2, CARD_H / 2); return [e.x, e.y, P[i].px, P[i].py];};
+  const side = (p: number[], q: number[], r: number[]) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+  const hits = (u: number[], v: number[]) => {const [a, b, c, e] = [[u[0], u[1]], [u[2], u[3]], [v[0], v[1]], [v[2], v[3]]]; return side(a, b, c) * side(a, b, e) < 0 && side(c, e, a) * side(c, e, b) < 0;};
+  const crossCount = (i: number) => {let k = 0; const si = segOf(i, best[i]); for (let j = 0; j < n; j++) if (j !== i && hits(si, segOf(j, best[j]))) k++; return k;};
+  for (let pass = 0; pass < 30; pass++) {
+    let changed = false;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      if (!hits(segOf(i, best[i]), segOf(j, best[j]))) continue;
+      const before = crossCount(i) + crossCount(j);
+      [best[i], best[j]] = [best[j], best[i]];
+      if (crossCount(i) + crossCount(j) < before) changed = true; else [best[i], best[j]] = [best[j], best[i]];
+    }
+    if (!changed) break;
   }
   const out: Record<string, {x: number; y: number}> = {};
-  const perCol = Math.max(1, Math.floor((planH + GAP) / (CARD_H + GAP)));
-  const perRow = Math.max(1, Math.floor((planW + GAP) / (CARD_W + GAP)));
-  for (const s of ['l', 'r', 't', 'b'] as const) {
-    const list = sides[s].sort((a, b) => s === 'l' || s === 'r' ? a.y - b.y : a.x - b.x);
-    const cap = s === 'l' || s === 'r' ? perCol : perRow;
-    const lines = Math.ceil(list.length / cap);
-    list.forEach((p, i) => {
-      const line = Math.floor(i / cap), inLine = list.length - line * cap, k = i - line * cap, n = Math.min(cap, inLine);
-      const along = (k + 0.5) / n * 100; // evenly spread, in order
-      if (s === 'l' || s === 'r') {
-        const off = (GAP + CARD_W / 2 + line * (CARD_W + GAP)) / planW * 100;
-        out[p.code] = {x: s === 'l' ? -off : 100 + off, y: along};
-      } else {
-        const off = (GAP + CARD_H / 2 + line * (CARD_H + GAP)) / planH * 100;
-        out[p.code] = {x: along, y: s === 't' ? -off : 100 + off};
-      }
-    });
-    void lines;
-  }
-  for (const k of Object.keys(out)) out[k] = {x: clamp(out[k].x), y: clamp(out[k].y)};
+  P.forEach((p, i) => {const s = S[best[i]]; out[p.code] = {x: clamp(s.x / W * 100), y: clamp(s.y / H * 100)};});
   return out;
 }
 const clamp = (n: number) => Math.round(Math.min(CALLOUT_MAX, Math.max(CALLOUT_MIN, n)) * 100) / 100;

@@ -13,7 +13,7 @@ import {unitPlanPath} from '@/lib/project-routes';
 import {sized} from '@/lib/img';
 
 import {PLAN_MAPS, planPieces, loadLots, lotOf} from '@/lib/plan-maps';
-import {CALLOUT_MAX, CALLOUT_MIN, CALLOUT_OUTSIDE, CARD_H, CARD_W, arrangeCallouts, edgePoint, exportPlanImage} from '@/lib/plan-callouts';
+import {CALLOUT_MAX, CALLOUT_MIN, CALLOUT_OUTSIDE, CARD_H, CARD_W, LAYOUT_W, arrangeCallouts, edgePoint, exportPlanImage} from '@/lib/plan-callouts';
 
 /** Per-project colour groups for the tags, with a multi-select filter (default: all).
  *  Saigon Park: handover standard (TCBG) – Thô red, Giãn xây default gold, Hoàn thiện green.
@@ -87,7 +87,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const [busy, setBusy] = useState('');
   const pinOf = useMemo(() => new Map(local.map(p => [up(p.code), p])), [local]);
   // content size at scale 1 = image fitted inside the viewport
-  const baseW = Math.min(box.w, box.h / ratio) * (roomy ? 0.62 : 1), baseH = baseW * ratio;
+  const baseW = Math.min(box.w, box.h / ratio) * (roomy ? 0.78 : 1), baseH = baseW * ratio;
   const fit = () => commit({s: 1, x: (box.w - baseW) / 2, y: (box.h - baseH) / 2});
   useEffect(() => {
     const el = view.current; if (!el) return;
@@ -162,7 +162,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
     const vis = new Set(list.map(u => up(u.code)));
     const pts = local.filter(p => vis.has(up(p.code)) && (all || p.callout)).map(p => ({code: up(p.code), x: p.x, y: p.y}));
     if (!pts.length) {toast.error(all ? 'Không có căn nào đang hiện trên mặt bằng.' : 'Chưa có thẻ thông tin nào – kéo tag giá ra hoặc bấm "Thẻ cho căn đang hiện".'); return;}
-    const layout = arrangeCallouts(pts, baseW, baseH);
+    const layout = arrangeCallouts(pts, LAYOUT_W, LAYOUT_W * ratio);
     setBusy('arrange');
     const next = local.map(p => layout[up(p.code)] ? {...p, layer: 'map' as const, callout: layout[up(p.code)]} : p);
     setLocal(next);
@@ -180,7 +180,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       const shown = local.flatMap(p => {const u = units.find(v => up(v.code) === up(p.code)); return u && (!only || statusOf(u) === only) && kindShown(u) ? [{p, u}] : [];});
       const tone = (u: Unit) => {const st = statusOf(u); if (st === 'Đã bán') return 'sold' as const; if (kinds) return (toneOf(u) || '') as '' | 'red' | 'green' | 'blue'; return st === 'Còn hàng' ? '' as const : 'held' as const;};
       const known2 = (v?: string) => !!v && v !== 'Đang cập nhật';
-      const blob = await exportPlanImage({tiles: cfg.levels[0], ratio, planPx: 5120, screenPlanW: Math.min(box.w, box.h / ratio) * 0.62, title: cfg.title,
+      const blob = await exportPlanImage({tiles: cfg.levels[0], ratio, planPx: 5120, screenPlanW: LAYOUT_W, title: cfg.title,
         tags: shown.map(({p, u}) => ({pin: p, unit: u, tone: tone(u), price: tag(u.price)})),
         cards: shown.filter(({p}) => p.callout).map(({p, u}) => ({pin: p, unit: u, price: u.price ? fmt(u.price) + ' tỷ' : 'Liên hệ', status: statusOf(u),
           rows: ([['Loại hình', u.type], ['DT đất', u.area ? fmt(u.area) + ' m²' : undefined], ['DTXD', u.builtArea ? fmt(u.builtArea) + ' m²' : undefined], ['TCBG', u.group], ['Phân khu', u.zone]] as [string, string | undefined][]).filter(([, v]) => known2(v)) as [string, string][]}))});
@@ -216,7 +216,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
             const x1 = p.callout!.x * W / 100, y1 = p.callout!.y * H / 100, cx = p.x * W / 100, cy = p.y * H / 100 - 14;
             // stop where the line meets the tag box (half size 24 × 15 incl. a 2 px gap)
             const dx = x1 - cx, dy = y1 - cy, f = Math.min(Math.abs(dx) > 1e-6 ? 24 / Math.abs(dx) : Infinity, Math.abs(dy) > 1e-6 ? 15 / Math.abs(dy) : Infinity, 1);
-            const st = out ? edgePoint(x1, y1, cx, cy, CARD_W / 2, CARD_H / 2) : {x: x1, y: y1};
+            const st = out ? edgePoint(x1, y1, cx, cy, CARD_W / 2 * W / LAYOUT_W, CARD_H / 2 * W / LAYOUT_W) : {x: x1, y: y1};
             return <line key={p.code} x1={st.x} y1={st.y} x2={cx + dx * f} y2={cy + dy * f} markerEnd="url(#pm-arrow)"/>;
           })}
         </svg>}
@@ -224,7 +224,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
           const u = units.find(v => up(v.code) === up(p.code)); if (!u) return null;
           const st = statusOf(u), code = up(p.code), known = (v?: string) => !!v && v !== 'Đang cập nhật';
           const rows: [string, string | undefined][] = [['Loại hình', u.type], ['Phân khu', u.zone], ['DT đất', u.area ? fmt(u.area) + ' m²' : undefined], ['DTXD', u.builtArea ? fmt(u.builtArea) + ' m²' : undefined], ['Hướng', u.direction], ['TCBG', u.group]];
-          return <div key={'n' + code} className={'pm-note' + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held')} style={{left: p.callout!.x + '%', top: p.callout!.y + '%'}}
+          return <div key={'n' + code} className={'pm-note' + (st === 'Còn hàng' ? '' : st === 'Đã bán' ? ' is-sold' : ' is-held')} style={{left: p.callout!.x + '%', top: p.callout!.y + '%', ...(out ? {transform: `translate(-50%,-50%) scale(${W / LAYOUT_W})`} : {})}}
             onPointerDown={e => dragCallout(e, code)} onClick={e => e.stopPropagation()}>
             <button type="button" className="pm-note-x" title="Gỡ thẻ thông tin" onPointerDown={e => e.stopPropagation()} onClick={e => {e.stopPropagation(); saveCallout(code);}}><X size={12}/></button>
             <strong>{u.code}</strong>

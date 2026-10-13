@@ -7,7 +7,7 @@ import {SAIGON_PARK, saigonParkModelImage} from '@/lib/saigon-park-models';
 
 /* Public layouts modelled on the Spaciaz theme (demo2.wpopal.com/spaciaz), filled with
  * Alpha Hub's own projects, units, articles and About/AlphaHub copy. Styles: app/spaciaz.css. */
-import {useEffect, useId, useMemo, useRef, useState, type ReactNode} from 'react';
+import {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import Link from './site-link';
 import {ArrowUpRight, Building2, Calendar, ChevronLeft, ChevronRight, Globe, Handshake, Heart, House, Layers, Mail, MapPin, MessageCircle, Pencil, Phone, Plus, Search, ShieldCheck, Sparkles, Star, TrendingUp, Users, Map as MapIcon} from 'lucide-react';
 import type {Article, Asset, Project, Unit} from '@/lib/catalog';
@@ -481,7 +481,7 @@ export function SpaciazAbout({about, brand, projects, units, contact}: {about: A
           <div data-fx=""><Eyebrow>Hành trình</Eyebrow><h2 className="sz-h2">{lines(about.journeyTitle)}</h2></div>
           <div className="sz-timeline">{steps.map(s => <Link key={s.year} href={s.href} className="sz-milestone" data-fx="">
             <span className="sz-milestone-year">{s.year}</span><span className="sz-milestone-photo"><Img w={640} src={s.image} alt=""/></span><i/><h3>{s.title}</h3><p>{s.body}</p></Link>)}</div>
-          <RoundCta href="/lien-he" fx="zoom" ring="• NHẬN TƯ VẤN • LUAN GROUP • HỖ TRỢ 24/7 ">Nhận<br/>tư vấn</RoundCta>
+          <RoundCta href="/lien-he" fx="zoom">Nhận<br/>tư vấn</RoundCta>
         </div>
       </section>
       <section className="sz-section sz-learn sz-wrap">
@@ -570,7 +570,7 @@ export function SpaciazContact({projects, contact, address}: {projects: Project[
       </section>
       <section className="sz-section sz-wrap sz-message">
         <div data-fx="left"><h2 className="sz-h2">{t('contact.form.title')}</h2><p className="sz-lead">{t('contact.form.body')}</p><LeadForm projects={projects} note="Trang liên hệ"/></div>
-        <div className="sz-message-photo sz-notch-tl" data-fx="right"><Img w={2560} src={projects[0]?.image} alt=""/><RoundCta href={contact.facebookHref} external icon="arrow" ring="• THEO DÕI • FACEBOOK • LUAN GROUP ">Theo dõi<br/>Facebook</RoundCta></div>
+        <div className="sz-message-photo sz-notch-tl" data-fx="right"><Img w={2560} src={projects[0]?.image} alt=""/><RoundCta href={contact.facebookHref} external icon="arrow">Theo dõi<br/>Facebook</RoundCta></div>
       </section>
     </Sheet>
   </div>;
@@ -584,7 +584,7 @@ export function SpaciazFooter({brand, contact, logo, logoWidth, address}: {brand
       <span className="sz-footer-ghost" aria-hidden="true">{brand}</span>
       <h2 data-fx="title">{lines(t('footer.title'))}</h2>
       <p data-fx="">{t('footer.body')}</p>
-      <RoundCta href="/lien-he" dark fx="zoom" ring="• NHẬN TƯ VẤN • LUAN GROUP • HỖ TRỢ 24/7 ">{lines(t('footer.cta'))}</RoundCta>
+      <RoundCta href="/lien-he" dark fx="zoom">{lines(t('footer.cta'))}</RoundCta>
     </div>
     <div className="sz-footer-card">
       <div className="sz-footer-grid">
@@ -722,12 +722,9 @@ export function SpaciazInventoryOutro({projects, contact}: {projects: Project[];
   </div>;
 }
 
-/** Round call-to-action badge: rotating text ring, glowing gradient core with an icon, pulse waves. */
-function RoundCta({href, children, ring, dark = false, external = false, icon = 'phone', fx}: {href: string; children: ReactNode; ring: string; dark?: boolean; external?: boolean; icon?: 'phone' | 'arrow'; fx?: string}) {
-  const id = useId().replace(/:/g, '');
+/** Round call-to-action badge: glowing gradient core with an icon, pulse waves. */
+function RoundCta({href, children, dark = false, external = false, icon = 'phone', fx}: {href: string; children: ReactNode; dark?: boolean; external?: boolean; icon?: 'phone' | 'arrow'; fx?: string}) {
   const body = <>
-    <svg className="sz-rc-ring" viewBox="0 0 100 100" aria-hidden><defs><path id={'rc' + id} d="M50 50 m-41 0 a41 41 0 1 1 82 0 a41 41 0 1 1 -82 0"/></defs>
-      <text><textPath href={'#rc' + id} textLength="257">{ring}</textPath></text></svg>
     <span className="sz-rc-core">{icon === 'phone' ? <Phone size={22}/> : <ArrowUpRight size={22}/>}<b>{children}</b></span>
     <i className="sz-rc-wave" aria-hidden/><i className="sz-rc-wave is-2" aria-hidden/>
   </>;

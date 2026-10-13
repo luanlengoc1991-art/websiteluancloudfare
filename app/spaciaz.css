@@ -2670,3 +2670,8 @@ button.sz-bento-photo{padding:0}
 .sz-round-cta.is-dark .sz-rc-core{background:linear-gradient(145deg,#6ee7b7,#10b981 60%,#059669);color:#022c22}
 .sz-round-cta.is-dark .sz-rc-core svg{color:#022c22}
 @media(max-width:640px){.sz-round-cta{width:140px;height:140px}.sz-rc-core b{font-size:11.5px}}
+.sz-round-cta{width:150px;height:150px}
+.sz-rc-core{width:78%;height:78%;gap:5px}
+.sz-rc-core svg{width:26px;height:26px}
+.sz-rc-core b{font-size:15px}
+@media(max-width:640px){.sz-round-cta{width:128px;height:128px}.sz-rc-core b{font-size:13px}}

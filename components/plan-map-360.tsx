@@ -62,6 +62,8 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   useEffect(() => setDpr(Math.min(window.devicePixelRatio || 1, 2)), []);
   // Zoom stops where one plan pixel meets one screen pixel (HD plans), so it never magnifies past the image.
   const maxZoom = useRef(14);
+  // HD plans open on a light 960 px base; the 1600 px and full view layers load only once the screen needs them.
+  const step = useRef(0);
   const [lotTable, setLotTable] = useState<Record<string, [number, number]> | null>(null);
   useEffect(() => {if (known?.lots) loadLots(project.id).then(setLotTable);}, [known, project.id]);
   const withLots = useMemo(() => {
@@ -195,6 +197,7 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
   const W = baseW * t.s, H = baseH * t.s, need = W * dpr;
   const pieces = known && W ? planPieces(cfg, need, {u0: -t.x / W, u1: (box.w - t.x) / W, v0: -t.y / H, v1: (box.h - t.y) / H}) : [];
   const original = !known && need > cfg.viewW * 1.15 && cfg.image !== project.image;
+  if (known) step.current = Math.max(step.current, need > 1600 * 1.15 ? 2 : need > 960 * 1.15 ? 1 : 0);
   const free = units.filter(u => statusOf(u) === 'Còn hàng'), held = units.filter(u => statusOf(u) === 'Đang giữ chỗ'), sold = units.filter(u => statusOf(u) === 'Đã bán');
   const list = units.filter(u => (!q.trim() || u.code.toLowerCase().includes(q.trim().toLowerCase())) && (!only || statusOf(u) === only) && kindShown(u))
     .sort((a, b) => (pinOf.has(up(a.code)) ? 0 : 1) - (pinOf.has(up(b.code)) ? 0 : 1) || a.code.localeCompare(b.code, 'vi', {numeric: true}));
@@ -206,8 +209,10 @@ export default function PlanMap360({project, units, pins, statusOf, canManage, o
       const p = toPct(e.clientX, e.clientY); place(placing, p.x, p.y); toast.success(`Đã đặt ${placing}.`); setPlacing('');
     }}>
       <div ref={canvas} className="pm-canvas" style={{width: W, height: H}}>
-        <img className="pm-img" src={cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}
+        <img className="pm-img" src={known ? sized(cfg.image, 960) : cfg.image} alt={`Mặt bằng ${cfg.title}`} decoding="async" draggable={false}
           onLoad={known ? undefined : e => {const i = e.currentTarget; if (i.naturalWidth) setShape(i.naturalHeight / i.naturalWidth);}}/>
+        {known && step.current >= 1 && <img className="pm-tile" src={sized(cfg.image, 1600)} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
+        {known && step.current >= 2 && <img className="pm-tile" src={cfg.image} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
         {original && <img className="pm-tile" src={project.image} alt="" decoding="async" draggable={false} style={{left: 0, top: 0, width: '100%', height: '100%'}}/>}
         {pieces.map(q => <img key={q.key} className="pm-tile" src={q.src} alt="" decoding="async" draggable={false} style={{left: q.left, top: q.top, width: q.width, height: q.height}}/>)}
         {showNotes && <svg className="pm-notes" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>

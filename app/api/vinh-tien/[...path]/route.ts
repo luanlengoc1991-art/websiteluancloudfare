@@ -1,6 +1,7 @@
 import {getCloudflareContext} from '@opennextjs/cloudflare';
 import {getCurrentUser} from '@/lib/auth';
 import {isSameOrigin} from '@/lib/request-origin';
+import {dropGreenParadise} from '@/lib/green-paradise-cache';
 import {MediaError, mediaFailure, storeMedia} from '@/lib/media-storage';
 import {readVinhTienSheet, readVinhTienState, vinhTienImage, writeVinhTienState} from '@/lib/vinh-tien-store';
 const permitted=(p:string)=>p==='api/state'||p==='api/sheet'||p==='api/assets'||/^(api\/assets|fonts|perspectives|gallery-perspectives|villa-perspectives|amenity-perspectives)\/[a-zA-Z0-9._%-]+$/.test(p)||/^(brand-logo|unit-title|unit-marker|poster-map)\.(png|jpg)$/.test(p);
@@ -45,7 +46,7 @@ async function relay(req:Request,context:{params:Promise<{path:string[]}>}){
  }
  try{
   if(p==='api/assets')return await upload(req);
-  if(p==='api/state'&&write){const d=await req.json() as {version?:number;units?:unknown[]};if(d.version!==2||!Array.isArray(d.units)||d.units.length>1000)return new Response('Invalid state',{status:400});return Response.json(await writeVinhTienState(d),{headers:{'Cache-Control':'no-store'}});}
+  if(p==='api/state'&&write){const d=await req.json() as {version?:number;units?:unknown[]};if(d.version!==2||!Array.isArray(d.units)||d.units.length>1000)return new Response('Invalid state',{status:400});const saved=await writeVinhTienState(d);await dropGreenParadise(req.url);return Response.json(saved,{headers:{'Cache-Control':'no-store'}});}
   if(p==='api/state')return Response.json({...await readVinhTienState(),canEdit:!!await getCurrentUser()},{headers:{'Cache-Control':'private, no-store'}});
   return Response.json(await readVinhTienSheet(),{headers:{'Cache-Control':'no-store'}});
  }catch(e){if(e instanceof MediaError)return mediaFailure(e);return Response.json({error:'Không thể tải dữ liệu Mặt bằng căn. Vui lòng thử lại.'},{status:502});}

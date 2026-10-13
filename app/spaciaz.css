@@ -2675,3 +2675,8 @@ button.sz-bento-photo{padding:0}
 .sz-rc-core svg{width:26px;height:26px}
 .sz-rc-core b{font-size:15px}
 @media(max-width:640px){.sz-round-cta{width:128px;height:128px}.sz-rc-core b{font-size:13px}}
+
+/* Copy guard: no text selection / image dragging on public pages (form fields excepted) */
+html.copy-guard body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html.copy-guard img{-webkit-user-drag:none;user-drag:none;pointer-events:auto}
+html.copy-guard :is(input,textarea,select,[contenteditable=true],.allow-copy){-webkit-user-select:text;user-select:text}

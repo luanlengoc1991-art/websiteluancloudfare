@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import SiteAtmosphere from "@/components/site-atmosphere";
+import CopyGuard from "@/components/copy-guard";
 import SiteEffects from "@/components/site-effects";
 import "./globals.css";
 import "./admin.css";
@@ -51,6 +52,7 @@ const mulish = localFont({
 export const metadata: Metadata = {
   title: "LUAN GROUP | Designer MKT",
   description: "Tra cứu quỹ căn, khám phá dự án và quản lý giao dịch bất động sản.",
+  other: {robots: "noai, noimageai"},
   icons: {
     icon: [
       {url: "/favicon.ico", sizes: "16x16 32x32 48x48"},
@@ -70,7 +72,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" data-skin="emerald" className={`${playfairDisplay.variable} ${mulish.variable}`}>
-      <body className="antialiased"><SiteAtmosphere/><SiteEffects/>{children}</body>
+      <body className="antialiased"><SiteAtmosphere/><SiteEffects/><CopyGuard/>{children}</body>
     </html>
   );
 }

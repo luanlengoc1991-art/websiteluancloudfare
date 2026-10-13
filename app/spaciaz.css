@@ -2631,3 +2631,22 @@ button.sz-bento-photo{padding:0}
 .trp-body small{display:flex;align-items:center;gap:3px;font-size:11.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trp-body em{justify-self:start;padding:2px 9px;border-radius:99px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-style:normal;font-size:11.5px;font-weight:800}
 .trp-empty{padding:14px;color:#94a3b8;font-size:13px}
+
+/* Trending: floating "NỔI BẬT" tab + compact floating panel (not full height) */
+.trending-button{right:0!important;padding:18px 11px!important;font-size:11px!important;font-weight:800;letter-spacing:3px!important;border-radius:14px 0 0 14px!important;background:linear-gradient(180deg,#10b981,#047857)!important;color:#fff!important;box-shadow:0 10px 26px -8px #04785799,0 0 0 3px #ffffffcc!important;animation:trd-glow 2.6s ease-in-out infinite;transition:padding .25s,transform .25s}
+.trending-button:hover{padding-right:16px!important;transform:translateX(-2px)}
+.trending-button svg{width:18px;height:18px;color:#fde68a;animation:trd-flame 1.4s ease-in-out infinite}
+@keyframes trd-glow{0%,100%{box-shadow:0 10px 26px -8px #04785799,0 0 0 3px #ffffffcc}50%{box-shadow:0 10px 30px -4px #10b981cc,0 0 0 3px #ffffffcc,0 0 0 9px #10b98133}}
+@keyframes trd-flame{50%{transform:scale(1.18) rotate(-6deg)}}
+[data-slot=sheet-content].trending-sheet{top:96px!important;bottom:auto!important;right:16px!important;height:auto!important;max-height:calc(100dvh - 130px)!important;width:340px!important;max-width:calc(100vw - 24px)!important;border:1px solid #e2ece8!important;border-radius:24px!important;padding-bottom:14px;gap:0!important;box-shadow:0 30px 60px -24px #02261d66!important;overflow:auto}
+.trending-sheet [data-slot=sheet-header]{padding:16px 18px 12px;border-bottom:1px dashed #d6e5df;margin-bottom:12px}
+.trending-sheet [data-slot=sheet-description]{display:none}
+.trending-sheet .trp-title{font-size:17px}
+.trending-sheet .sheet-body{padding:0 14px}
+.trending-sheet .trp-tabs button{height:34px;font-size:12.5px}
+.trending-sheet .trp-list a{grid-template-columns:52px 1fr 16px;gap:11px;padding:8px 10px 8px 8px;border-radius:16px}
+.trending-sheet .trp-img{width:52px;height:52px}
+.trending-sheet .trp-body strong{font-size:12.5px}
+.trending-sheet .trp-body small{display:none}
+[data-slot=sheet-overlay]:has(+ .trending-sheet){background:#02261d14!important;backdrop-filter:none!important}
+@media(max-width:640px){[data-slot=sheet-content].trending-sheet{top:80px!important;right:10px!important}}
